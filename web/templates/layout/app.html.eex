@@ -18,5 +18,8 @@
 
     </div> <!-- /container -->
     <script src="<%= static_path(@conn, "/js/app.js") %>"></script>
+    <script>
+      var app = Elm.embed(Elm.MMP, document.getElementById('elm-main'));
+    </script>
   </body>
 </html>
