@@ -16,4 +16,6 @@ Setup
 - `mix deps.get`
 - Make sure you have Postgress running
 - `mix ecto.create`
+- `elm package install -y`
+- `elm package install evancz/elm-html -y`
 - `mix phoenix.server`
