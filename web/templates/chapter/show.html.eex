@@ -1,0 +1,33 @@
+<h2>Show chapter</h2>
+
+<ul>
+
+  <li>
+    <strong>Order:</strong>
+    <%= @chapter.order %>
+  </li>
+
+  <li>
+    <strong>Stylesheet:</strong>
+    <%= @chapter.stylesheet %>
+  </li>
+
+  <li>
+    <strong>Title:</strong>
+    <%= @chapter.title %>
+  </li>
+
+  <li>
+    <strong>Content:</strong>
+    <%= @chapter.content %>
+  </li>
+
+  <li>
+    <strong>Release date:</strong>
+    <%= @chapter.release_date %>
+  </li>
+
+</ul>
+
+<%= link "Edit", to: chapter_path(@conn, :edit, @chapter) %>
+<%= link "Back", to: chapter_path(@conn, :index) %>
