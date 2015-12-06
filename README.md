@@ -12,11 +12,10 @@ Setup
 - Install above requirements
 - Clone repository
 - cd into repository
-- `npm install && node node_modules/brunch/bin/brunch build`
+- `npm install`
 - `mix deps.get`
 - Make sure you have Postgress running
 - `mix ecto.create`
-- `cd web/elm`
-- `elm package install -y`
-- `cd ../../`
+- `mix ecto.migrate`
+- `cd web/elm && elm package install -y && cd ../../`
 - `mix phoenix.server`
