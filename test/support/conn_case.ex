@@ -36,6 +36,6 @@ defmodule Mmp.ConnCase do
       Ecto.Adapters.SQL.restart_test_transaction(Mmp.Repo, [])
     end
 
-    :ok
+    {:ok, conn: Phoenix.ConnTest.conn()}
   end
 end

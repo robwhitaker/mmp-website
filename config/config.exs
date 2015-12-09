@@ -9,7 +9,7 @@ use Mix.Config
 config :mmp, Mmp.Endpoint,
   url: [host: "localhost"],
   root: Path.dirname(__DIR__),
-  secret_key_base: "+Gz2x+bsTxHNhK3TfIGKNTi1QMuUm77aehWiTakLoNx/jshorXrLeneOGx0NFTWX",
+  secret_key_base: "oONakc9zNUQKgLUiEZTQAZiQNvge/IdOs07ECo1LmznHdUFeTZyfIKm7GQ54AGmm",
   render_errors: [accepts: ~w(html json)],
   pubsub: [name: Mmp.PubSub,
            adapter: Phoenix.PubSub.PG2]

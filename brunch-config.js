@@ -43,7 +43,7 @@ exports.config = {
       "deps/phoenix_html/web/static",
       "web/static",
       "test/static",
-      "web/elm/MMP.elm"
+      "web/elm/Mmp.elm"
     ],
 
     // Where to compile files to
@@ -54,7 +54,7 @@ exports.config = {
   plugins: {
     elmBrunch: {
       elmFolder: 'web/elm',
-      mainModules: ['MMP.elm'],
+      mainModules: ['Mmp.elm'],
       outputFolder: '../static/vendor'
     },
     babel: {

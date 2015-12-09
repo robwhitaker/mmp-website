@@ -33,7 +33,7 @@ defmodule Mmp.Endpoint do
   plug Plug.Session,
     store: :cookie,
     key: "_mmp_key",
-    signing_salt: "x0j1aYqc"
+    signing_salt: "dAyk1bH2"
 
   plug Mmp.Router
 end

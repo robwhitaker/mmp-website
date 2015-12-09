@@ -30,3 +30,6 @@ erl_crash.dump
 web/elm/elm-stuff/
 # elm-repl generated files
 repl-temp-*
+
+### OS X ###
+.DS_Store

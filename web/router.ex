@@ -17,9 +17,6 @@ defmodule Mmp.Router do
     pipe_through :browser # Use the default browser stack
 
     get "/", PageController, :index
-
-    resources "/chapters", ChapterController
-    resources "/entries", EntryController
   end
 
   # Other scopes may use custom stacks.
