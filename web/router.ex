@@ -20,7 +20,10 @@ defmodule Mmp.Router do
   end
 
   # Other scopes may use custom stacks.
-  # scope "/api", Mmp do
-  #   pipe_through :api
-  # end
+  scope "/api", Mmp do
+    pipe_through :api
+
+    resources "/chapters", ChapterController, except: [:new, :edit]
+    resources "/entries", EntryController, except: [:new, :edit]
+  end
 end
