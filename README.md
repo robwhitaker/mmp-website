@@ -17,5 +17,6 @@ Setup
 - Make sure you have Postgress running
 - `mix ecto.create`
 - `mix ecto.migrate`
+- `mix run priv/repo/seeds.exs`
 - `cd web/elm && elm package install -y && cd ../../`
 - `mix phoenix.server`
