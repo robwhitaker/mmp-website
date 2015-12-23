@@ -1,0 +1,25 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+body, html {
+	height: 100%;
+}
+
+.book {
+	width: 650px;
+	height: 759px;
+	overflow: hidden; /*this is here to offset the .book-text stuff*/
+	margin: 0 auto;
+	background-image: url('/assets/img/book-final2.png');
+}
+
+.book-text {
+	margin: 70px auto 0 auto;
+	width: 530px;
+	height: 600px;
+	overflow: hidden;
+	-webkit-column-width: 530px;
+	-webkit-column-gap: 0px;
+}

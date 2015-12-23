@@ -1,0 +1,19 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Editor</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="<%= static_path(@conn, "/css/editor.css") %>">
+</head>
+<body>
+    <script src="<%= static_path(@conn, "/build/editor.js") %>"></script>
+    <script>
+    var Editor= Elm.fullscreen(Elm.Editor.Main);
+
+    Editor.ports.contextChange.subscribe(function() {
+        document.getElementById("scroll-container").scrollTop = 0;;
+    });
+    </script>
+</body>
+</html>
