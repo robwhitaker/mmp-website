@@ -24,6 +24,8 @@ erl_crash.dump
 # variables.
 /config/prod.secret.exs
 
+#Generated JS
+/web/static/vendor/
 
 ### Elm ###
 # elm-package generated files
