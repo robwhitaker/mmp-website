@@ -1,7 +1,7 @@
 defmodule Mmp.Entry do
   use Mmp.Web, :model
 
-  @derive {Poison.Encoder, only: [:chapter_id, :level, :order, :title, :content, :release_date, :authors_note]}
+  @derive {Poison.Encoder, only: [:id, :chapter_id, :level, :order, :title, :content, :release_date, :authors_note]}
 
   schema "entries" do
     field :level, :integer
