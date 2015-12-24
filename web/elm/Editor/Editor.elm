@@ -1,4 +1,4 @@
-module Editor.Main where
+module Editor.Editor where
 
 import Core.Models.Chapter as Chapter exposing (Chapter)
 import Editor.ChapterListEditor as ChapterListEditor
