@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="<%= static_path(@conn, "/css/editor.css") %>">
 </head>
 <body>
-  <!-- <script src="<%= static_path(@conn, "/js/app.js") %>"></script> -->
   <script src="<%= static_path(@conn, "/js/editor.js") %>"></script>
   <script>
   var Editor = Elm.fullscreen(Elm.Editor.Editor);
