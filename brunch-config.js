@@ -47,7 +47,7 @@ exports.config = {
     watched: [
       // "deps/phoenix/web/static",
       // "deps/phoenix_html/web/static",
-      // "web/static",
+      "web/static",
       // "test/static",
       "web/elm/Editor",
       "web/elm/Reader",
