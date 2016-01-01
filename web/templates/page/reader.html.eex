@@ -1,0 +1,52 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Reader</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="<%= static_path(@conn, "/css/reader.css") %>">
+</head>
+<body>
+  <script src="<%= static_path(@conn, "/js/reader.js") %>"></script>
+  <script>
+  var Reader = Elm.fullscreen(Elm.Reader.Reader, { location : window.location.href, chapterRendered : [0, []], headingUpdate : [] });
+  var collidesWithBook = function(item) {
+    var storyTextArea = document.getElementsByClassName("book-text")[0];
+    if(storyTextArea == null) return false;
+      var bookRect = storyTextArea.getBoundingClientRect();
+      var itemRect = item.getBoundingClientRect();
+      console.log(bookRect, itemRect)
+      return !(bookRect.right <= itemRect.left || bookRect.left >= itemRect.right);
+  };
+  var getHeadingsOnPage = function() {
+    var storyTextArea = document.getElementsByClassName("book-text")[0];
+    if(storyTextArea == null) return [];
+    var headings = storyTextArea.querySelectorAll("h1,h2,h3,h4,h5,h6");
+    return Array.prototype.filter.call(headings, collidesWithBook)
+      .map(function(h) { return parseInt(h.id); })
+      .filter(function(id) { return !isNaN(id) });
+  }
+  Reader.ports.currentPage.subscribe(function(pageNum) {
+    var storyTextArea = document.getElementsByClassName("book-text")[0];
+    if(storyTextArea != null) {
+      storyTextArea.scrollLeft = 530 * pageNum; //TODO: replace 530 with dynamic width of storyTextArea
+      Reader.ports.headingUpdate.send(getHeadingsOnPage());
+    }
+    
+    console.log("page num", pageNum);
+  });
+  Reader.ports.currentChapter.subscribe(function(chapter) {
+    var storyTextArea = document.getElementsByClassName("book-text")[0];
+    if(storyTextArea == null) return;
+    setTimeout(function() {
+      //TODO: bump headings at bottom of page to next page
+      Reader.ports.chapterRendered.send(
+        [ Math.round(storyTextArea.scrollWidth/530) //TODO: replace 530 with dynamic width of storyTextArea 
+        , getHeadingsOnPage()
+        ]
+      ); 
+    }, 500);
+  });
+  </script>
+</body>
+</html>
