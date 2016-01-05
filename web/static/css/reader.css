@@ -15,11 +15,29 @@ body, html {
 	background-image: url('/img/book-final2.png');
 }
 
+.book .top-bar {
+	text-align: right;
+	padding: 30px 70px 0 0;
+}
+
 .book-text {
-	margin: 70px auto 0 auto;
+	margin: 40px auto 0 auto;
 	width: 530px;
 	height: 600px;
+	display: block;
+	/*border: 1px solid black;*/
 	overflow: hidden;
-	-webkit-column-width: 530px;
-	-webkit-column-gap: 0px;
+	position: relative;
+}
+
+.book-text iframe {
+	width: 100%;
+	height: 100%;
+	border: none;
+}
+
+.book-text .cover {
+	position: absolute;
+	top: 0; right: 0; bottom: 0; left: 0;
+	z-index: 10;
 }
