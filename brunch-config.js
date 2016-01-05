@@ -2,7 +2,7 @@ exports.config = {
   // See http://brunch.io/#documentation for docs.
   files: {
     javascripts: {
-      joinTo: { 
+      joinTo: {
         "js/editor.js" : /web\/static\/vendor\/editor\.js/,
         "js/reader.js" : /web\/static\/vendor\/reader\.js/
       }
@@ -49,22 +49,22 @@ exports.config = {
       // "deps/phoenix_html/web/static",
       "web/static",
       // "test/static",
-      "web/elm/Editor",
-      "web/elm/Reader",
-      "web/elm/Core"
+      // "web/elm/Editor",
+      // "web/elm/Reader",
+      // "web/elm/Core"
     ],
 
     // Where to compile files to
     public: "priv/static"
   },
 
-  // Configure your plugins
+  //Configure your plugins
   plugins: {
-    elmBrunch: {
-      elmFolder: 'web/elm',
-      mainModules: ['Editor/Editor.elm', 'Reader/Reader.elm'],
-      outputFolder: '../static/vendor'
-    },
+    // elmBrunch: {
+    //   elmFolder: 'web/elm',
+    //   mainModules: ['Editor/Editor.elm', 'Reader/Reader.elm'],
+    //   outputFolder: '../static/vendor'
+    // },
     babel: {
       // Do not use ES6 compiler in vendor code
       ignore: [/web\/static\/vendor/]
