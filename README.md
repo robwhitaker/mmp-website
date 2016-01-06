@@ -3,10 +3,10 @@ Elm + Phoenix
 
 Requires
 - [Elm](http://elm-lang.org/install) v0.16.0
-- [Elixir](http://elixir-lang.org/install.html) v1.1.1
-- [Phoenix](http://www.phoenixframework.org/docs/installation) v1.0.4
+- [Elixir](http://elixir-lang.org/install.html) v1.2.0
+- [Phoenix](http://www.phoenixframework.org/docs/installation) v1.1.1
 - [Postgres](http://www.postgresql.org/download/) v9.4.5
-- [Node.js/NPM](https://nodejs.org/en/) v5.1.0
+- [Node.js/NPM](https://nodejs.org/en/) v5.3.0
 
 Setup
 - Install above requirements
