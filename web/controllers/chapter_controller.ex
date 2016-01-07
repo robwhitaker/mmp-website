@@ -18,7 +18,7 @@ defmodule Mmp.ChapterController do
         conn
         |> put_status(:created)
         |> put_resp_header("location", chapter_path(conn, :show, chapter))
-        |> render("show.json", chapter: chapter)
+        |> render("show.json", chapter: (chapter |> Mmp.Repo.preload(:entries)))
       {:error, changeset} ->
         conn
         |> put_status(:unprocessable_entity)

@@ -13,7 +13,7 @@ defmodule Mmp.Chapter do
 
     timestamps
 
-    has_many :entries, Mmp.Entry
+    has_many :entries, Mmp.Entry, on_delete: :delete_all
   end
 
   @required_fields ~w(order stylesheet title content release_date authors_note)
