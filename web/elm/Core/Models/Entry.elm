@@ -1,6 +1,6 @@
 module Core.Models.Entry where
 
-import Json.Decode as Decoder exposing (Decoder)
+import Json.Decode as Decoder exposing (Decoder, (:=))
 import Json.Encode as Encoder exposing (Value)
 
 type alias Entry =
@@ -29,25 +29,25 @@ empty =
 decoder : Decoder Entry
 decoder =
     Decoder.object8 Entry
-        (Decoder.maybe Decoder.int)
-        Decoder.int
-        Decoder.int
-        Decoder.int
-        Decoder.string
-        Decoder.string
-        Decoder.string
-        Decoder.string
+        ("id" := Decoder.maybe Decoder.int)
+        ("chapter_id" := Decoder.int)
+        ("level" := Decoder.int)
+        ("order" := Decoder.int)
+        ("title" := Decoder.string)
+        ("content" := Decoder.string)
+        ("release_date" := Decoder.string)
+        ("authors_note" := Decoder.string)
 
 encoder : Entry -> Value
 encoder entry =
     Encoder.object
         [ ("id", Maybe.map Encoder.int entry.id |> Maybe.withDefault Encoder.null)
-        , ("chapter", Encoder.int entry.chapter)
+        , ("chapter_id", Encoder.int entry.chapter)
         , ("level", Encoder.int entry.level)
         , ("order", Encoder.int entry.order)
         , ("title", Encoder.string entry.title)
         , ("content", Encoder.string entry.content)
-        , ("releaseDate", Encoder.string entry.releaseDate)
-        , ("authorsNote", Encoder.string entry.authorsNote)
+        , ("release_date", Encoder.string entry.releaseDate)
+        , ("authors_note", Encoder.string entry.authorsNote)
         ]
 

@@ -2,6 +2,7 @@ defmodule Mmp.ChapterController do
   use Mmp.Web, :controller
 
   alias Mmp.Chapter
+  alias Mmp.Entry
 
   plug :scrub_params, "chapter" when action in [:create, :update]
 
@@ -12,13 +13,31 @@ defmodule Mmp.ChapterController do
 
   def create(conn, %{"chapter" => chapter_params}) do
     changeset = Chapter.changeset(%Chapter{}, chapter_params)
+    entries = chapter_params["entries"] || []
 
     case Repo.insert(changeset) do
       {:ok, chapter} ->
-        conn
-        |> put_status(:created)
-        |> put_resp_header("location", chapter_path(conn, :show, chapter))
-        |> render("show.json", chapter: (chapter |> Mmp.Repo.preload(:entries)))
+        success =
+          Enum.reduce(entries, true,
+            fn(entry, acc) ->
+              assoc = Ecto.build_assoc(chapter, :entries, entry)
+              case Repo.insert(assoc) do
+                {:ok, _} -> acc
+                {:error, _} -> False
+              end
+            end
+          )
+
+        if success do
+          conn
+          |> put_status(:created)
+          |> put_resp_header("location", chapter_path(conn, :show, chapter))
+          |> render("show.json", chapter: (chapter |> Mmp.Repo.preload(:entries)))
+        else
+          conn
+          |> put_status(:unprocessable_entity)
+          |> render(Mmp.ChangesetView, "error.json", changeset: changeset)
+        end
       {:error, changeset} ->
         conn
         |> put_status(:unprocessable_entity)

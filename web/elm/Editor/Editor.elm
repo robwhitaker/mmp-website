@@ -15,6 +15,10 @@ import Task
 import Core.Models.Entry as Entry
 import Core.HTTP.Requests as Requests
 
+import Json.Decode exposing ((:=))
+
+import Task exposing (Task)
+
 type alias Model =
     { viewMode          : ViewMode
     , chaptersAtSync    : List Chapter
@@ -24,16 +28,20 @@ type alias Model =
 
 type ViewMode = ChapterList | ChapterCreate | ChapterEdit | Loading
 
-chap = Chapter.empty
-ch   = { chap | title = "This Is The First Chapter", id = Just 1, order = 0, releaseDate = "12/20/1993 00:00" }
-ch2  = { chap | title = "Episode 2. Sleepytime Tea / The Eyeball", id = Just 2, order = 1 }
-ch3  = { chap | title = "Un Dos Tres Toca La Pared", id = Just 3, order = 2 }
+chapterListRequest : Task Effects.Never Action
+chapterListRequest =
+    Http.get ("data" := Json.Decode.list Chapter.decoder) "api/chapters"
+    |> Task.map GoToChapterList
+    |> Task.map (Debug.log "ehh")
+    |> Task.mapError (Debug.log "ehhror?")
+    |> Task.toMaybe
+    |> Task.map (Maybe.withDefault NoOp)
 
 initListEditor : List Chapter -> ChapterListEditor.Model
 initListEditor =
     ChapterListEditor.init
         (Signal.forwardTo actions.address RequestUpdateChapterList)
-        (Signal.forwardTo actions.address RequestChapterForEdit)
+        (Signal.forwardTo actions.address GoToChapterEdit)
         (Signal.forwardTo actions.address <| always RequestChapterList)
 
 initChapterEditor : Chapter -> ChapterEditor.Model
@@ -50,12 +58,11 @@ init =
         , chapterListEditor = initListEditor []
         , chapterEditor = initChapterEditor Chapter.empty
         }
-        (Task.succeed (GoToChapterList [ch,ch2,ch3]) |> Effects.task)
+        (Effects.task chapterListRequest)
 
 type Action
     = ChapterListEditorFwd ChapterListEditor.Action
     | ChapterEditorFwd ChapterEditor.Action
-    | RequestChapterForEdit (Maybe Int)
     | RequestChapterList
     | RequestUpdateChapterList (List Chapter)
     | RequestUpdateChapter Chapter
@@ -72,60 +79,24 @@ update action model =
         ChapterEditorFwd subAction ->
             ({ model | chapterEditor = ChapterEditor.update subAction model.chapterEditor }, Effects.none)
 
-        --UpdateChapterList newChapters ->
-        --    let
-        --        d1 = Debug.log "Update: " (List.map .title newChapters) |> always (model, Effects.none)
-        --        diffWithOlds = \news old ->
-        --            news
-        --            |> List.filter (.id >> (==) old.id)
-        --            |> List.head
-        --            |> \new ->
-        --                case new of
-        --                    Nothing       -> "Deleted " ++ toString old.id
-        --                    Just newEntry ->
-        --                        if newEntry == old
-        --                        then ""
-        --                        else "Updated " ++ toString old.id
-
-        --        diff =
-        --            List.map (diffWithOlds newChapters) model.chapters
-        --            --++ List.map (\entry -> if entry.id == Nothing then "Created NEW" else "") newChapters
-        --            -- |> List.filter ((/=) "")
-        --        d2 = Debug.log "Diff: " diff
-        --    in ({ model | chapters = newChapters }, Effects.none)
-
-        RequestChapterForEdit maybeId ->
-            let fx =
-                Requests.postEditChapter maybeId
-                |> Task.toMaybe
-                |> Task.map (Maybe.map GoToChapterEdit)
-                |> Task.map (Maybe.withDefault RequestChapterList)
-                |> Effects.task
-
-                tempUpdate =
-                    model.chaptersAtSync
-                    |> List.filter (.id >> (==) maybeId)
-                    |> List.head
-                    |> Maybe.map GoToChapterEdit
-                    |> Maybe.withDefault (GoToChapterEdit Chapter.empty)
-            in update tempUpdate model -- ( { model | viewMode = Loading }, fx )
-                                       -- TODO: uncomment real request
-
         RequestChapterList ->
-            update (GoToChapterList model.chaptersAtSync) model --TODO: fill in real request
+            ({ model | viewMode = Loading }, Effects.task chapterListRequest)
 
         RequestUpdateChapterList chapters ->
-            update (GoToChapterList chapters) model  --TODO: fill in real request
+            let
+                chapterListUpdateRequest =
+                    Task.succeed "" -- TODO: make chapter list update request
+                    `Task.andThen`
+                    always chapterListRequest
+            in (model, Effects.task chapterListUpdateRequest)
 
         RequestUpdateChapter chapter ->
-            let newChapters' =
-                    model.chaptersAtSync
-                    |> List.map (\ch -> if ch.id == chapter.id then chapter else ch)
-                newChapters =
-                    if not (List.member chapter.id (List.map .id model.chaptersAtSync))
-                    then newChapters' ++ [ { chapter | id = Just <| List.length newChapters' + 1 } ]
-                    else newChapters'
-             in update (GoToChapterList newChapters) model --TODO: replace entire thing with real request / handling
+            let
+                chapterUpdateRequest =
+                    Task.succeed "" -- TODO: make chapter update request
+                    `Task.andThen`
+                    always chapterListRequest
+            in (model, Effects.task chapterUpdateRequest)
 
         GoToChapterList chapters ->
             (,)

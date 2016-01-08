@@ -12,11 +12,11 @@ type alias Model =
     { chapters     : RL.ReorderableList Chapter
     , lastChapters : RL.ReorderableList Chapter
     , commitAddr   : Signal.Address (List Chapter)
-    , editAddr     : Signal.Address (Maybe Int)
+    , editAddr     : Signal.Address Chapter
     , cancelAddr   : Signal.Address ()
     }
 
-init : Signal.Address (List Chapter) -> Signal.Address (Maybe Int) -> Signal.Address () -> (List Chapter) -> Model
+init : Signal.Address (List Chapter) -> Signal.Address Chapter -> Signal.Address () -> (List Chapter) -> Model
 init commitAddr editAddr cancelAddr chapters =
     { chapters = RL.fromListWith (ChapterReorderable.make editAddr) chapters
     , lastChapters = RL.fromListWith (ChapterReorderable.make editAddr) chapters
@@ -49,7 +49,7 @@ renderControls : Signal.Address Action -> Model -> Html
 renderControls address model =
     div []
         [ if RL.toList model.chapters /= RL.toList model.lastChapters then span [] [] else
-            button [ onClick model.editAddr Nothing ] [ text "New Chapter" ]
+            button [ onClick model.editAddr Chapter.empty ] [ text "New Chapter" ]
         , if RL.toList model.chapters == RL.toList model.lastChapters then span [] [] else
             button [ onClick model.commitAddr (RL.toList model.chapters) ] [ text "Save" ]
         , if RL.toList model.chapters == RL.toList model.lastChapters then span [] [] else
