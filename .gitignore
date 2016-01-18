@@ -1,37 +1,33 @@
-### Phoenix ###
-# App artifacts
-/_build
-/db
-/deps
-/*.ez
-
-# Generate on crash by the VM
-erl_crash.dump
-
-# Static artifacts
-/node_modules
-
-# Since we are building assets from web/static,
-# we ignore priv/static. You may want to comment
-# this depending on your deployment strategy.
-/priv/static/
-
-# The config/prod.secret.exs file by default contains sensitive
-# data and you should not commit it into version control.
-#
-# Alternatively, you may comment the line below and commit the
-# secrets file as long as you replace its contents by environment
-# variables.
-/config/prod.secret.exs
-
-#Generated JS
-/web/static/vendor/
-
 ### Elm ###
 # elm-package generated files
 web/elm/elm-stuff/
 # elm-repl generated files
 repl-temp-*
 
-### OS X ###
+### Ruby ###
+*.gem
+*.rbc
+/.config
+/coverage/
+/InstalledFiles
+/pkg/
+/spec/reports/
+/spec/examples.txt
+/test/tmp/
+/test/version_tmp/
+/tmp/
+
+## Documentation cache and generated files:
+/.yardoc/
+/_yardoc/
+/doc/
+/rdoc/
+
+## Environment normalization:
+/.bundle/
+/vendor/bundle
+/lib/bundler/man/
+
+### OS X and RVM ###
+.rvmrc
 .DS_Store
