@@ -1,3 +1,5 @@
+@import url(https://fonts.googleapis.com/css?family=Tangerine);
+
 * {
     padding: 0;
     margin: 0;
@@ -13,6 +15,7 @@ body, html {
 	overflow: hidden; /*this is here to offset the .book-text stuff*/
 	margin: 0 auto;
 	background-image: url('/img/book-final2.png');
+	position: relative;
 }
 
 .book .top-bar {
@@ -36,8 +39,30 @@ body, html {
 	border: none;
 }
 
-.book-text .cover {
+/*.book-text .cover {
 	position: absolute;
 	top: 0; right: 0; bottom: 0; left: 0;
 	z-index: 10;
+}*/
+
+.hidden { visibility: hidden; }
+
+.book .loader {
+	position: absolute;
+	top: 0; right: 0; bottom: 0; left: 0;
+	width: 650px;
+	height: 759px;
+	background-image: url('/img/book-final2.png');
+	display: none;
+	z-index: 100;
+	font-family: 'Tangerine', cursive;
+	font-size: 50px;
+	font-weight: bold;
+	color: #333;
+}
+
+.book .loader.isDisplayed { display: block;}
+
+.book .loader .loading-label {
+	text-align: center;
 }

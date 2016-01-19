@@ -4,6 +4,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
+import Graphics.Element exposing (..)
+
 import Markdown
 import Regex
 import String
@@ -28,9 +30,10 @@ type alias Model =
     , numPages              : Int
     , currentPage           : Int
     , lastNavAction         : LastNavAction
-    , focusedId             : String 
+    , focusedId             : String
     , headingIdsOnPage      : List String
     , toc                   : List Chapter
+    , bookSize              : (Int, Int)
     }
 
 init : (Model, Effects Action)
@@ -44,18 +47,19 @@ init =
         , focusedId = ""
         , headingIdsOnPage = []
         , toc = [testChapter]
+        , bookSize = (650,759)
         }
-        (Task.succeed (HandleChapterRequest (Response testChapter)) |> Effects.task) --TODO: Retrieve TOC and current chapter from server
+        (Task.sleep 1500 `Task.andThen` (\_ -> Task.succeed (HandleChapterRequest (Response testChapter))) |> Effects.task) --TODO: Retrieve TOC and current chapter from server
 
 ---- UPDATE ----
 
 type Direction = Forward | Backward
 
-type State = Rendered | Loading
+type State = Ready | Loading | Reflowing | Rendering
 
 type Either = Chapter Chapter | Entry Entry
 
-type LastNavAction = PageTurn Direction | PageJump Int
+type LastNavAction = PageTurn Direction | PageJump Int | PageReflow
 
 type ChapterRequest = Request Int | Response Chapter
 
@@ -64,13 +68,15 @@ type Action
     | JumpToHeading Int
     | HandleChapterRequest ChapterRequest
     | ChapterHasRendered Int (List String) -- numPages (List header ids)
+    | ChapterHasReflowed Int Int (List String) -- currentPage numPages (List header ids)
     | UpdateHeadingsOnPage (List String)
+    | Reflow
     | Dump String
     | NoOp
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
-    case action of
+    case Debug.log "action" action of
         TurnPage dir ->
             case dir of
                 Forward ->
@@ -119,16 +125,31 @@ update action model =
                 Response chapter ->
                     (,)
                         { model |
-                            currentChapter = chapter
+                            currentChapter = chapter,
+                            state = Rendering
                         }
                         Effects.none
 
         ChapterHasRendered numPages headingIds ->
             (,)
                 { model |
+                    currentPage = 0,
                     numPages = numPages,
-                    state = Rendered,
+                    state = Ready,
                     headingIdsOnPage = headingIdFilter model.currentChapter headingIds
+                }
+                Effects.none
+
+        Reflow -> ({ model | state = Reflowing }, Effects.none)
+
+        ChapterHasReflowed currentPage numPages headingIds ->
+            (,)
+                { model |
+                    currentPage = currentPage,
+                    numPages = numPages,
+                    state = Ready,
+                    headingIdsOnPage = headingIdFilter model.currentChapter headingIds,
+                    lastNavAction = PageReflow
                 }
                 Effects.none
 
@@ -166,7 +187,7 @@ headingIdFilter chapter ids =
                 chapter.entries_
             |> List.reverse
             |> List.filter ((/=) "")
-            
+
 
 
 ---- VIEW ----
@@ -175,22 +196,32 @@ view : Signal.Address Action -> Model -> Html
 view address model =
     div
         [ class "book" ]
-        [ div 
-            [ class "top-bar" ]
+        [ div [ classList [("loader", True), ("isDisplayed", model.state == Rendering || model.state == Loading)] ]
+              [ fromElement <| container (fst model.bookSize) (snd model.bookSize) middle <|
+                    flow down
+                        [ case model.state of
+                            Loading -> div [class "loading-label"] [text "Loading..."] |> toElement (fst model.bookSize) 50
+                            Rendering -> div [class "loading-label"] [text "Rendering..."] |> toElement (fst model.bookSize) 50
+                            _ -> show ""
+                        , div [class "loading-label"] [img [src "/img/ajax-loader-2.gif"] []] |> toElement (fst model.bookSize) 100
+                        ]
+              ]
+        , div
+            [ class "top-bar"]
             [ (text << toString) (model.currentPage + 1)
             , text " / "
-            , (text << toString) model.numPages 
+            , (text << toString) model.numPages
             , text ", "
             , (text << toString) model.headingIdsOnPage
             ]
         , div [ class "book-text" ]
             [ iframe
-                [ id "book-text-frame", src "about:blank" ]
+                [ id "book-text-frame", src "about:blank"]
                 [ ]
             --, div [ class "cover" ] []
             ]
         , div
-            [ class "book-controls" ]
+            [ class "book-controls"]
             [ button [onClick address (TurnPage Backward)] [ text "Backward" ]
             , button [onClick address (TurnPage Forward)] [ text "Forward" ]
             , makeSpinner address model
@@ -199,9 +230,9 @@ view address model =
 
 makeSpinner : Signal.Address Action -> Model -> Html
 makeSpinner address model =
-    let 
+    let
         makeOption pre { id, title, level } =
-            option 
+            option
                 [ value <| Maybe.withDefault "" <| Maybe.map (toString >> (++) pre) id ]
                 [ Markdown.toHtml <|
                     (String.repeat (level*4) "&nbsp;")
@@ -210,14 +241,14 @@ makeSpinner address model =
                 ]
 
         makeOptions =
-            List.concatMap 
+            List.concatMap
                 (\chapter ->
                     [ makeOption "c" { id = chapter.id, title = chapter.title, level = 0 } ]
                     ++
                     (List.map (makeOption "e") chapter.entries_)
                 )
     in
-        select 
+        select
             [ on "change" targetValue (Signal.message address << Dump) ]
             (makeOptions model.toc)
 
@@ -241,7 +272,7 @@ renderChapter chapter =
                 )
                 ((injectId "c" chapter.id chapter.title) ++ chapter.content)
                 chapter.entries_
-    in 
+    in
         """
         <!DOCTYPE HTML>
         <html>
@@ -267,7 +298,7 @@ renderChapter chapter =
         </head>
         <body>
         <div id="text-container">
-        """ 
+        """
         ++ chapterString ++
         """
         </div>
@@ -281,7 +312,7 @@ app = StartApp.start
     { init   = init
     , update = update
     , view   = view
-    , inputs = [ arrowKeys, chapterRenderedIn, headingsUpdated ]
+    , inputs = [ arrowKeys, chapterRenderedIn, chapterReflowIn, headingsUpdated, Signal.map (always Reflow) reflow ]
     }
 
 main : Signal Html
@@ -305,11 +336,17 @@ chapterRenderedIn =
         (\(numPages, headingIds) -> ChapterHasRendered numPages headingIds)
     |> Signal.dropRepeats
 
+chapterReflowIn : Signal Action
+chapterReflowIn =
+    chapterReflowed
+    |> Signal.map
+        (\(currentPage, numPages, headingIds) -> ChapterHasReflowed currentPage numPages headingIds)
+    |> Signal.dropRepeats
+
 headingsUpdated : Signal Action
 headingsUpdated =
     headingUpdate
     |> Signal.map UpdateHeadingsOnPage
-    |> Signal.dropRepeats
 
 -- Static Ports --
 
@@ -319,7 +356,11 @@ port location : String
 
 port chapterRendered : Signal (Int, List String)
 
+port chapterReflowed : Signal (Int, Int, List String)
+
 port headingUpdate : Signal (List String)
+
+port reflow : Signal ()
 
 -- Outbound Ports --
 
@@ -330,6 +371,7 @@ port tasks =
 port currentPage : Signal Int
 port currentPage =
     app.model
+    |> Signal.filter (.lastNavAction >> (/=) PageReflow) (fst init)
     |> Signal.map .currentPage
     |> Signal.dropRepeats
 
