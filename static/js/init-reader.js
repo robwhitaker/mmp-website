@@ -1,14 +1,4 @@
-<!DOCTYPE HTML>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Reader</title>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
-  <link rel="stylesheet" href="<%= static_path(@conn, "/css/reader.css") %>">
-</head>
-<body>
-  <script src="<%= static_path(@conn, "/js/reader.js") %>"></script>
-  <script>
+(function() {
   var Reader = Elm.fullscreen(Elm.Reader.Reader, { location : window.location.href, chapterRendered : [0, []], chapterReflowed : [0, 0, []], headingUpdate : [], reflow: [] });
 
   var bookWidth = 530;
@@ -199,6 +189,4 @@
       );
     });
   });
-  </script>
-</body>
-</html>
+})();

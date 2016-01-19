@@ -69,7 +69,6 @@ type Action
     | HandleChapterRequest ChapterRequest
     | ChapterHasRendered Int (List String) -- numPages (List header ids)
     | ChapterHasReflowed Int Int (List String) -- currentPage numPages (List header ids)
-    | UpdateHeadingsOnPage (List String)
     | Reflow
     | Dump String
     | NoOp
