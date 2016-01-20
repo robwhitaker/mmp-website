@@ -38,8 +38,8 @@ decoder =
         ("release_date" := Decoder.string)
         ("authors_note" := Decoder.string)
 
-encoder : Entry -> Value
-encoder entry =
+encode : Entry -> Value
+encode entry =
     Encoder.object
         [ ("id", Maybe.map Encoder.int entry.id |> Maybe.withDefault Encoder.null)
         , ("chapter_id", Encoder.int entry.chapter)
