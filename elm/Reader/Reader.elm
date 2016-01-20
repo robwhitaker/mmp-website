@@ -69,6 +69,7 @@ type Action
     | HandleChapterRequest ChapterRequest
     | ChapterHasRendered Int (List String) -- numPages (List header ids)
     | ChapterHasReflowed Int Int (List String) -- currentPage numPages (List header ids)
+    | UpdateHeadingsOnPage (List String)
     | Reflow
     | Dump String
     | NoOp
@@ -202,7 +203,7 @@ view address model =
                             Loading -> div [class "loading-label"] [text "Loading..."] |> toElement (fst model.bookSize) 50
                             Rendering -> div [class "loading-label"] [text "Rendering..."] |> toElement (fst model.bookSize) 50
                             _ -> show ""
-                        , div [class "loading-label"] [img [src "/img/ajax-loader-2.gif"] []] |> toElement (fst model.bookSize) 100
+                        , div [class "loading-label"] [img [src "static/assets/img/ajax-loader-2.gif"] []] |> toElement (fst model.bookSize) 100
                         ]
               ]
         , div
