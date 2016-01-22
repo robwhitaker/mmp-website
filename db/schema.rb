@@ -39,6 +39,4 @@ ActiveRecord::Schema.define(version: 20160118035618) do
     t.datetime "updated_at",   null: false
   end
 
-  add_index "entries", ["chapter_id"], name: "index_entries_on_chapter_id", using: :btree
-
 end

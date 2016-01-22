@@ -40,12 +40,11 @@ post '/api/chapters' do
 
   payload = JSON.parse(request.body.read)
 
-  @entries = payload.entries
+  @entries = payload["entries"]
+  payload.delete("entries")
 	@chapter = Chapter.new(payload)
 	if @chapter.save
-    @entries.each do |entry|
-      @chapter.entries.create(entry)
-    end
+    @chapter.entries.create(@entries)
 		redirect '/chapters'
 	else
 		"Sorry, there was an error!"
