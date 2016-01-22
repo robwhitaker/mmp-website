@@ -28,6 +28,7 @@ ActiveRecord::Schema.define(version: 20160118035618) do
   end
 
   create_table "entries", force: :cascade do |t|
+    t.integer  "chapter_id"
     t.integer  "level"
     t.integer  "order"
     t.string   "title"
@@ -37,5 +38,7 @@ ActiveRecord::Schema.define(version: 20160118035618) do
     t.datetime "created_at",   null: false
     t.datetime "updated_at",   null: false
   end
+
+  add_index "entries", ["chapter_id"], name: "index_entries_on_chapter_id", using: :btree
 
 end

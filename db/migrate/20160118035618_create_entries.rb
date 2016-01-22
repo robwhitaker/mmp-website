@@ -1,6 +1,7 @@
 class CreateEntries < ActiveRecord::Migration
   def change
     create_table :entries do |t|
+      t.belongs_to :chapter
       t.integer :level
       t.integer :order
       t.string :title
