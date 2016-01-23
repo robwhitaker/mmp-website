@@ -1,19 +1,39 @@
 module Core.HTTP.Requests where
 
 import Http
-import Json.Decode as Json
+import Json.Encode as Json
+import Json.Decode exposing (Decoder)
 import Task exposing (Task)
-import Core.Models.Chapter as Chapter exposing (Chapter)
+import Effects exposing (Effects)
 
-domain : String
-domain = "http://example.com"
+type RequestType = Post Json.Value | Get
 
-postEditChapter : Maybe Int -> Task Http.Error Chapter
-postEditChapter maybeId =
-    let route =
-        maybeId
-        |> Maybe.map toString
-        |> Maybe.withDefault "new"
-        |> (++) "/"
+apiRoute : String
+apiRoute = "/api"
+
+send : Maybe String -> RequestType -> Decoder value -> String -> Task Http.Error value
+send secretKey reqType decoder endpoint =
+    let route = apiRoute ++ endpoint
+        secretKeyValue =
+            secretKey |> Maybe.map Json.string |> Maybe.withDefault Json.null
     in
-        Http.post (Chapter.decoder) (domain ++ "/chapter" ++ route) Http.empty
+        case reqType of
+            Post payload ->
+                Http.post
+                    decoder
+                    route
+                    (Http.string <| Json.encode 0 <| Json.object [("data", payload), ("secretKey", secretKeyValue)])
+
+            Get ->
+                Http.get decoder route
+
+toEffect : (success -> action) -> (error -> action) -> Task error success -> Effects action
+toEffect onSuccess onError task =
+    task
+    |> Task.toResult
+    |> Task.map (\result ->
+        case result of
+            Ok val -> onSuccess val
+            Err val -> onError val
+        )
+    |> Effects.task

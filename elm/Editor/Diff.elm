@@ -132,8 +132,8 @@ e4 = { e3 | content = "actual content" }
 
 c1 = { c | id = Just 1, content = "test", entries_ = [e1, e3] }
 
-c2 = { c1 | content ="change", entries_ = [ e, e2, e4 ]}
+c2 = { c1 | content ="change", entries_ = [ e, e2, e4 ] }
 
-c3 = {c | id = Just 10 }
+c3 = { c | id = Just 10 }
 
-c4 = {c3 | content = "updated content"}
+c4 = { c3 | content = "updated content" }
