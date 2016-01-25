@@ -20,7 +20,8 @@ get '/api/chapters' do
 
   chaptersWithEntries = []
 
-  chapters = Chapter.includes(:entries).all
+  chapters = Chapter.where('release_date <= ?', DateTime.now)
+
   chapters.each do |chapter|
     chaptersWithEntries.push(withEntries(chapter))
   end
@@ -39,16 +40,24 @@ post '/api/chapters' do
   content_type :json
 
   payload = JSON.parse(request.body.read)
+  secret_key = payload["secret_key"]
+  data = payload["data"]
 
-  @entries = payload["entries"]
-  payload.delete("entries")
-	@chapter = Chapter.new(payload)
-	if @chapter.save
-    @chapter.entries.create(@entries)
-		redirect '/chapters'
-	else
-		"Sorry, there was an error!"
-	end
+  if secret_key != "" && data != {}
+    @entries = data["entries"]
+    data.delete("entries")
+  	@chapter = Chapter.new(data)
+  	if @chapter.save
+      @chapter.entries.create(@entries)
+  		json allChaptersWithEntries()
+  	else
+  		"Sorry, there was an error!\n"
+  	end
+  elsif secret_key != ""
+    json allChaptersWithEntries()
+  else
+    "Go away. You bungled it.\n"
+  end
 end
 
 post '/api/batch' do
@@ -81,7 +90,18 @@ post '/api/batch' do
     Entry.create(data)
   end
 
-  redirect '/chapters'
+  json allChaptersWithEntries()
+end
+
+def allChaptersWithEntries()
+  chaptersWithEntries = []
+  chapters = Chapter.all
+
+  chapters.each do |chapter|
+    chaptersWithEntries.push(withEntries(chapter))
+  end
+
+  chaptersWithEntries
 end
 
 def withEntries(chapter)
