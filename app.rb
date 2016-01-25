@@ -8,7 +8,7 @@ require './models/entry'
 set :public_folder, 'public'
 
 get '/' do
-  send_file File.join(settings.public_folder, 'index.html')
+  send_file File.join(settings.public_folder, 'reader.html')
 end
 
 get '/editor' do
