@@ -10,12 +10,13 @@ import Effects exposing (Effects, Never)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Debug
-import Json.Decode as Json
+import Json.Decode as Json exposing ((:=))
+import Json.Encode as Encode
 import Task
 import Core.Models.Entry as Entry
 import Core.HTTP.Requests as Requests
 
-import Json.Decode exposing ((:=))
+import Editor.Diff as Diff exposing (DiffRecord)
 
 import Task exposing (Task)
 
@@ -28,14 +29,13 @@ type alias Model =
 
 type ViewMode = ChapterList | ChapterCreate | ChapterEdit | Loading
 
-chapterListRequest : Task Effects.Never Action
+chapterListRequest : Task Http.Error (List Chapter)
 chapterListRequest =
-    Http.get ("data" := Json.Decode.list Chapter.decoder) "api/chapters"
-    |> Task.map GoToChapterList
-    |> Task.map (Debug.log "ehh")
-    |> Task.mapError (Debug.log "ehhror?")
-    |> Task.toMaybe
-    |> Task.map (Maybe.withDefault NoOp)
+    Requests.send Nothing (Requests.Post Encode.null) (Json.list Chapter.decoder) "chapters"
+
+batchRequest : DiffRecord -> Task Http.Error (List Chapter)
+batchRequest diff =
+    Requests.send Nothing (Requests.Post <| Diff.encode diff) (Json.list Chapter.decoder) "batch"
 
 initListEditor : List Chapter -> ChapterListEditor.Model
 initListEditor =
@@ -58,7 +58,7 @@ init =
         , chapterListEditor = initListEditor []
         , chapterEditor = initChapterEditor Chapter.empty
         }
-        (Effects.task chapterListRequest)
+        (Requests.toEffect GoToChapterList (\_ -> NoOp) chapterListRequest)
 
 type Action
     = ChapterListEditorFwd ChapterListEditor.Action
@@ -80,23 +80,31 @@ update action model =
             ({ model | chapterEditor = ChapterEditor.update subAction model.chapterEditor }, Effects.none)
 
         RequestChapterList ->
-            ({ model | viewMode = Loading }, Effects.task chapterListRequest)
+            ({ model | viewMode = Loading }, (Requests.toEffect GoToChapterList (\_ -> NoOp) chapterListRequest))
 
         RequestUpdateChapterList chapters ->
             let
                 chapterListUpdateRequest =
-                    Task.succeed "" -- TODO: make chapter list update request
-                    `Task.andThen`
-                    always chapterListRequest
-            in (model, Effects.task chapterListUpdateRequest)
+                    Diff.chapterList model.chaptersAtSync chapters
+                    |> Diff.toDiffRecord
+                    |> batchRequest
+                    |> Requests.toEffect GoToChapterList (\_ -> NoOp)
+            in (model, chapterListUpdateRequest)
 
         RequestUpdateChapter chapter ->
             let
                 chapterUpdateRequest =
-                    Task.succeed "" -- TODO: make chapter update request
-                    `Task.andThen`
-                    always chapterListRequest
-            in (model, Effects.task chapterUpdateRequest)
+                    case List.head (List.filter (.id >> (==) chapter.id) model.chaptersAtSync) of
+                        Nothing ->
+                            Requests.send Nothing (Requests.Post <| Chapter.encode chapter) (Json.list Chapter.decoder) "chapters"
+                            |> Requests.toEffect GoToChapterList (\_ -> NoOp)
+
+                        Just oldChapter ->
+                            Diff.chapter oldChapter (Just chapter)
+                            |> Diff.toDiffRecord
+                            |> batchRequest
+                            |> Requests.toEffect GoToChapterList (\_ -> NoOp)
+            in (model, chapterUpdateRequest)
 
         GoToChapterList chapters ->
             (,)
