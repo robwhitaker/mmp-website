@@ -1,5 +1,5 @@
-(function() {
-  var Reader = Elm.fullscreen(Elm.Reader.Reader, { location : window.location.href, chapterRendered : [0, []], chapterReflowed : [0, 0, []], headingUpdate : [], reflow: [] });
+// (function() {
+  var Reader = Elm.fullscreen(Elm.Reader.Reader, { location : window.location.href, chapterRendered : [0, []], chapterReflowed : [0, 0, null, []], headingUpdate : [], reflow: [] });
 
   var bookWidth = 530;
   var bookHeight = 600;
@@ -26,6 +26,20 @@
     return Array.prototype.filter.call(headings, collidesWithBook)
       .map(function(h) { return h.id; })
       .filter(function(hId) { return hId != null });
+  }
+
+  var getFocusedHeading = function() {
+    var storyTextArea = getTextContainer();
+    if(storyTextArea == null) return null;
+
+    var headingsOnPage = getHeadingsOnPage();
+    if(headingsOnPage.length > 0) return null;
+
+    return Array.prototype.reduce.call(storyTextArea.querySelectorAll("h1,h2,h3,h4,h5,h6"), function(acc, h) {
+      if(h.offsetLeft < storyTextArea.scrollLeft) { return h.id; }
+      else { return acc; }
+    }, null);
+
   }
 
   var getTextContainer = function() {
@@ -65,7 +79,7 @@
     storyTextArea = getTextContainer();
     if(storyTextArea == null) return;
 
-    //---- REMOVE PLACEHOLDER DIVS FOR REFLOW && TELL ELM WE'RE REFLOWING ----
+    //---- REMOVE PLACEHOLDER DIVS FOR REFLOW ----
 
     if(isReflow) {
       Array.prototype.map.call(storyTextArea.getElementsByClassName("placeholder"), function(placeholder) {
@@ -105,11 +119,12 @@
         callback(
           { numPages : numPages
           , headingsOnPage : getHeadingsOnPage()
+          , focusedHeading : getFocusedHeading()
           , currentPage : currentPage
           }
         );
 
-      //---- RESTART WATCHER, OR START IT IF IT DOESN'T EXIST
+      //---- RESTART WATCHER, OR START IT IF IT DOESN'T EXIST ----
 
       if(watcher != null)
         watcher.start();
@@ -163,6 +178,7 @@
       Reader.ports.chapterReflowed.send(
         [ renderData.currentPage
         , renderData.numPages
+        , renderData.focusedHeading
         , renderData.headingsOnPage
         ]
       );
@@ -189,4 +205,4 @@
       );
     });
   });
-})();
+// })();

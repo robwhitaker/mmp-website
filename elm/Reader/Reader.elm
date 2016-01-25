@@ -30,8 +30,8 @@ type alias Model =
     , numPages              : Int
     , currentPage           : Int
     , lastNavAction         : LastNavAction
-    , focusedId             : String
-    , headingIdsOnPage      : List String
+    , focusedId             : NormalID
+    , headingIdsOnPage      : List NormalID
     , toc                   : List Chapter
     , bookSize              : (Int, Int)
     }
@@ -44,7 +44,7 @@ init =
         , numPages = 0
         , currentPage = 0
         , lastNavAction = PageTurn Forward
-        , focusedId = ""
+        , focusedId = ChapterData -1
         , headingIdsOnPage = []
         , toc = [testChapter]
         , bookSize = (650,759)
@@ -57,7 +57,9 @@ type Direction = Forward | Backward
 
 type State = Ready | Loading | Reflowing | Rendering
 
-type Either = Chapter Chapter | Entry Entry
+type Either a b = ChapterData a | EntryData b
+
+type alias NormalID = Either Int Int -- Left chapterId, Right entryId
 
 type LastNavAction = PageTurn Direction | PageJump Int | PageReflow
 
@@ -68,7 +70,7 @@ type Action
     | JumpToHeading Int
     | HandleChapterRequest ChapterRequest
     | ChapterHasRendered Int (List String) -- numPages (List header ids)
-    | ChapterHasReflowed Int Int (List String) -- currentPage numPages (List header ids)
+    | ChapterHasReflowed Int Int (Maybe String) (List String) -- currentPage numPages maybeFocusedId (List header ids)
     | UpdateHeadingsOnPage (List String)
     | Reflow
     | Dump String
@@ -142,12 +144,17 @@ update action model =
 
         Reflow -> ({ model | state = Reflowing }, Effects.none)
 
-        ChapterHasReflowed currentPage numPages headingIds ->
+        ChapterHasReflowed currentPage numPages maybeFocusedId headingIds ->
             (,)
                 { model |
                     currentPage = currentPage,
                     numPages = numPages,
                     state = Ready,
+                    focusedId =
+                        if List.length headingIds == 0 && maybeFocusedId /= Nothing then
+                            Maybe.withDefault model.focusedId <| Maybe.map normalIDFromString maybeFocusedId
+                        else
+                            model.focusedId,
                     headingIdsOnPage = headingIdFilter model.currentChapter headingIds,
                     lastNavAction = PageReflow
                 }
@@ -167,26 +174,27 @@ update action model =
         NoOp ->
             (model, Effects.none)
 
-headingIdFilter : Chapter -> List String -> List String
+headingIdFilter : Chapter -> List String -> List NormalID
 headingIdFilter chapter ids =
-    case chapter.id of
-        Nothing -> ids
+    let normalIDs = List.map normalIDFromString ids
+    in case chapter.id of
+        Nothing -> normalIDs
         Just chId ->
             List.foldl
-                (\{ id, content } acc ->
-                    let id' = id |> Maybe.map (toString >> (++) "e") |> Maybe.withDefault ""
+                (\entry acc ->
+                    let id' = normalID (EntryData entry)
                     in
-                        if List.member id' ids && content /= ""
+                        if List.member id' normalIDs && entry.content /= ""
                         then id' :: acc
                         else acc
                 )
-                ( if List.member ("c" ++ toString chId) ids && chapter.content /= ""
-                  then ["c" ++ toString chId]
+                ( if List.member (normalID (ChapterData chapter)) normalIDs && chapter.content /= ""
+                  then [normalID (ChapterData chapter)]
                   else []
                 )
                 chapter.entries_
             |> List.reverse
-            |> List.filter ((/=) "")
+            --|> List.filter ((/=) "")
 
 
 
@@ -340,7 +348,7 @@ chapterReflowIn : Signal Action
 chapterReflowIn =
     chapterReflowed
     |> Signal.map
-        (\(currentPage, numPages, headingIds) -> ChapterHasReflowed currentPage numPages headingIds)
+        (\(currentPage, numPages, focusedHeadingId, headingIds) -> ChapterHasReflowed currentPage numPages focusedHeadingId headingIds)
     |> Signal.dropRepeats
 
 headingsUpdated : Signal Action
@@ -356,7 +364,7 @@ port location : String
 
 port chapterRendered : Signal (Int, List String)
 
-port chapterReflowed : Signal (Int, Int, List String)
+port chapterReflowed : Signal (Int, Int, Maybe String, List String)
 
 port headingUpdate : Signal (List String)
 
@@ -382,6 +390,55 @@ port currentChapter =
     |> Signal.map renderChapter
     |> Signal.dropRepeats
 
+---- HELPERS ----
+
+mapChapterData : (a -> c) -> Either a b -> Either c b
+mapChapterData f either =
+    case either of
+        ChapterData val -> ChapterData (f val)
+        EntryData val -> EntryData val
+
+mapEntryData : (b -> c) -> Either a b -> Either a c
+mapEntryData f either =
+    case either of
+        EntryData val -> EntryData (f val)
+        ChapterData val -> ChapterData val
+
+normalIDFromString : String -> NormalID
+normalIDFromString str =
+    let
+        toEitherErr = "Invalid string input for `toEither`. Acceptable format is: \"c###\" or \"e###\"."
+        constructor =
+            case String.left 1 str of
+                "c" -> ChapterData
+                "e" -> EntryData
+                _   -> Debug.crash toEitherErr
+    in case String.toInt (String.dropLeft 1 str) of
+        Ok val ->
+            constructor val
+
+        Err _ ->
+            Debug.crash toEitherErr
+
+
+normalIDToString : NormalID -> String
+normalIDToString normalID =
+    case normalID of
+        ChapterData id ->
+            if id < 0 then "" else "c" ++ toString id
+
+        EntryData id ->
+            if id < 0 then "" else "e" ++ toString id
+
+normalID : Either Chapter Entry -> NormalID
+normalID =
+    mapChapterData (.id >> Maybe.withDefault -1) >> mapEntryData (.id >> Maybe.withDefault -1)
+
+makeIDString : Either Chapter Entry -> String
+makeIDString =
+    normalID >> normalIDToString
+
+---- TEST DATA ----
 
 testChapter : Chapter
 testChapter =
