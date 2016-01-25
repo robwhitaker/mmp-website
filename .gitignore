@@ -1,10 +1,19 @@
 ### Elm ###
-# elm-package generated files
+## elm-package generated files
 web/elm/elm-stuff/
-# elm-repl generated files
+
+## elm-repl generated files
 repl-temp-*
 
+## Static artifacts
+/node_modules
+/static/build
+/elm/elm-stuff
+repl-temp-*
+
+
 ### Ruby ###
+## Assorted
 *.gem
 *.rbc
 /.config
