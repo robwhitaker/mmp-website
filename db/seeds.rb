@@ -4,7 +4,7 @@
 # curl -H "Content-Type: application/json" -X POST -d '{"data": {"order": 1, "stylesheet": "<dingle mcringleberry>", "title": "Hey!", "content": "Beep boop", "release_date": "2016-10-01 12:30:00", "authors_note": "wao"}, "secretKey": ""}' http://localhost:9393/api/chapters
 
 ## Chapter with entries creation | POST /api/chapters ##
-curl -H "Content-Type: application/json" -X POST -d '{"data": {"order": 1, "stylesheet": "<dingle mcringleberry>", "title": "Hey!", "content": "Beep boop", "release_date": "2016-10-01 12:30:00", "authors_note": "wao", "entries": [{"order": 1, "title": "Entry #1", "content": "Hinkle dinkle doo", "release_date": "2016-10-01 12:30:00", "authors_note": "Womp"}, {"order": 2, "title": "Entry #2", "content": "Hinkle dinkle doo", "release_date": "2016-10-01 12:30:00", "authors_note": "Wimp"}]}, "secretKey": ""}' http://localhost:9393/api/chapters
+# curl -H "Content-Type: application/json" -X POST -d '{"data": {"order": 1, "stylesheet": "<dingle mcringleberry>", "title": "Hey!", "content": "Beep boop", "release_date": "2016-10-01 12:30:00", "authors_note": "wao", "entries": [{"order": 1, "title": "Entry #1", "content": "Hinkle dinkle doo", "release_date": "2016-10-01 12:30:00", "authors_note": "Womp"}, {"order": 2, "title": "Entry #2", "content": "Hinkle dinkle doo", "release_date": "2016-10-01 12:30:00", "authors_note": "Wimp"}]}, "secretKey": ""}' http://localhost:9393/api/chapters
 
 ## Chapter with entries unrestricted retrieval | POST /api/chapters ##
 # curl -H "Content-Type: application/json" -X POST -d '{"data": {}, "secretKey": "beep"}' http://localhost:9393/api/chapters
