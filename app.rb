@@ -51,6 +51,39 @@ post '/api/chapters' do
 	end
 end
 
+post '/api/batch' do
+  content_type :json
+
+  payload = JSON.parse(request.body.read)
+
+  @chapter_batch = payload["chapters"]
+  @entry_batch = payload["entries"]
+
+  @chapter_batch["delete"].each do |chapter|
+    Chapter.destroy(chapter["id"])
+  end
+
+  @chapter_batch["update"].each do |chapter|
+    id = chapter["id"] && chapter.delete("id")
+    Chapter.update(id, chapter)
+  end
+
+  @entry_batch["delete"].each do |entry|
+    Entry.destroy(entry["id"])
+  end
+
+  @entry_batch["update"].each do |entry|
+    id = entry["id"] && entry.delete("id")
+    Entry.update(id, entry)
+  end
+
+  @entry_batch["create"].each do |data|
+    Entry.create(data)
+  end
+
+  redirect '/chapters'
+end
+
 def withEntries(chapter)
   chapterWithEntries = chapter.attributes
   chapterWithEntries[:entries] = chapter.entries
