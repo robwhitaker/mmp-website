@@ -12,7 +12,8 @@ Setup
 - cd into repository
 - `bundle install`
 - Make sure you have Postgres running
-- `rake db:migrate`
+- Add `export PG_USER="_username_"` and `export PG_PASS="_pass_"` environment vars to your PATH
+- `rake db:setup`
 - Compile Elm files as described below
 - `ruby app.rb`
 
