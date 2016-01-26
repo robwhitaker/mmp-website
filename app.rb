@@ -44,10 +44,10 @@ post '/api/chapters' do
   content_type :json
 
   payload = JSON.parse(request.body.read)
-  secret_key = payload["secret_key"]
+  secret_key = payload["secretKey"]
   data = payload["data"]
 
-  if secret_key != "" && data != {}
+  if secret_key != nil && data != nil
     @entries = data["entries"]
     data.delete("entries")
   	@chapter = Chapter.new(data)
@@ -57,7 +57,7 @@ post '/api/chapters' do
   	else
   		"Sorry, there was an error!\n"
   	end
-  elsif secret_key != ""
+  elsif secret_key != nil
     json allChaptersWithEntries()
   else
     "Go away. You bungled it.\n"
