@@ -82,7 +82,7 @@ post '/api/batch' do
     end
 
     @chapter_batch["update"].each do |chapter|
-      id = chapter["id"] && chapter.delete("id") && chapter.delete("entries")
+      id = chapter["id"] && chapter.delete("id")
       Chapter.update(id, chapter)
     end
 

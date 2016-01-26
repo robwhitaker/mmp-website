@@ -93,8 +93,8 @@ chapterList oldChList newChList =
 toDiffRecord : (List (Diff Chapter), List (Diff Entry)) -> DiffRecord
 toDiffRecord (cDiff, eDiff) =
     { chapter =
-        { update = List.map (unwrap >> (\c -> { c | entries_ = [] })) <| List.filter isUpdate cDiff
-        , delete = List.map (unwrap >> (\c -> { c | entries_ = [] })) <| List.filter isDelete cDiff
+        { update = List.map unwrap <| List.filter isUpdate cDiff
+        , delete = List.map unwrap <| List.filter isDelete cDiff
         }
     , entry =
         { update = List.map unwrap <| List.filter isUpdate eDiff
