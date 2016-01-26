@@ -31,11 +31,11 @@ type ViewMode = ChapterList | ChapterCreate | ChapterEdit | Loading
 
 chapterListRequest : Task Http.Error (List Chapter)
 chapterListRequest =
-    Requests.send Nothing (Requests.Post Encode.null) (Json.list Chapter.decoder) "chapters"
+    Requests.send (Just "abcde") (Requests.Get) (Json.list Chapter.decoder) "/chapters"
 
 batchRequest : DiffRecord -> Task Http.Error (List Chapter)
 batchRequest diff =
-    Requests.send Nothing (Requests.Post <| Diff.encode diff) (Json.list Chapter.decoder) "batch"
+    Requests.send Nothing (Requests.Post <| Diff.encode diff) (Json.list Chapter.decoder) "/batch"
 
 initListEditor : List Chapter -> ChapterListEditor.Model
 initListEditor =
@@ -58,7 +58,7 @@ init =
         , chapterListEditor = initListEditor []
         , chapterEditor = initChapterEditor Chapter.empty
         }
-        (Requests.toEffect GoToChapterList (\_ -> NoOp) chapterListRequest)
+        (Requests.toEffect GoToChapterList (\a -> Debug.log (toString a) NoOp) chapterListRequest)
 
 type Action
     = ChapterListEditorFwd ChapterListEditor.Action
@@ -96,7 +96,7 @@ update action model =
                 chapterUpdateRequest =
                     case List.head (List.filter (.id >> (==) chapter.id) model.chaptersAtSync) of
                         Nothing ->
-                            Requests.send Nothing (Requests.Post <| Chapter.encode chapter) (Json.list Chapter.decoder) "chapters"
+                            Requests.send Nothing (Requests.Post <| Chapter.encode chapter) (Json.list Chapter.decoder) "/chapters"
                             |> Requests.toEffect GoToChapterList (\_ -> NoOp)
 
                         Just oldChapter ->
