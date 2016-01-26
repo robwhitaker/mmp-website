@@ -35,7 +35,7 @@ decoder =
         ("order" := Decoder.int)
         ("title" := Decoder.string)
         ("content" := Decoder.string)
-        ("release_date" := Decoder.string)
+        ("release_date" := Decoder.map (Maybe.withDefault "") (Decoder.maybe Decoder.string))
         ("authors_note" := Decoder.string)
 
 encode : Entry -> Value
