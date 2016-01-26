@@ -1,4 +1,6 @@
 require 'bundler'
+require 'sinatra'
+configure { set :server, :puma }
 Bundler.require
 
 require './config/environments'
@@ -68,30 +70,36 @@ post '/api/batch' do
   content_type :json
 
   payload = JSON.parse(request.body.read)
+  secret_key = payload["secretKey"]
+  data = payload["data"]
 
-  @chapter_batch = payload["chapters"]
-  @entry_batch = payload["entries"]
+  if secret_key != nil && data != nil
+    @chapter_batch = data["chapters"]
+    @entry_batch = data["entries"]
 
-  @chapter_batch["delete"].each do |chapter|
-    Chapter.destroy(chapter["id"])
-  end
+    @chapter_batch["delete"].each do |chapter|
+      Chapter.destroy(chapter["id"])
+    end
 
-  @chapter_batch["update"].each do |chapter|
-    id = chapter["id"] && chapter.delete("id")
-    Chapter.update(id, chapter)
-  end
+    @chapter_batch["update"].each do |chapter|
+      id = chapter["id"] && chapter.delete("id")
+      Chapter.update(id, chapter)
+    end
 
-  @entry_batch["delete"].each do |entry|
-    Entry.destroy(entry["id"])
-  end
+    @entry_batch["delete"].each do |entry|
+      Entry.destroy(entry["id"])
+    end
 
-  @entry_batch["update"].each do |entry|
-    id = entry["id"] && entry.delete("id")
-    Entry.update(id, entry)
-  end
+    @entry_batch["update"].each do |entry|
+      id = entry["id"] && entry.delete("id")
+      Entry.update(id, entry)
+    end
 
-  @entry_batch["create"].each do |data|
-    Entry.create(data)
+    @entry_batch["create"].each do |data|
+      Entry.create(data)
+    end
+  else
+    "Go away. You bungled it.\n"
   end
 
   json allChaptersWithEntries()

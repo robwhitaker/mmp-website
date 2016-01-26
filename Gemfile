@@ -3,7 +3,7 @@ source "https://rubygems.org"
 gem 'sinatra'
 gem 'sinatra-contrib'
 gem 'sinatra-activerecord'
-gem 'thin'
+gem 'puma'
 gem 'rake'
 
 group :development do
