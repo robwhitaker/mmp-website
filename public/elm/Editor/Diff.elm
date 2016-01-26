@@ -120,7 +120,7 @@ encode diff =
         entryVal =
             Json.object [("update", Json.list eUpdates), ("delete", Json.list eDeletes), ("create", Json.list eCreates)]
     in
-        Json.object [("chapter", chapterVal), ("entry", entryVal)]
+        Json.object [("chapters", chapterVal), ("entries", entryVal)]
 
 c = Chapter.empty
 e = Entry.empty
