@@ -26,7 +26,7 @@ get '/api/chapters' do
 
   chaptersWithEntries = []
 
-  chapters = Chapter.where('release_date <= ?', DateTime.now)
+  chapters = Chapter.order(order: :asc).where('release_date <= ?', DateTime.now)
 
   chapters.each do |chapter|
     chaptersWithEntries.push(withEntries(chapter))
@@ -107,7 +107,7 @@ end
 
 def allChaptersWithEntries()
   chaptersWithEntries = []
-  chapters = Chapter.all
+  chapters = Chapter.order(order: :asc)
 
   chapters.each do |chapter|
     chaptersWithEntries.push(withEntries(chapter))
