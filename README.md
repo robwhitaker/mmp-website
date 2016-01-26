@@ -19,5 +19,5 @@ Setup
 
 Compiling Elm
 - cd into web/elm
-    + Compile Editor: `elm make Editor/Editor.elm --output=../static/vendor/editor.js`
-    + Compile Reader: `elm make Reader/Reader.elm --output=../static/vendor/reader.js`
+    + Compile Editor: `elm make Editor/Editor.elm --output=../static/build/editor.js`
+    + Compile Reader: `elm make Reader/Reader.elm --output=../static/build/reader.js`

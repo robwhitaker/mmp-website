@@ -5,6 +5,10 @@ require './config/environments'
 require './models/chapter'
 require './models/entry'
 
+env = ENV["SINATRA_ENV"] || "development"
+databases = YAML.load(ERB.new(File.read("config/database.yml")).result)
+ActiveRecord::Base.establish_connection(databases[env])
+
 set :public_folder, 'public'
 
 get '/' do

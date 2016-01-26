@@ -1,13 +1,15 @@
 source "https://rubygems.org"
 
 gem 'sinatra'
-gem 'thin'
-gem "rake"
-gem 'pg'
 gem 'sinatra-contrib'
 gem 'sinatra-activerecord'
+gem 'thin'
+gem 'rake'
 
 group :development do
-  gem 'pry'
-  gem 'shotgun'
+  gem 'sqlite3'
+end
+
+group :production do
+  gem 'pg'
 end
