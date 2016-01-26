@@ -18,12 +18,14 @@ type alias Model =
 
 init : Signal.Address (List Chapter) -> Signal.Address Chapter -> Signal.Address () -> (List Chapter) -> Model
 init commitAddr editAddr cancelAddr chapters =
-    { chapters = RL.fromListWith (ChapterReorderable.make editAddr) chapters
-    , lastChapters = RL.fromListWith (ChapterReorderable.make editAddr) chapters
-    , commitAddr = commitAddr
-    , cancelAddr = cancelAddr
-    , editAddr = editAddr
-    }
+    let chs = List.sortBy .order chapters
+    in
+        { chapters = RL.fromListWith (ChapterReorderable.make editAddr) chs
+        , lastChapters = RL.fromListWith (ChapterReorderable.make editAddr) chs
+        , commitAddr = commitAddr
+        , cancelAddr = cancelAddr
+        , editAddr = editAddr
+        }
 
 type Action = Reorder RL.Action
 
