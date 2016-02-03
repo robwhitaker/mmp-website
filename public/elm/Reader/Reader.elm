@@ -43,7 +43,7 @@ init =
         , state = Loading
         , numPages = 0
         , currentPage = 0
-        , lastNavAction = PageTurn Forward
+        , lastNavAction = PageJump (ChapterData -1)
         , focusedId = ChapterData -1
         , headingIdsOnPage = []
         , toc = [testChapter]
@@ -61,13 +61,13 @@ type Either a b = ChapterData a | EntryData b
 
 type alias NormalID = Either Int Int -- Left chapterId, Right entryId
 
-type LastNavAction = PageTurn Direction | PageJump Int | PageReflow
+type LastNavAction = PageTurn Direction | PageJump NormalID | PageReflow
 
 type ChapterRequest = Request Int | Response Chapter
 
 type Action
     = TurnPage Direction
-    | JumpToHeading Int
+    | JumpToHeading NormalID
     | HandleChapterRequest ChapterRequest
     | ChapterHasRendered Int (List String) -- numPages (List header ids)
     | ChapterHasReflowed Int Int (Maybe String) (List String) -- currentPage numPages maybeFocusedId (List header ids)
@@ -78,7 +78,7 @@ type Action
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
-    case Debug.log "action" action of
+    case action of
         TurnPage dir ->
             case dir of
                 Forward ->
@@ -153,19 +153,62 @@ update action model =
                     focusedId =
                         if List.length headingIds == 0 && maybeFocusedId /= Nothing then
                             Maybe.withDefault model.focusedId <| Maybe.map normalIDFromString maybeFocusedId
+                        else if List.member model.focusedId (headingIdFilter model.currentChapter headingIds) then
+                            model.focusedId
                         else
-                            model.focusedId,
+                            headingIdFilter model.currentChapter headingIds |> List.head |> Maybe.withDefault model.focusedId,
                     headingIdsOnPage = headingIdFilter model.currentChapter headingIds,
                     lastNavAction = PageReflow
                 }
                 Effects.none
 
         UpdateHeadingsOnPage headingIds ->
-            (,)
-                { model |
-                    headingIdsOnPage = headingIdFilter model.currentChapter headingIds
-                }
-                Effects.none
+            let headings = headingIdFilter model.currentChapter headingIds
+            in
+                (,)
+                    { model |
+                        headingIdsOnPage = headings,
+                        focusedId =
+                            case model.lastNavAction of
+                                PageTurn dir ->
+                                    case dir of
+                                        Forward ->
+                                            Maybe.oneOf
+                                                [ List.head headings
+                                                , (List.reverse >> List.head) model.headingIdsOnPage
+                                                ]
+                                            |> Maybe.withDefault model.focusedId
+
+                                        Backward ->
+                                            if List.length headings > 0 then
+                                                (List.reverse >> List.head) headings |> Maybe.withDefault model.focusedId
+                                            else if List.length model.headingIdsOnPage > 0 then
+                                                let firstIdOnPrevPage =
+                                                    Maybe.withDefault model.focusedId <| List.head model.headingIdsOnPage
+                                                in
+                                                    flattenToc model.toc
+                                                    |> List.drop (indexOfId firstIdOnPrevPage model.toc - 1)
+                                                    |> List.map (mapChapterData (.id >> Maybe.withDefault -1) >> mapEntryData (.id >> Maybe.withDefault -1))
+                                                    |> List.head
+                                                    |> Maybe.withDefault model.focusedId
+                                            else
+                                                model.focusedId
+
+                                PageJump normId ->
+                                    if List.member normId headings then
+                                        normId
+                                    else
+                                        flattenToc model.toc
+                                        |> List.drop (indexOfId normId model.toc + 1)
+                                        |> List.map (mapChapterData (.id >> Maybe.withDefault -1) >> mapEntryData (.id >> Maybe.withDefault -1))
+                                        |> List.filter (flip List.member headings)
+                                        |> List.head
+                                        |> Maybe.withDefault model.focusedId
+
+                                PageReflow ->
+                                    model.focusedId
+                    }
+                    Effects.none
 
         Dump str ->
             let a = Debug.log "dump" str
@@ -234,6 +277,7 @@ view address model =
             , button [onClick address (TurnPage Forward)] [ text "Forward" ]
             , makeSpinner address model
             ]
+        , div [] [ text <| toString model.focusedId, text " | ", text <| toString model.lastNavAction ]
         ]
 
 makeSpinner : Signal.Address Action -> Model -> Html
@@ -437,6 +481,28 @@ normalID =
 makeIDString : Either Chapter Entry -> String
 makeIDString =
     normalID >> normalIDToString
+
+getById : NormalID -> List Chapter -> Maybe (Either Chapter Entry)
+getById normId chapters =
+    case normId of
+        ChapterData id ->
+            Maybe.map ChapterData <| List.head <| List.filter (.id >> (==) (Just id)) chapters
+
+        EntryData id ->
+            Maybe.map EntryData <| List.head <| List.filter (.id >> (==) (Just id)) <| List.concatMap .entries_ chapters
+
+indexOfId : NormalID -> List Chapter -> Int
+indexOfId normId chapters =
+    chapters
+    |> flattenToc
+    |> List.map (mapChapterData (.id >> Maybe.withDefault -1))
+    |> List.map (mapEntryData (.id >> Maybe.withDefault -1))
+    |> List.foldl (\item (acc, index) -> if item == normId then (index, index+1) else (acc, index+1)) (-1,0)
+    |> fst
+
+flattenToc : List Chapter -> List (Either Chapter Entry)
+flattenToc =
+    List.concatMap (\chapter -> ChapterData chapter :: List.map EntryData chapter.entries_)
 
 ---- TEST DATA ----
 
