@@ -36,7 +36,7 @@
     if(headingsOnPage.length > 0) return null;
 
     return Array.prototype.reduce.call(storyTextArea.querySelectorAll("h1,h2,h3,h4,h5,h6"), function(acc, h) {
-      if(h.offsetLeft < storyTextArea.scrollLeft) { return h.id; }
+      if(h.offsetLeft < Math.round(storyTextArea.scrollLeft)) { return h.id; }
       else { return acc; }
     }, null);
 
@@ -204,5 +204,9 @@
         ]
       );
     });
+  });
+
+  Reader.ports.focusedId.subscribe(function(id) {
+    window.location.hash = "!/" + id;
   });
 // })();

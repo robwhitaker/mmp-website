@@ -9,6 +9,7 @@ import Graphics.Element exposing (..)
 import Markdown
 import Regex
 import String
+import Dict
 
 import StartApp
 import Effects exposing (Effects, Never)
@@ -31,6 +32,7 @@ type alias Model =
     , currentPage           : Int
     , lastNavAction         : LastNavAction
     , focusedId             : NormalID
+    , selectedId            : List { id : NormalID, selected : Bool }
     , headingIdsOnPage      : List NormalID
     , toc                   : List Chapter
     , bookSize              : (Int, Int)
@@ -45,6 +47,7 @@ init =
         , currentPage = 0
         , lastNavAction = PageJump (ChapterData -1)
         , focusedId = ChapterData -1
+        , selectedId = []
         , headingIdsOnPage = []
         , toc = [testChapter]
         , bookSize = (650,759)
@@ -72,6 +75,7 @@ type Action
     | ChapterHasRendered Int (List String) -- numPages (List header ids)
     | ChapterHasReflowed Int Int (Maybe String) (List String) -- currentPage numPages maybeFocusedId (List header ids)
     | UpdateHeadingsOnPage (List String)
+    | ChangeSelection NormalID
     | Reflow
     | Dump String
     | NoOp
@@ -133,80 +137,184 @@ update action model =
                         Effects.none
 
         ChapterHasRendered numPages headingIds ->
-            (,)
-                { model |
-                    currentPage = 0,
-                    numPages = numPages,
-                    state = Ready,
-                    headingIdsOnPage = headingIdFilter model.currentChapter headingIds
-                }
-                Effects.none
+            let headings = headingIdFilter model.currentChapter headingIds
+                focusedId = List.head headings |> Maybe.withDefault model.focusedId
+                selectedId =
+                    List.map (\id -> { id = id, selected = List.length headings <= 1 }) headings
+            in
+                (,)
+                    { model |
+                        currentPage = 0,
+                        numPages = numPages,
+                        state = Ready,
+                        headingIdsOnPage = headings,
+                        focusedId = focusedId,
+                        selectedId = selectedId
+                    }
+                    Effects.none
 
         Reflow -> ({ model | state = Reflowing }, Effects.none)
 
         ChapterHasReflowed currentPage numPages maybeFocusedId headingIds ->
+            let headings = headingIdFilter model.currentChapter headingIds
+
+                newFocusedId =
+                    if List.length headingIds == 0 && maybeFocusedId /= Nothing then
+                        Maybe.withDefault model.focusedId <| Maybe.map normalIDFromString maybeFocusedId
+                    else if List.member model.focusedId headings then
+                        model.focusedId
+                    else
+                        headings |> List.head |> Maybe.withDefault model.focusedId
+
+                newSelectedId =
+                    if List.length headings == 0 then
+                        [{ id = newFocusedId, selected = True }]
+                    else
+                        let firstHeaderOffset =
+                            List.foldl (\{ id } (index, foundPos) ->
+                                    if List.head headings == Just id then
+                                        (index+1, Just index)
+                                    else
+                                        (index+1, foundPos)
+                                )
+                                (0, Nothing)
+                                (Debug.log "sId" model.selectedId)
+                            |> snd
+                            |> Debug.log "offset"
+
+                            selectionIdDict =
+                                model.selectedId
+                                |> List.map (\{ id, selected } -> (normalIDToString id,selected))
+                                |> Dict.fromList
+
+                            keepers =
+                                if Maybe.withDefault False
+                                    ( Maybe.map2
+                                        (\a b -> indexOfId b model.toc - indexOfId a model.toc == 1)
+                                        (List.head model.selectedId |> Maybe.map .id)
+                                        (List.head headings)
+                                    )
+                                then model.selectedId |> List.head |> Maybe.map (flip (::) []) |> Maybe.withDefault []
+                                else
+                                    case firstHeaderOffset of
+                                        Nothing -> []
+                                        Just offset ->
+                                            if offset == 0 then
+                                                []
+                                            else
+                                                model.selectedId
+                                                |> List.drop (offset - 1)
+                                                |> List.head
+                                                |> Maybe.map (flip (::) [])
+                                                |> Maybe.withDefault []
+
+                            news =
+                                List.map (\id -> { id = id, selected = False }) headings
+                        in
+                            keepers ++ news
+                            |> List.map (\sId ->
+                                { sId | selected = Maybe.withDefault False (Dict.get (normalIDToString sId.id) selectionIdDict) }
+                                )
+            in
+                (,)
+                    { model |
+                        currentPage = currentPage,
+                        numPages = numPages,
+                        state = Ready,
+                        focusedId = newFocusedId,
+                        selectedId = newSelectedId,
+                        headingIdsOnPage = headings,
+                        lastNavAction = PageReflow
+                    }
+                    Effects.none
+
+        ChangeSelection id ->
             (,)
                 { model |
-                    currentPage = currentPage,
-                    numPages = numPages,
-                    state = Ready,
-                    focusedId =
-                        if List.length headingIds == 0 && maybeFocusedId /= Nothing then
-                            Maybe.withDefault model.focusedId <| Maybe.map normalIDFromString maybeFocusedId
-                        else if List.member model.focusedId (headingIdFilter model.currentChapter headingIds) then
-                            model.focusedId
-                        else
-                            headingIdFilter model.currentChapter headingIds |> List.head |> Maybe.withDefault model.focusedId,
-                    headingIdsOnPage = headingIdFilter model.currentChapter headingIds,
-                    lastNavAction = PageReflow
+                    selectedId =
+                        List.map (\sId -> { sId | selected = id == sId.id }) model.selectedId
                 }
                 Effects.none
 
         UpdateHeadingsOnPage headingIds ->
             let headings = headingIdFilter model.currentChapter headingIds
+                newFocusedId =
+                    case model.lastNavAction of
+                        PageTurn dir ->
+                            case dir of
+                                Forward ->
+                                    Maybe.oneOf
+                                        [ List.head headings
+                                        , (List.reverse >> List.head) model.headingIdsOnPage
+                                        ]
+                                    |> Maybe.withDefault model.focusedId
+
+                                Backward ->
+                                    if List.length headings > 0 then
+                                        (List.reverse >> List.head) headings |> Maybe.withDefault model.focusedId
+                                    else if List.length model.headingIdsOnPage > 0 then
+                                        let firstIdOnPrevPage =
+                                            Maybe.withDefault model.focusedId <| List.head model.headingIdsOnPage
+                                        in
+                                            flattenToc model.toc
+                                            |> List.drop (indexOfId firstIdOnPrevPage model.toc - 1)
+                                            |> List.map (mapChapterData (.id >> Maybe.withDefault -1) >> mapEntryData (.id >> Maybe.withDefault -1))
+                                            |> List.head
+                                            |> Maybe.withDefault model.focusedId
+                                    else
+                                        model.focusedId
+
+                        PageJump normId ->
+                            if List.member normId headings then
+                                normId
+                            else
+                                flattenToc model.toc
+                                |> List.drop (indexOfId normId model.toc + 1)
+                                |> List.map (mapChapterData (.id >> Maybe.withDefault -1) >> mapEntryData (.id >> Maybe.withDefault -1))
+                                |> List.filter (flip List.member headings)
+                                |> List.head
+                                |> Maybe.withDefault model.focusedId
+
+                        PageReflow ->
+                            model.focusedId
+
+                selectedList =
+                    Maybe.map .id (List.head (List.reverse model.selectedId)) :: List.map Just headings
+
+                newSelectedId =
+                    if List.length headings > 0 then
+                        case model.lastNavAction of
+                            PageJump _        ->
+                                selectedList
+                                |> List.drop 1
+                                |> List.filterMap (Maybe.map (\id ->
+                                        { id = id, selected = id == newFocusedId }
+                                    ))
+
+                            PageTurn Backward ->
+                                if List.length headings > 1 then
+                                    selectedList
+                                    |> List.drop 1
+                                    |> List.filterMap (Maybe.map (\id ->
+                                            { id = id, selected = False }
+                                        ))
+                                else
+                                    selectedList
+                                    |> List.drop 1
+                                    |> List.filterMap identity
+                                    |> List.indexedMap (\index id -> { id = id, selected = index == 0 })
+
+                            PageTurn Forward  ->
+                                selectedList |> List.filterMap (Maybe.map (\id -> { id = id, selected = False }))
+                            _                 -> model.selectedId
+                    else
+                        [{ id = newFocusedId, selected = True }]
             in
                 (,)
                     { model |
                         headingIdsOnPage = headings,
-                        focusedId =
-                            case model.lastNavAction of
-                                PageTurn dir ->
-                                    case dir of
-                                        Forward ->
-                                            Maybe.oneOf
-                                                [ List.head headings
-                                                , (List.reverse >> List.head) model.headingIdsOnPage
-                                                ]
-                                            |> Maybe.withDefault model.focusedId
-
-                                        Backward ->
-                                            if List.length headings > 0 then
-                                                (List.reverse >> List.head) headings |> Maybe.withDefault model.focusedId
-                                            else if List.length model.headingIdsOnPage > 0 then
-                                                let firstIdOnPrevPage =
-                                                    Maybe.withDefault model.focusedId <| List.head model.headingIdsOnPage
-                                                in
-                                                    flattenToc model.toc
-                                                    |> List.drop (indexOfId firstIdOnPrevPage model.toc - 1)
-                                                    |> List.map (mapChapterData (.id >> Maybe.withDefault -1) >> mapEntryData (.id >> Maybe.withDefault -1))
-                                                    |> List.head
-                                                    |> Maybe.withDefault model.focusedId
-                                            else
-                                                model.focusedId
-
-                                PageJump normId ->
-                                    if List.member normId headings then
-                                        normId
-                                    else
-                                        flattenToc model.toc
-                                        |> List.drop (indexOfId normId model.toc + 1)
-                                        |> List.map (mapChapterData (.id >> Maybe.withDefault -1) >> mapEntryData (.id >> Maybe.withDefault -1))
-                                        |> List.filter (flip List.member headings)
-                                        |> List.head
-                                        |> Maybe.withDefault model.focusedId
-
-                                PageReflow ->
-                                    model.focusedId
+                        focusedId = newFocusedId,
+                        selectedId = newSelectedId
                     }
                     Effects.none
 
@@ -245,39 +353,57 @@ headingIdFilter chapter ids =
 
 view : Signal.Address Action -> Model -> Html
 view address model =
-    div
-        [ class "book" ]
-        [ div [ classList [("loader", True), ("isDisplayed", model.state == Rendering || model.state == Loading)] ]
-              [ fromElement <| container (fst model.bookSize) (snd model.bookSize) middle <|
-                    flow down
-                        [ case model.state of
-                            Loading -> div [class "loading-label"] [text "Loading..."] |> toElement (fst model.bookSize) 50
-                            Rendering -> div [class "loading-label"] [text "Rendering..."] |> toElement (fst model.bookSize) 50
-                            _ -> show ""
-                        , div [class "loading-label"] [img [src "static/assets/img/ajax-loader-2.gif"] []] |> toElement (fst model.bookSize) 100
-                        ]
-              ]
+    div []
+        [ div
+            [ class "book" ]
+            [ div [ classList [("loader", True), ("isDisplayed", model.state == Rendering || model.state == Loading)] ]
+                  [ fromElement <| container (fst model.bookSize) (snd model.bookSize) middle <|
+                        flow down
+                            [ case model.state of
+                                Loading -> div [class "loading-label"] [text "Loading..."] |> toElement (fst model.bookSize) 50
+                                Rendering -> div [class "loading-label"] [text "Rendering..."] |> toElement (fst model.bookSize) 50
+                                _ -> show ""
+                            , div [class "loading-label"] [img [src "static/assets/img/ajax-loader-2.gif"] []] |> toElement (fst model.bookSize) 100
+                            ]
+                  ]
+            , div
+                [ class "top-bar"]
+                [ (text << toString) (model.currentPage + 1)
+                , text " / "
+                , (text << toString) model.numPages
+                , text ", "
+                , (text << toString) model.headingIdsOnPage
+                ]
+            , div [ class "book-text" ]
+                [ iframe
+                    [ id "book-text-frame", src "about:blank"]
+                    [ ]
+                --, div [ class "cover" ] []
+                ]
+            , div
+                [ class "book-controls"]
+                [ button [onClick address (TurnPage Backward)] [ text "Backward" ]
+                , button [onClick address (TurnPage Forward)] [ text "Forward" ]
+                , makeSpinner address model
+                ]
+            , div [] [ text <| toString model.focusedId, text " | ", text <| toString model.lastNavAction ]
+            ]
         , div
-            [ class "top-bar"]
-            [ (text << toString) (model.currentPage + 1)
-            , text " / "
-            , (text << toString) model.numPages
-            , text ", "
-            , (text << toString) model.headingIdsOnPage
+            [ class "comments-container" ]
+            [ ul []
+                (List.map (\thingy -> --thingy? really?
+                    thingy |>
+                        toString >> text >> flip (::) [] >>
+                            li
+                                [ classList [("selected", thingy.selected)]
+                                , onClick address (ChangeSelection thingy.id)
+                                ]
+                    ) model.selectedId
+                )
+            , div
+                [ classList [("comments-container-inner", True), ("hidden", not <| List.foldl (\b acc -> b.selected || acc) False model.selectedId )] ]
+                [ text "THIS IS THE HIDDEN CONTAINER" ]
             ]
-        , div [ class "book-text" ]
-            [ iframe
-                [ id "book-text-frame", src "about:blank"]
-                [ ]
-            --, div [ class "cover" ] []
-            ]
-        , div
-            [ class "book-controls"]
-            [ button [onClick address (TurnPage Backward)] [ text "Backward" ]
-            , button [onClick address (TurnPage Forward)] [ text "Forward" ]
-            , makeSpinner address model
-            ]
-        , div [] [ text <| toString model.focusedId, text " | ", text <| toString model.lastNavAction ]
         ]
 
 makeSpinner : Signal.Address Action -> Model -> Html
@@ -434,6 +560,12 @@ port currentChapter =
     |> Signal.map renderChapter
     |> Signal.dropRepeats
 
+port focusedId : Signal String
+port focusedId =
+    app.model
+    |> Signal.map (.focusedId >> normalIDToString)
+    |> Signal.dropRepeats
+
 ---- HELPERS ----
 
 mapChapterData : (a -> c) -> Either a b -> Either c b
@@ -499,6 +631,7 @@ indexOfId normId chapters =
     |> List.map (mapEntryData (.id >> Maybe.withDefault -1))
     |> List.foldl (\item (acc, index) -> if item == normId then (index, index+1) else (acc, index+1)) (-1,0)
     |> fst
+    |> (\n -> if n < 0 then -99999 else n)
 
 flattenToc : List Chapter -> List (Either Chapter Entry)
 flattenToc =
