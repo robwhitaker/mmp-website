@@ -50,6 +50,6 @@ encode chapter =
         , ("content", Encoder.string chapter.content)
         , ("release_date", Encoder.string chapter.releaseDate)
         , ("authors_note", Encoder.string chapter.authorsNote)
-        , ("entries", Encoder.list <| List.map Entry.encode chapter.entries_)
+        , ("entries_attributes", Encoder.list <| List.map Entry.encode chapter.entries_)
         ]
 
