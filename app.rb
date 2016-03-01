@@ -43,8 +43,6 @@ post '/api/chapters' do # all chapters
 end
 
 post '/api/chapters/crupdate' do
-  content_type :json
-
   payload = JSON.parse(request.body.read)
   data = payload["data"]
 
@@ -71,6 +69,7 @@ post '/api/chapters/crupdate' do
       @chapter.save
     end
   end
+  return 0
 end
 
 post '/api/chapters/delete' do
@@ -78,7 +77,8 @@ post '/api/chapters/delete' do
 
   payload = JSON.parse(request.body.read)
 
-  authorized? payload["secretKey"] ? Chapter.destroy(payload["data"]) : nil
+  if authorized? payload["secretKey"] then Chapter.destroy(payload["data"]) end
+  return 0
 end
 
 def authorized?(string)
