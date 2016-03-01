@@ -53,13 +53,13 @@ post '/api/chapters/crupdate' do
   data = payload["data"]
 
   if authorized? payload["secretKey"]
-    if data["id"] != "" # Update chapter | chapter already exists
+    if data["id"] != "null" # Update chapter | chapter already exists
       id = data["id"] && data.delete("id")
       @entries = data["entries"] && data.delete("entries")
       @chapter = Chapter.update(id, data)
       if @chapter.save
         @entries.each do |entry|
-          if entry["id"] != "" # Update entry | entry already exists
+          if entry["id"] != "null" # Update entry | entry already exists
             id = entry["id"] && entry.delete("id")
             updatedEntry = Entry.update(id, entry) # might be replaceable with Entry.save(id, entry)
             updatedEntry.save
