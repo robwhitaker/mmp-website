@@ -42,7 +42,7 @@ post '/api/chapters' do
   if authorized? payload["secretKey"]
     json allChaptersWithEntries()
   else
-    return 418
+    return "418"
   end
 end
 
@@ -53,13 +53,13 @@ post '/api/chapters/crupdate' do
   data = payload["data"]
 
   if authorized? payload["secretKey"]
-    if data.has_key? "id" # Update chapter | chapter already exists
+    if data["id"] != "" # Update chapter | chapter already exists
       id = data["id"] && data.delete("id")
       @entries = data["entries"] && data.delete("entries")
       @chapter = Chapter.update(id, data)
       if @chapter.save
         @entries.each do |entry|
-          if entry.has_key? "id" # Update entry | entry already exists
+          if entry["id"] != "" # Update entry | entry already exists
             id = entry["id"] && entry.delete("id")
             updatedEntry = Entry.update(id, entry) # might be replaceable with Entry.save(id, entry)
             updatedEntry.save
@@ -68,19 +68,19 @@ post '/api/chapters/crupdate' do
           end
         end
       end
-      return 200
+      return "200"
     else # Create chapter | note: entries cannot exist without a chapter
       @entries = data["entries"] && data.delete("entries")
       @chapter = Chapter.new(data)
     	if @chapter.save
         @chapter.entries.create(@entries)
-    		return 200
+    		return "200"
     	else # Invalid chapter JSON, presumably
-    		return 418
+    		return "418"
     	end
     end
   else # Did not pass authorized? check
-    return 418
+    return "418"
   end
 end
 
@@ -91,9 +91,9 @@ post '/api/chapters/delete' do
 
   if authorized? payload["secretKey"]
     Chapter.destroy(payload["data"])
-    return 200
+    return "200"
   else
-    return 418
+    return "418"
   end
 end
 
