@@ -39,11 +39,7 @@ post '/api/chapters' do # all chapters
 
   payload = JSON.parse(request.body.read)
 
-  if authorized? payload["secretKey"]
-    json allChaptersWithEntries()
-  else
-    return "418"
-  end
+  authorized? payload["secretKey"] ? json allChaptersWithEntries() : nil
 end
 
 post '/api/chapters/crupdate' do
@@ -55,7 +51,7 @@ post '/api/chapters/crupdate' do
   if authorized? payload["secretKey"]
     if data["id"].nil? # Create chapter
       @chapter = Chapter.new(data)
-      @chapter.save ? "200" : "418"
+      @chapter.save
     else # Update chapter
       allEntryIds = []
       allEntries = Chapter.find(data["id"]).entries
@@ -72,12 +68,10 @@ post '/api/chapters/crupdate' do
       Entry.destroy(entriesToBeDeleted)
 
       @chapter = Chapter.update(data["id"], data)
-      @chapter.save ? "200" : "418"
+      @chapter.save
     end
-    "200"
-  else # Invalid key
-    "418"
   end
+  nil
 end
 
 post '/api/chapters/delete' do
@@ -85,12 +79,8 @@ post '/api/chapters/delete' do
 
   payload = JSON.parse(request.body.read)
 
-  if authorized? payload["secretKey"]
-    Chapter.destroy(payload["data"])
-    "200"
-  else
-    "418"
-  end
+  if authorized? payload["secretKey"] then Chapter.destroy(payload["data"])
+  nil
 end
 
 def authorized?(string)
