@@ -61,19 +61,25 @@ post '/api/chapters/crupdate' do
         @entries.each do |entry|
           if entry["id"] != "null" # Update entry | entry already exists
             id = entry["id"] && entry.delete("id")
-            updatedEntry = Entry.update(id, entry) # might be replaceable with Entry.save(id, entry)
+            updatedEntry = Entry.update(id, entry)
             updatedEntry.save
           else # Create entry
+            entry.delete("id")
             @chapter.entries.create(entry)
           end
         end
       end
       return "200"
     else # Create chapter | note: entries cannot exist without a chapter
+      id = data["id"] && data.delete("id")
       @entries = data["entries"] && data.delete("entries")
       @chapter = Chapter.new(data)
     	if @chapter.save
-        @chapter.entries.create(@entries)
+        @entriesWithoutIds = []
+        @entries.each do |entry|
+          entry.delete("id") && @entriesWithoutIds.push(entry)
+        end
+        @chapter.entries.create(@entriesWithoutIds)
     		return "200"
     	else # Invalid chapter JSON, presumably
     		return "418"
