@@ -21,20 +21,6 @@ get '/editor' do
   send_file File.join(settings.public_folder, 'editor.html')
 end
 
-get '/api/chapters' do
-  content_type :json
-
-  chaptersWithEntries = []
-
-  chapters = Chapter.order(order: :asc).where('release_date <= ?', DateTime.now)
-
-  chapters.each do |chapter|
-    chaptersWithEntries.push(withEntries(chapter))
-  end
-
-  json chaptersWithEntries
-end
-
 get '/api/chapters/:id' do |id|
   content_type :json
 
@@ -42,72 +28,87 @@ get '/api/chapters/:id' do |id|
   json withEntries(chapter)
 end
 
+get '/api/chapters' do
+  content_type :json
+
+  json allChaptersWithEntries("restricted")
+end
+
 post '/api/chapters' do
   content_type :json
 
   payload = JSON.parse(request.body.read)
-  secret_key = payload["secretKey"]
-  data = payload["data"]
 
-  if secret_key != nil && data != nil
-    @entries = data["entries"]
-    data.delete("entries")
-  	@chapter = Chapter.new(data)
-  	if @chapter.save
-      @chapter.entries.create(@entries)
-  		json allChaptersWithEntries()
-  	else
-  		"Sorry, there was an error!\n"
-  	end
-  elsif secret_key != nil
+  if authorized? payload["secretKey"]
     json allChaptersWithEntries()
   else
-    "Go away. You bungled it.\n"
+    return 418
   end
 end
 
-post '/api/batch' do
+post '/api/chapters/crupdate' do
   content_type :json
 
   payload = JSON.parse(request.body.read)
-  secret_key = payload["secretKey"]
   data = payload["data"]
 
-  if secret_key != nil && data != nil
-    @chapter_batch = data["chapters"]
-    @entry_batch = data["entries"]
-
-    @chapter_batch["delete"].each do |chapter|
-      Chapter.destroy(chapter["id"])
+  if authorized? payload["secretKey"]
+    if data.has_key? "id" # Update chapter | chapter already exists
+      id = data["id"] && data.delete("id")
+      @entries = data["entries"] && data.delete("entries")
+      @chapter = Chapter.update(id, data)
+      if @chapter.save
+        @entries.each do |entry|
+          if entry.has_key? "id" # Update entry | entry already exists
+            id = entry["id"] && entry.delete("id")
+            updatedEntry = Entry.update(id, entry) # might be replaceable with Entry.save(id, entry)
+            updatedEntry.save
+          else # Create entry
+            @chapter.entries.create(entry)
+          end
+        end
+      end
+      return 200
+    else # Create chapter | note: entries cannot exist without a chapter
+      @entries = data["entries"] && data.delete("entries")
+      @chapter = Chapter.new(data)
+    	if @chapter.save
+        @chapter.entries.create(@entries)
+    		return 200
+    	else # Invalid chapter JSON, presumably
+    		return 418
+    	end
     end
-
-    @chapter_batch["update"].each do |chapter|
-      id = chapter["id"] && chapter.delete("id")
-      Chapter.update(id, chapter)
-    end
-
-    @entry_batch["delete"].each do |entry|
-      Entry.destroy(entry["id"])
-    end
-
-    @entry_batch["update"].each do |entry|
-      id = entry["id"] && entry.delete("id")
-      Entry.update(id, entry)
-    end
-
-    @entry_batch["create"].each do |data|
-      Entry.create(data)
-    end
-  else
-    "Go away. You bungled it.\n"
+  else # Did not pass authorized? check
+    return 418
   end
-
-  json allChaptersWithEntries()
 end
 
-def allChaptersWithEntries()
+post '/api/chapters/delete' do
+  content_type :json
+
+  payload = JSON.parse(request.body.read)
+
+  if authorized? payload["secretKey"]
+    Chapter.destroy(payload["data"])
+    return 200
+  else
+    return 418
+  end
+end
+
+def authorized?(string)
+  string != nil
+end
+
+def allChaptersWithEntries(type = "unrestricted")
   chaptersWithEntries = []
-  chapters = Chapter.order(order: :asc)
+
+  if type == "restricted"
+    chapters = Chapter.order(order: :asc).where('release_date <= ?', DateTime.now)
+  else
+    chapters = Chapter.order(order: :asc)
+  end
 
   chapters.each do |chapter|
     chaptersWithEntries.push(withEntries(chapter))
