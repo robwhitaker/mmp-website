@@ -33,15 +33,15 @@ chapterListRequest : Task Http.Error (List Chapter)
 chapterListRequest =
     Requests.send (Just "abcde") (Requests.Post Encode.null) (Json.list Chapter.decoder) "/chapters"
 
-crupdateRequest : Chapter -> Task Http.Error (Maybe a)
+crupdateRequest : Chapter -> Task Http.Error Int
 crupdateRequest chapter =
-    Requests.send (Just "abcde") (Requests.Post <| Chapter.encode chapter) (Json.null Nothing) "/chapters/crupdate"
+    Requests.send (Just "abcde") (Requests.Post <| Chapter.encode chapter) (Json.int) "/chapters/crupdate"
 
-deleteRequest : Int -> Task Http.Error (Maybe a)
+deleteRequest : Int -> Task Http.Error Int
 deleteRequest id =
-    Requests.send (Just "abcde") (Requests.Post <| Encode.int id) (Json.null Nothing) "/chapters/delete"
+    Requests.send (Just "abcde") (Requests.Post <| Encode.int id) (Json.int) "/chapters/delete"
 
-chapterListUpdateRequest : DiffRecord -> Task Http.Error (Maybe a)
+chapterListUpdateRequest : DiffRecord -> Task Http.Error Int
 chapterListUpdateRequest diff =
     let
         updates = List.map crupdateRequest diff.update
@@ -50,7 +50,7 @@ chapterListUpdateRequest diff =
         request =
             updates ++ deletions
             |> Task.sequence
-            |> Task.map (always Nothing)
+            |> Task.map (\_ -> 0)
 
     in request
 
