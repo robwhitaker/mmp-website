@@ -28,13 +28,13 @@ get '/api/chapters/:id' do |id|
   json withEntries(chapter)
 end
 
-get '/api/chapters' do
+get '/api/chapters' do # public chapters
   content_type :json
 
   json allChaptersWithEntries("restricted")
 end
 
-post '/api/chapters' do
+post '/api/chapters' do # all chapters
   content_type :json
 
   payload = JSON.parse(request.body.read)
@@ -53,40 +53,16 @@ post '/api/chapters/crupdate' do
   data = payload["data"]
 
   if authorized? payload["secretKey"]
-    if data["id"] != "null" # Update chapter | chapter already exists
-      id = data["id"] && data.delete("id")
-      @entries = data["entries"] && data.delete("entries")
-      @chapter = Chapter.update(id, data)
-      if @chapter.save
-        @entries.each do |entry|
-          if entry["id"] != "null" # Update entry | entry already exists
-            id = entry["id"] && entry.delete("id")
-            updatedEntry = Entry.update(id, entry)
-            updatedEntry.save
-          else # Create entry
-            entry.delete("id")
-            @chapter.entries.create(entry)
-          end
-        end
-      end
-      return "200"
-    else # Create chapter | note: entries cannot exist without a chapter
-      id = data["id"] && data.delete("id")
-      @entries = data["entries"] && data.delete("entries")
+    if data["id"].nil? # Create chapter
       @chapter = Chapter.new(data)
-    	if @chapter.save
-        @entriesWithoutIds = []
-        @entries.each do |entry|
-          entry.delete("id") && @entriesWithoutIds.push(entry)
-        end
-        @chapter.entries.create(@entriesWithoutIds)
-    		return "200"
-    	else # Invalid chapter JSON, presumably
-    		return "418"
-    	end
+      @chapter.save ? "200" : "418"
+    else # Update chapter
+      @chapter = Chapter.update(data["id"], data)
+      @chapter.save ? "200" : "418"
     end
-  else # Did not pass authorized? check
-    return "418"
+    "200"
+  else # Invalid key
+    "418"
   end
 end
 
@@ -97,9 +73,9 @@ post '/api/chapters/delete' do
 
   if authorized? payload["secretKey"]
     Chapter.destroy(payload["data"])
-    return "200"
+    "200"
   else
-    return "418"
+    "418"
   end
 end
 
