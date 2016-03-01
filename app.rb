@@ -57,6 +57,20 @@ post '/api/chapters/crupdate' do
       @chapter = Chapter.new(data)
       @chapter.save ? "200" : "418"
     else # Update chapter
+      allEntryIds = []
+      allEntries = Chapter.find(data["id"]).entries
+      allEntries.each do |entry|
+        allEntryIds.push(entry[:id])
+      end
+
+      givenEntryIds = []
+      data["entries_attributes"].each do |entry|
+        givenEntryIds.push(entry["id"])
+      end
+
+      entriesToBeDeleted = allEntryIds - givenEntryIds
+      Entry.destroy(entriesToBeDeleted)
+
       @chapter = Chapter.update(data["id"], data)
       @chapter.save ? "200" : "418"
     end
