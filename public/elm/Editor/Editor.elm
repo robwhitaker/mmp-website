@@ -33,9 +33,26 @@ chapterListRequest : Task Http.Error (List Chapter)
 chapterListRequest =
     Requests.send (Just "abcde") (Requests.Post Encode.null) (Json.list Chapter.decoder) "/chapters"
 
-batchRequest : DiffRecord -> Task Http.Error (List Chapter)
-batchRequest diff =
-    Requests.send (Just "abcde") (Requests.Post <| Diff.encode diff) (Json.list Chapter.decoder) "/batch"
+crupdateRequest : Chapter -> Task Http.Error (Maybe a)
+crupdateRequest chapter =
+    Requests.send (Just "abcde") (Requests.Post <| Chapter.encode chapter) (Json.null Nothing) "/chapters/crupdate"
+
+deleteRequest : Int -> Task Http.Error (Maybe a)
+deleteRequest id =
+    Requests.send (Just "abcde") (Requests.Post <| Encode.int id) (Json.null Nothing) "/chapters/delete"
+
+chapterListUpdateRequest : DiffRecord -> Task Http.Error (Maybe a)
+chapterListUpdateRequest diff =
+    let
+        updates = List.map crupdateRequest diff.update
+        deletions = List.map deleteRequest diff.delete
+
+        request =
+            updates ++ deletions
+            |> Task.sequence
+            |> Task.map (always Nothing)
+
+    in request
 
 initListEditor : List Chapter -> ChapterListEditor.Model
 initListEditor =
@@ -58,7 +75,7 @@ init =
         , chapterListEditor = initListEditor []
         , chapterEditor = initChapterEditor Chapter.empty
         }
-        (Requests.toEffect GoToChapterList (\a -> Debug.log (toString a) NoOp) chapterListRequest)
+        (Requests.toEffect GoToChapterList HttpError chapterListRequest)
 
 type Action
     = ChapterListEditorFwd ChapterListEditor.Action
@@ -68,6 +85,7 @@ type Action
     | RequestUpdateChapter Chapter
     | GoToChapterList (List Chapter)
     | GoToChapterEdit Chapter
+    | HttpError Http.Error
     | NoOp
 
 update : Action -> Model -> (Model, Effects Action)
@@ -80,30 +98,22 @@ update action model =
             ({ model | chapterEditor = ChapterEditor.update subAction model.chapterEditor }, Effects.none)
 
         RequestChapterList ->
-            ({ model | viewMode = Loading }, (Requests.toEffect GoToChapterList (\_ -> NoOp) chapterListRequest))
+            ({ model | viewMode = Loading }, (Requests.toEffect GoToChapterList HttpError chapterListRequest))
 
         RequestUpdateChapterList chapters ->
             let
-                chapterListUpdateRequest =
-                    Diff.chapterList model.chaptersAtSync chapters
-                    |> Diff.toDiffRecord
-                    |> batchRequest
-                    |> Requests.toEffect GoToChapterList (\_ -> NoOp)
-            in (model, chapterListUpdateRequest)
+                cListUpdateRequest =
+                    chapterListUpdateRequest (Diff.chapterList model.chaptersAtSync chapters)
+                        `Task.andThen` (\_ -> chapterListRequest)
+                    |> Requests.toEffect GoToChapterList HttpError
+            in (model, cListUpdateRequest)
 
         RequestUpdateChapter chapter ->
             let
                 chapterUpdateRequest =
-                    case List.head (List.filter (.id >> (==) chapter.id) model.chaptersAtSync) of
-                        Nothing ->
-                            Requests.send (Just "abcde") (Requests.Post <| Chapter.encode chapter) (Json.list Chapter.decoder) "/chapters"
-                            |> Requests.toEffect GoToChapterList (\_ -> NoOp)
-
-                        Just oldChapter ->
-                            Diff.chapter oldChapter (Just chapter)
-                            |> Diff.toDiffRecord
-                            |> batchRequest
-                            |> Requests.toEffect GoToChapterList (\_ -> NoOp)
+                    crupdateRequest chapter
+                        `Task.andThen` (\_ -> chapterListRequest)
+                    |> Requests.toEffect GoToChapterList HttpError
             in (model, chapterUpdateRequest)
 
         GoToChapterList chapters ->
@@ -122,6 +132,10 @@ update action model =
                 chapterEditor = initChapterEditor chapter
             }
             Effects.none
+
+        HttpError error ->
+            let dump = Debug.log "HTTP ERROR: " error
+            in (model, Effects.none)
 
         _ -> (model, Effects.none)
 
