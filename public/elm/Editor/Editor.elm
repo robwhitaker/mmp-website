@@ -35,11 +35,11 @@ chapterListRequest =
 
 crupdateRequest : Chapter -> Task Http.Error Int
 crupdateRequest chapter =
-    Requests.send (Just "abcde") (Requests.Post <| Chapter.encode chapter) (Json.int) "/chapters/crupdate"
+    Requests.send (Just "abcde") (Requests.Post <| Chapter.encode chapter) ("return" := Json.int) "/chapters/crupdate"
 
 deleteRequest : Int -> Task Http.Error Int
 deleteRequest id =
-    Requests.send (Just "abcde") (Requests.Post <| Encode.int id) (Json.int) "/chapters/delete"
+    Requests.send (Just "abcde") (Requests.Post <| Encode.int id) ("return" := Json.int) "/chapters/delete"
 
 chapterListUpdateRequest : DiffRecord -> Task Http.Error Int
 chapterListUpdateRequest diff =
