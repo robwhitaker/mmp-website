@@ -12,6 +12,9 @@
 ## Chapter update with entries | POST /api/chapters/crupdate ##
 # curl -H "Content-Type: application/json" -X POST -d '{"data": {"id": 5, "order": 1, "stylesheet": "<dingle mcringleberry>", "title": "Hey!", "content": "Beep boop", "release_date": "2015-10-01 12:30:00", "authors_note": "wao", "entries_attributes": [{"id": 7, "order": 1, "level": 1, "title": "HELLO!!!", "content": "Hinkle dinkle doo", "release_date": "2015-10-01 12:30:00", "authors_note": "Womp"}, {"id": null, "order": 3, "level": 2, "title": "Entry #3", "content": "Hinkle dinkle doo", "release_date": "2015-10-01 12:30:00", "authors_note": "Wimp"}]}, "secretKey": "hello"}' http://localhost:4567/api/chapters/crupdate
 
+## Chapter update with entries | Reordering | POST /api/chapters/crupdate ##
+# curl -H "Content-Type: application/json" -X POST -d '{"data": {"id": 6, "order": 10, "entries_attributes": [{"id": 9, "order": 3}, {"id": 10, "order": 5}]}, "secretKey": "hello"}' http://localhost:4567/api/chapters/crupdate
+
 ## Chapter deletion | POST /api/chapters/delete ##
 # curl -H "Content-Type: application/json" -X POST -d '{"data": [3, 5], "secretKey": "hello"}' http://localhost:4567/api/chapters/delete
 
