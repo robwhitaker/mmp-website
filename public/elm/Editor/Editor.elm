@@ -90,7 +90,7 @@ type Action
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
-    case Debug.log "action: " action of
+    case action of
         ChapterListEditorFwd subAction ->
             ({ model | chapterListEditor = ChapterListEditor.update subAction model.chapterListEditor }, Effects.none)
 
