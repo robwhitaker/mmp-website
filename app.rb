@@ -25,12 +25,13 @@ get '/api/chapters/:id' do |id|
   content_type :json
 
   chapter = Chapter.includes(:entries).find(id)
+  status 200
   json withEntries(chapter)
 end
 
 get '/api/chapters' do # public chapters
   content_type :json
-
+  status 200
   json allChaptersWithEntries("restricted")
 end
 
@@ -39,7 +40,12 @@ post '/api/chapters' do # all chapters
 
   payload = JSON.parse(request.body.read)
 
-  if authorized? payload["secretKey"] then json allChaptersWithEntries() end
+  if authorized? payload["secretKey"]
+    status 200
+    json allChaptersWithEntries()
+  else
+    status 418
+  end
 end
 
 post '/api/chapters/crupdate' do
@@ -50,28 +56,20 @@ post '/api/chapters/crupdate' do
 
   if authorized? payload["secretKey"]
     if data["id"].nil? # Create chapter
-      @chapter = Chapter.new(data)
-      @chapter.save
+      chapter = Chapter.new(data)
+      chapter.save
+      status 200
     else # Update chapter
-      allEntryIds = []
-      allEntries = Chapter.find(data["id"]).entries
-      allEntries.each do |entry|
-        allEntryIds.push(entry[:id])
-      end
-
-      givenEntryIds = []
-      data["entries_attributes"].each do |entry|
-        givenEntryIds.push(entry["id"])
-      end
-
-      entriesToBeDeleted = allEntryIds - givenEntryIds
+      entriesToBeDeleted = diffEntryIds(data["id"], data["entries_attributes"])
       Entry.destroy(entriesToBeDeleted)
 
-      @chapter = Chapter.update(data["id"], data)
-      @chapter.save
+      chapter = Chapter.update(data["id"], data)
+      chapter.save
+      status 200
     end
+  else
+    status 418
   end
-  '{ "return": 0 }'
 end
 
 post '/api/chapters/delete' do
@@ -79,8 +77,12 @@ post '/api/chapters/delete' do
 
   payload = JSON.parse(request.body.read)
 
-  if authorized? payload["secretKey"] then Chapter.destroy(payload["data"]) end
-  '{"return": 0}'
+  if authorized? payload["secretKey"]
+    Chapter.destroy(payload["data"])
+    status 200
+  else
+    status 418
+  end
 end
 
 def authorized?(string)
@@ -107,4 +109,19 @@ def withEntries(chapter)
   chapterWithEntries = chapter.attributes
   chapterWithEntries[:entries] = chapter.entries
   chapterWithEntries
+end
+
+def diffEntryIds(chapterId, entries)
+  allEntryIds = []
+  allEntries = Chapter.find(chapterId).entries
+  allEntries.each do |entry|
+    allEntryIds.push(entry[:id])
+  end
+
+  givenEntryIds = []
+  entries.each do |entry|
+    givenEntryIds.push(entry["id"])
+  end
+
+  allEntryIds - givenEntryIds
 end
