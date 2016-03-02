@@ -20,11 +20,16 @@ chapterList oldChList newChList =
             Dict.fromList <| List.map (\chapter -> (Maybe.withDefault -1 chapter.id, chapter)) newChList
     in
         { update =
-            List.filter (\old ->
+            oldChList
+            |> List.filter (\old ->
                 Dict.get (Maybe.withDefault -1 old.id) newChDict `Maybe.andThen`
                     (\new -> Just (old /= new))
                 |> Maybe.withDefault False
-            ) oldChList
+            )
+            |> List.filterMap (\{ id } ->
+                let oldId = Maybe.withDefault -1 id
+                in Dict.get oldId newChDict
+            )
         , delete =
             List.filter (\old ->
                 Dict.get (Maybe.withDefault -1 old.id) newChDict == Nothing

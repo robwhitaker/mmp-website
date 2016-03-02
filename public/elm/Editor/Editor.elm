@@ -35,11 +35,11 @@ chapterListRequest =
 
 crupdateRequest : Chapter -> Task Http.Error Int
 crupdateRequest chapter =
-    Requests.send (Just "abcde") (Requests.Post <| Chapter.encode chapter) ("return" := Json.int) "/chapters/crupdate"
+    Requests.send (Just "abcde") (Requests.Post <| Chapter.encode chapter) ("data" := Json.int) "/chapters/crupdate"
 
 deleteRequest : Int -> Task Http.Error Int
 deleteRequest id =
-    Requests.send (Just "abcde") (Requests.Post <| Encode.int id) ("return" := Json.int) "/chapters/delete"
+    Requests.send (Just "abcde") (Requests.Post <| Encode.int id) ("data" := Json.int) "/chapters/delete"
 
 chapterListUpdateRequest : DiffRecord -> Task Http.Error Int
 chapterListUpdateRequest diff =
@@ -90,7 +90,7 @@ type Action
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
-    case Debug.log "action: " action of
+    case action of
         ChapterListEditorFwd subAction ->
             ({ model | chapterListEditor = ChapterListEditor.update subAction model.chapterListEditor }, Effects.none)
 
