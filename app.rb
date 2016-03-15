@@ -1,13 +1,14 @@
 require 'bundler'
-require 'sinatra'
-require 'logger'
-configure { set :server, :puma }
 Bundler.require
 
+require 'sinatra'
+require 'logger'
+require 'active_support/core_ext/time'
 require './config/environments'
 require './models/chapter'
 require './models/entry'
 
+configure { set :server, :puma }
 env = ENV["SINATRA_ENV"] || "development"
 databases = YAML.load(ERB.new(File.read("config/database.yml")).result)
 ActiveRecord::Base.establish_connection(databases[env])
@@ -61,8 +62,8 @@ post '/api/chapters/crupdate' do
   content_type :json
 
   payload = JSON.parse(request.body.read)
-  data = payload["data"]
-  log_payload(payload)
+  data = adjust_time_zones(payload["data"])
+  log(payload)
 
   if authorized? payload["secretKey"]
     if data["id"].nil? # Create chapter
@@ -106,7 +107,7 @@ def failure_response()
   body '{"data": 0}'
 end
 
-def log_payload(payload)
+def log(payload)
   File.open("log/app.log", "a+") do |f|
     f.puts(payload)
   end
@@ -114,6 +115,33 @@ end
 
 def authorized?(string)
   string != nil
+end
+
+def adjust_time_zone(date_string)
+  release_date = Time.parse(date_string)
+
+  if release_date.dst?
+    adjusted_release_date = release_date.strftime('%Y-%m-%d %I:%M:%S') + ' -0400'
+  else
+    adjusted_release_date = release_date.strftime('%Y-%m-%d %I:%M:%S') + ' -0500'
+  end
+end
+
+def adjust_time_zones(data)
+  adjusted_data = data
+  adjusted_data["release_date"] = adjust_time_zone(data["release_date"])
+
+  data["entries_attributes"].each_with_index do |entry, index|
+    adjusted_data["entries_attributes"][index]["release_date"] = adjust_time_zone(entry["release_date"])
+  end
+
+  adjusted_data
+end
+
+def with_entries(chapter)
+  chapter_with_entries = chapter.attributes
+  chapter_with_entries[:entries] = chapter.entries
+  chapter_with_entries
 end
 
 def all_chapters_with_entries(type = "unrestricted")
@@ -132,16 +160,10 @@ def all_chapters_with_entries(type = "unrestricted")
   chapters_with_entries
 end
 
-def with_entries(chapter)
-  chapter_with_entries = chapter.attributes
-  chapter_with_entries[:entries] = chapter.entries
-  chapter_with_entries
-end
-
-def diff_entry_ids(chapterId, entries)
+def diff_entry_ids(chapter_id, entries)
   all_entry_ids = []
-  allEntries = Chapter.find(chapterId).entries
-  allEntries.each do |entry|
+  all_entries = Chapter.find(chapter_id).entries
+  all_entries.each do |entry|
     all_entry_ids.push(entry[:id])
   end
 
