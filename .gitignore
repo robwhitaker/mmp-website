@@ -10,6 +10,7 @@ repl-temp-*
 public/static/build
 /elm/elm-stuff
 repl-temp-*
+Gemfile.lock
 
 ### Ruby ###
 ## Assorted
