@@ -3,7 +3,7 @@ Bundler.require
 
 require 'sinatra'
 require 'logger'
-require 'active_support/core_ext/time'
+require 'time'
 require './config/environments'
 require './models/chapter'
 require './models/entry'
