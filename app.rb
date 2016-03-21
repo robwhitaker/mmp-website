@@ -121,9 +121,9 @@ def adjust_time_zone(date_string)
   release_date = Time.parse(date_string)
 
   if release_date.dst?
-    adjusted_release_date = release_date.strftime('%Y-%m-%d %I:%M:%S') + ' -0400'
+    adjusted_release_date = release_date.strftime('%Y-%m-%d %H:%M:%S') + ' -0400'
   else
-    adjusted_release_date = release_date.strftime('%Y-%m-%d %I:%M:%S') + ' -0500'
+    adjusted_release_date = release_date.strftime('%Y-%m-%d %H:%M:%S') + ' -0500'
   end
 end
 
