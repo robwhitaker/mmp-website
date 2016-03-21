@@ -48,7 +48,7 @@ post '/api/chapters' do # all chapters
   content_type :json
 
   payload = JSON.parse(request.body.read)
-  log_payload(payload)
+  log(payload)
 
   if authorized? payload["secretKey"]
     success_response()
@@ -87,7 +87,7 @@ post '/api/chapters/delete' do
   content_type :json
 
   payload = JSON.parse(request.body.read)
-  log_payload(payload)
+  log(payload)
 
   if authorized? payload["secretKey"]
     Chapter.destroy(payload["data"])
