@@ -16,6 +16,9 @@ import Task
 import Core.Models.Entry as Entry
 import Core.HTTP.Requests as Requests
 
+import Date
+import String
+
 import Editor.Diff as Diff exposing (DiffRecord)
 
 import Task exposing (Task)
@@ -53,6 +56,27 @@ chapterListUpdateRequest diff =
             |> Task.map (\_ -> 0)
 
     in request
+
+dateToString date =
+    case Date.fromString date of
+        Err _ -> ""
+        Ok d ->
+            List.map (\f -> f d)
+                [ Date.dayOfWeek >> toString
+                , always " "
+                , Date.month >> toString
+                , always " "
+                , Date.day >> toString
+                , always ", "
+                , Date.year >> toString
+                , always " "
+                , Date.hour >> toString
+                , always ":"
+                , Date.minute >> toString
+                , always ":"
+                , Date.second >> toString
+                ]
+            |> String.concat
 
 initListEditor : List Chapter -> ChapterListEditor.Model
 initListEditor =
@@ -117,12 +141,14 @@ update action model =
             in (model, chapterUpdateRequest)
 
         GoToChapterList chapters ->
-            (,)
-            { model |
-                chaptersAtSync = chapters,
-                viewMode = ChapterList,
-                chapterListEditor = initListEditor chapters
-            }
+            let chs = List.map (\ch -> { ch | releaseDate = dateToString ch.releaseDate }) chapters
+            in
+                (,)
+                { model |
+                    chaptersAtSync = chs,
+                    viewMode = ChapterList,
+                    chapterListEditor = initListEditor chs
+                }
             Effects.none
 
         GoToChapterEdit chapter ->
