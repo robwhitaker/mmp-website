@@ -141,7 +141,13 @@ update action model =
             in (model, chapterUpdateRequest)
 
         GoToChapterList chapters ->
-            let chs = List.map (\ch -> { ch | releaseDate = dateToString ch.releaseDate }) chapters
+            let chs = List.map (\ch ->
+                { ch |
+                    releaseDate = dateToString ch.releaseDate,
+                    entries_ = List.map (\entry ->
+                        { entry | releaseDate = dateToString entry.releaseDate }
+                    ) ch.entries_
+                }) chapters
             in
                 (,)
                 { model |
