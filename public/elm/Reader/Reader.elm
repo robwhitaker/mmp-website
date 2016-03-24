@@ -376,7 +376,7 @@ view address model =
                 ]
             , div [ class "book-text" ]
                 [ iframe
-                    [ id "book-text-frame", src "about:blank"]
+                    [ id "book-text-frame", src "/renderer.html"]
                     [ ]
                 --, div [ class "cover" ] []
                 ]
@@ -430,7 +430,7 @@ makeSpinner address model =
             [ on "change" targetValue (Signal.message address << Dump) ]
             (makeOptions model.toc)
 
-renderChapter : Chapter -> String
+renderChapter : Chapter -> { stylesheet : String, entryData : List { heading : String, body : String, authorsNote : Bool } }
 renderChapter chapter =
     let
         injectId pre maybeId title =
@@ -443,46 +443,24 @@ renderChapter chapter =
                         (always <| "\" id=\"" ++ pre ++ toString id ++ "\">")
                         title
 
-        chapterString =
-            List.foldl
-                (\{id, title, content} acc ->
-                    acc ++ (injectId "e" id title) ++ content
-                )
-                ((injectId "c" chapter.id chapter.title) ++ chapter.content)
-                chapter.entries_
+        entryData =
+            (
+                { heading = (injectId "c" chapter.id chapter.title)
+                , body = chapter.content
+                , authorsNote = chapter.authorsNote /= ""
+                }
+            ) ::
+            List.map
+                (\{id, title, content, authorsNote} ->
+                    { heading = (injectId "e" id title)
+                    , body = content
+                    , authorsNote = authorsNote /= ""
+                    }
+                ) chapter.entries_
     in
-        """
-        <!DOCTYPE HTML>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <style>
-        """
-        ++ chapter.stylesheet ++
-        """
-          html,body {
-                height: 100%;
-                margin: 0;
-                padding: 0;
-            }
-            #text-container {
-                overflow: hidden;
-                width: 530px;
-                height: 600px;
-                -webkit-column-width: 530px;
-                -webkit-column-gap: 0px;
-            }
-          </style>
-        </head>
-        <body>
-        <div id="text-container">
-        """
-        ++ chapterString ++
-        """
-        </div>
-        </body>
-        </html>
-        """
+        { stylesheet = chapter.stylesheet
+        , entryData = entryData
+        }
 
 ---- WIRING ----
 
@@ -511,7 +489,7 @@ chapterRenderedIn : Signal Action
 chapterRenderedIn =
     chapterRendered
     |> Signal.map
-        (\(numPages, headingIds) -> ChapterHasRendered numPages headingIds)
+        (\{numPages, headingsOnPage} -> ChapterHasRendered numPages headingsdOnPage)
     |> Signal.dropRepeats
 
 chapterReflowIn : Signal Action
@@ -532,7 +510,7 @@ port location : String
 
 -- Inbound Ports --
 
-port chapterRendered : Signal (Int, List String)
+port chapterRendered : Signal { numPages : Int, headingsOnPage : List String }
 
 port chapterReflowed : Signal (Int, Int, Maybe String, List String)
 
@@ -553,7 +531,7 @@ port currentPage =
     |> Signal.map .currentPage
     |> Signal.dropRepeats
 
-port currentChapter : Signal String
+port currentChapter : Signal { stylesheet : String, entryData : List { heading : String, body : String, authorsNote : Bool } }
 port currentChapter =
     app.model
     |> Signal.map .currentChapter
