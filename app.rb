@@ -8,12 +8,12 @@ require './config/environments'
 require './models/chapter'
 require './models/entry'
 
-configure { set :server, :puma }
-env = ENV["SINATRA_ENV"] || "development"
+set :server => :puma,
+    :show_exceptions => :after_handler,
+    :public_folder => 'public'
+env = ENV["RACK_ENV"] || "development"
 databases = YAML.load(ERB.new(File.read("config/database.yml")).result)
 ActiveRecord::Base.establish_connection(databases[env])
-
-set :public_folder, 'public'
 
 configure do
   enable :logging
