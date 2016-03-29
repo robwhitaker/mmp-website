@@ -30,6 +30,14 @@
         Array.prototype.filter.call(headingsOnPage, function() { return true; })
       );
     });
+
+    Renderer.on("linkClick", function(link, id) {
+      alert(link + " " + id)
+    });
+
+    Renderer.on("arrows", function(arrows) {
+      console.log(arrows);
+    });
   });
 
 

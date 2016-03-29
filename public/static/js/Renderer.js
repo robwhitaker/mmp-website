@@ -54,41 +54,86 @@ var Renderer = window.Renderer = (function() {
             var storyTextArea = document.createElement("div");
             storyTextArea.id = "text-container";
 
-            for(var entry of renderObj.entryData) {
-                storyTextArea.innerHTML += entry.heading + entry.body;
+            var meh = function(i) {
+                alert(i);
+            };
 
-                var linkLine = document.createElement("p");
-                linkLine.className = "link-line";
+            for(var i=0; i<renderObj.entryData.length;i++) {
+                (function(index) {
+                    var entry = renderObj.entryData[index];
+                    storyTextArea.innerHTML += entry.heading + entry.body;
 
-                if(entry.authorsNote) {
-                    var authorsNoteLink = document.createElement("span");
-                    authorsNoteLink.innerHtml = "Author's Note";
-                    authorsNoteLink.addEventListener("click", function() {
-                        listeners.linkClick("authorsnote", entry.id);
+                    if(entry.body === "") return;
+
+                    function mkLinkLine() {
+                        var linkLine = document.createElement("p");
+                        linkLine.className = "link-line";
+                        return linkLine;
+                    }
+
+                    var linkLine = mkLinkLine();
+
+                    function mkDivider() {
+                        var divider = document.createElement("span");
+                        divider.className = "divider";
+                        divider.innerHTML = " | "
+                        return divider;
+                    }
+
+                    if(entry.authorsNote || true) {
+                        var authorsNoteLink = document.createElement("span");
+                        authorsNoteLink.innerHTML = "Author's Note";
+                        authorsNoteLink.addEventListener("click", function() {
+                            listeners.linkClick("authorsnote", entry.id);
+                        });
+                        linkLine.appendChild(authorsNoteLink);
+                        linkLine.appendChild(mkDivider());
+                    }
+
+                    var commentsLink = document.createElement("span");
+                    commentsLink.innerHTML = "Comments";
+                    commentsLink.className = "disqus-comment-count";
+                    if(commentsLink.dataset)
+                        commentsLink.dataset.disqusIdentifier = entry.disqusIdentifier;
+                    else
+                        commentsLink.setAttribute("data-disqus-identifier", entry.disqusIdentifier);
+
+                    commentsLink.addEventListener("click",(function(i2) {
+                        console.log(commentsLink);
+                        return function() {
+                            meh(i2);
+                        };
+                    })(index), false);
+                    // var addOnClick = function(cLink, index) {
+                    //     commentsLink.onclick = function() {
+                    //         alert("nananananana" + index);
+                    //     };
+                    // };
+
+                    // addOnClick(i);
+
+                    // (function(commentsLink, entry) {
+                    //     commentsLink.addEventListener("click", (function(entry) {
+                    //         return function BLEH() {
+                    //             listeners.linkClick("comments", entry.heading);
+                    //         };
+                    //     })(entry));
+                    // })(commentsLink, entry);
+
+
+                    linkLine.appendChild(commentsLink);
+                    commentsLink = null;
+                    linkLine.appendChild(mkDivider());
+
+                    var shareLink = document.createElement("span");
+                    shareLink.innerHTML = "Share";
+                    shareLink.addEventListener("click", function() {
+                        listeners.linkClick("share", entry.id);
                     });
-                    linkLine.appendChild(authorsNoteLink);
-                }
+                    linkLine.appendChild(shareLink);
 
-                var commentsLink = document.createElement("span");
-                commentsLink.innerHtml = "Comments";
-                commentsLink.className = "disqus-comment-count";
-                if(commentsLink.dataset)
-                    commentsLink.dataset.disqusIdentifier = entry.disqusIdentifier;
-                else
-                    commentsLink.setAttribute("data-disqus-identifier", entry.disqusIdentifier);
-                commentsLink.addEventListener("click", function() {
-                    listeners.linkClick("comments", entry.id);
-                });
-                linkLine.appendChild(commentsLink);
-
-                var shareLink = document.createElement("span");
-                shareLink.innerHtml = "Share";
-                shareLink.addEventListener("click", function() {
-                    listeners.linkClick("share", entry.id);
-                });
-                linkLine.appendChild(shareLink);
-
-                storyTextArea.appendChild(linkLine);
+                    storyTextArea.appendChild(linkLine);
+                })(i);
             }
 
             document.body.innerHTML = "";
