@@ -1,13 +1,16 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Reader</title>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
-  <link rel="stylesheet" href="/static/css/reader.css">
+  	<meta charset="UTF-8">
+  	<title>Reader</title>
+  	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  	<link rel="stylesheet" href="/static/css/reader.css">
 </head>
 <body>
-  <script src="/static/build/reader.js"></script>
-  <script src="/static/js/init-reader.js"></script>
+  	<script src="/static/build/reader.js"></script>
+  	<script src="/static/js/RendererInterface.js"></script>
+  	<script>
+  		RendererInterface.init(document.getElementById("book-text-frame"));
+  	</script>
 </body>
 </html>

@@ -482,12 +482,13 @@ main = app.html
 
 arrowKeys : Signal Action
 arrowKeys =
-    Keyboard.arrows
+    Signal.merge iframeArrows Keyboard.arrows
     |> Signal.map (\{ x } ->
         if x == -1 then TurnPage Backward
         else if x == 1 then TurnPage Forward
         else NoOp
         )
+    |> Signal.dropRepeats
 
 chapterRenderedIn : Signal Action
 chapterRenderedIn =
@@ -521,6 +522,8 @@ port chapterReflowed : Signal (Int, Int, Maybe String, List String)
 port headingUpdate : Signal (List String)
 
 port reflow : Signal ()
+
+port iframeArrows : Signal { x : Int, y : Int }
 
 -- Outbound Ports --
 
