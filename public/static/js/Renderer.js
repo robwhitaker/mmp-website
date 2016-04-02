@@ -51,90 +51,98 @@ var Renderer = window.Renderer = (function() {
             else
                 document.head.appendChild(style);
 
-            var storyTextArea = document.createElement("div");
-            storyTextArea.id = "text-container";
-
-            var meh = function(i) {
-                alert(i);
-            };
-
-            for(var i=0; i<renderObj.entryData.length;i++) {
-                (function(index) {
-                    var entry = renderObj.entryData[index];
-                    storyTextArea.innerHTML += entry.heading + entry.body;
-
-                    if(entry.body === "") return;
-
-                    function mkLinkLine() {
-                        var linkLine = document.createElement("p");
-                        linkLine.className = "link-line";
-                        return linkLine;
-                    }
-
-                    var linkLine = mkLinkLine();
-
-                    function mkDivider() {
-                        var divider = document.createElement("span");
-                        divider.className = "divider";
-                        divider.innerHTML = " | "
-                        return divider;
-                    }
-
-                    if(entry.authorsNote || true) {
-                        var authorsNoteLink = document.createElement("span");
-                        authorsNoteLink.innerHTML = "Author's Note";
-                        authorsNoteLink.addEventListener("click", function() {
-                            listeners.linkClick("authorsnote", entry.id);
-                        });
-                        linkLine.appendChild(authorsNoteLink);
-                        linkLine.appendChild(mkDivider());
-                    }
-
-                    var commentsLink = document.createElement("span");
-                    commentsLink.innerHTML = "Comments";
-                    commentsLink.className = "disqus-comment-count";
-                    if(commentsLink.dataset)
-                        commentsLink.dataset.disqusIdentifier = entry.disqusIdentifier;
-                    else
-                        commentsLink.setAttribute("data-disqus-identifier", entry.disqusIdentifier);
-
-                    commentsLink.addEventListener("click",(function(i2) {
-                        console.log(commentsLink);
-                        return function() {
-                            meh(i2);
-                        };
-                    })(index), false);
-                    // var addOnClick = function(cLink, index) {
-                    //     commentsLink.onclick = function() {
-                    //         alert("nananananana" + index);
-                    //     };
-                    // };
-
-                    // addOnClick(i);
-
-                    // (function(commentsLink, entry) {
-                    //     commentsLink.addEventListener("click", (function(entry) {
-                    //         return function BLEH() {
-                    //             listeners.linkClick("comments", entry.heading);
-                    //         };
-                    //     })(entry));
-                    // })(commentsLink, entry);
-
-
-                    linkLine.appendChild(commentsLink);
-                    commentsLink = null;
-                    linkLine.appendChild(mkDivider());
-
-                    var shareLink = document.createElement("span");
-                    shareLink.innerHTML = "Share";
-                    shareLink.addEventListener("click", function() {
-                        listeners.linkClick("share", entry.id);
-                    });
-                    linkLine.appendChild(shareLink);
-
-                    storyTextArea.appendChild(linkLine);
-                })(i);
+            function mkLinkLine(links) {
+                var linkLine = links.reduce(function(acc, link, i, ls) {
+                    acc.appendChild(link);
+                    if(i < ls.length - 1) { acc.appendChild(mkDivider()); }
+                    return acc;
+                }, document.createElement("p"));
+                linkLine.className = "link-line";
+                return linkLine;
             }
+
+            function mkDivider() {
+                var divider = document.createElement("span");
+                divider.className = "divider";
+                divider.innerHTML = " | "
+                return divider;
+            }
+
+            function attachListener(id, listener) {
+                setTimeout(function() {
+                    document.getElementById(id).addEventListener("click", listener);
+                }, 0);
+            }
+
+            function mkAuthorsNoteLink(entry) {
+                if(entry.authorsNote || true) {
+                    var authorsNoteLink = document.createElement("span");
+                    authorsNoteLink.innerHTML = "Author's Note";
+
+                    var id = "authorsnote-" + entry.id;
+                    authorsNoteLink.id = id;
+
+                    attachListener(id, function() {
+                        listeners.linkClick("authorsnote", entry.id);
+                    });
+
+                    return authorsNoteLink;
+                } else {
+                    return null;
+                }
+            }
+
+
+            function mkCommentsLink(entry) {
+                var commentsLink = document.createElement("span");
+                commentsLink.innerHTML = "Comments";
+                commentsLink.className = "disqus-comment-count";
+
+                var id = "comments-" + entry.id;
+                commentsLink.id = id;
+
+                if(commentsLink.dataset)
+                    commentsLink.dataset.disqusIdentifier = entry.disqusIdentifier;
+                else
+                    commentsLink.setAttribute("data-disqus-identifier", entry.disqusIdentifier);
+
+                attachListener(id, function() {
+                    listeners.linkClick("comments", entry.id, entry.disqusId);
+                });
+
+                return commentsLink;
+            }
+
+            function mkShareLink(entry) {
+                var shareLink = document.createElement("span");
+                shareLink.innerHTML = "Share";
+
+                var id = "share-" + entry.id;
+                shareLink.id = id;
+
+                attachListener(id, function() {
+                    listeners.linkClick("share", entry.id);
+                });
+
+                return shareLink;
+            }
+
+            var storyTextArea = renderObj.entryData.reduce(function(acc, entry) {
+                acc.innerHTML += entry.heading + entry.body;
+
+                if(entry.body === "") return acc;
+
+                acc.appendChild(mkLinkLine(
+                    [ mkAuthorsNoteLink(entry)
+                    , mkCommentsLink(entry)
+                    , mkShareLink(entry)
+                    ].filter(function(item) { return item != null; })
+                ));
+
+                return acc;
+            }, document.createElement("div"));
+
+            storyTextArea.id = "text-container";
 
             document.body.innerHTML = "";
             document.body.appendChild(storyTextArea);

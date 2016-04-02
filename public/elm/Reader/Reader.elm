@@ -430,7 +430,7 @@ makeSpinner address model =
             [ on "change" targetValue (Signal.message address << Dump) ]
             (makeOptions model.toc)
 
-renderChapter : Chapter -> { stylesheet : String, entryData : List { heading : String, body : String, authorsNote : Bool } }
+renderChapter : Chapter -> { stylesheet : String, entryData : List { heading : String, body : String, authorsNote : Bool, id : String, disqusId : String } }
 renderChapter chapter =
     let
         injectId pre maybeId title =
@@ -448,13 +448,17 @@ renderChapter chapter =
                 { heading = (injectId "c" chapter.id chapter.title)
                 , body = chapter.content
                 , authorsNote = chapter.authorsNote /= ""
+                , id = makeIDString (ChapterData chapter)
+                , disqusId = ""
                 }
             ) ::
             List.map
-                (\{id, title, content, authorsNote} ->
-                    { heading = (injectId "e" id title)
-                    , body = content
-                    , authorsNote = authorsNote /= ""
+                (\entry ->
+                    { heading = (injectId "e" entry.id entry.title)
+                    , body = entry.content
+                    , authorsNote = entry.authorsNote /= ""
+                    , id = makeIDString (EntryData entry)
+                    , disqusId = ""
                     }
                 ) chapter.entries_
     in
@@ -489,7 +493,7 @@ chapterRenderedIn : Signal Action
 chapterRenderedIn =
     chapterRendered
     |> Signal.map
-        (\{numPages, headingsOnPage} -> ChapterHasRendered numPages headingsdOnPage)
+        (\{numPages, headingsOnPage} -> ChapterHasRendered numPages headingsOnPage)
     |> Signal.dropRepeats
 
 chapterReflowIn : Signal Action
@@ -531,7 +535,7 @@ port currentPage =
     |> Signal.map .currentPage
     |> Signal.dropRepeats
 
-port currentChapter : Signal { stylesheet : String, entryData : List { heading : String, body : String, authorsNote : Bool } }
+port currentChapter : Signal { stylesheet : String, entryData : List { heading : String, body : String, authorsNote : Bool, id : String, disqusId : String } }
 port currentChapter =
     app.model
     |> Signal.map .currentChapter
