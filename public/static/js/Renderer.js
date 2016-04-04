@@ -127,7 +127,7 @@ var Renderer = window.Renderer = (function() {
                 return shareLink;
             }
 
-            var storyTextArea = renderObj.entryData.reduce(function(acc, entry) {
+            var storyTextArea = renderObj.renderElements.reduce(function(acc, entry) {
                 acc.innerHTML += entry.heading + entry.body;
 
                 if(entry.body === "") return acc;

@@ -1,18 +1,19 @@
 var RendererInterface = (function() {
-    
+
     var Renderer;
-    var Reader = Elm.fullscreen(Elm.Reader.Reader, 
-        { location : window.location.href
-        , chapterRendered : 
+    var Reader = Elm.fullscreen(Elm.Reader.Reader,
+        { location : window.location.hash
+        , chapterRendered :
             { numPages : 0
-            , headingsOnPage : [] 
+            , headingsOnPage : []
             }
         , chapterReflowed : [0, 0, null, []]
         , headingUpdate : []
-        , reflow: []
-        , iframeArrows : { x : 0, y : 0 } 
+        , iframeArrows : { x : 0, y : 0 }
         }
     );
+
+    window.location.hash = "";
 
 
     function init(rendererFrame) {
@@ -57,14 +58,10 @@ var RendererInterface = (function() {
         Renderer.render(chapter);
     });
 
-    Reader.ports.focusedId.subscribe(function(id) {
-        window.location.hash = "!/" + id;
-    });
-
     Reader.ports.currentPage.subscribe(function(pageNum) {
         Renderer.goToPage(pageNum);
     });
 
     return { init : init };
-    
+
 })();
