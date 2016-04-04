@@ -59,7 +59,8 @@ var RendererInterface = (function() {
     });
 
     Reader.ports.currentPage.subscribe(function(pageNum) {
-        Renderer.goToPage(pageNum);
+        if(pageNum >= 0)
+            Renderer.goToPage(pageNum);
     });
 
     return { init : init };

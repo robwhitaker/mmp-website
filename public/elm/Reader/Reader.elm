@@ -108,8 +108,12 @@ port tasks =
 port currentPage : Signal Int
 port currentPage =
     app.model
-    |> Signal.filter (.lastNavAction >> (/=) PageReflow) (fst init)
-    |> Signal.map (.pages >> .current)
+    |> Signal.map (\model ->
+            if model.lastNavAction == PageReflow then
+                -1
+            else
+                model.pages.current
+        )
     |> Signal.dropRepeats
 
 port currentChapter : Signal RenderBlob
