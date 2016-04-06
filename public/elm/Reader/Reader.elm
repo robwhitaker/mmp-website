@@ -14,6 +14,9 @@ import Core.Utils.MaybeExtra exposing (..)
 import Reader.Model exposing (..)
 import Reader.Update exposing (..)
 import Reader.View exposing (..)
+import Reader.Utils exposing (..)
+
+import Reader.Components.Disqus exposing (..)
 
 --TODO: remove these when done
 import Core.Models.Chapter exposing (Chapter)
@@ -122,9 +125,18 @@ port currentChapter =
     |> Signal.map genRenderBlob
     |> Signal.dropRepeats
 
-port focusedId : Signal String
-port focusedId =
-    Signal.constant ""
+port currentDisqusThread : Signal DisqusData
+port currentDisqusThread =
+    app.model
+    |> Signal.filter (.toc >> .selected >> .body >> (/=) "") empty
+    |> Signal.map (.toc >> disqusDataFromTOC)
+    |> Signal.dropRepeats
+
+port title : Signal String
+port title =
+    app.model
+    |> Signal.map (.toc >> selectedTitleFromTOC)
+    |> Signal.dropRepeats
 
 ---- TEST DATA ----
 

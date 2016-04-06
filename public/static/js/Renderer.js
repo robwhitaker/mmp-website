@@ -105,9 +105,9 @@ var Renderer = window.Renderer = (function() {
                 commentsLink.id = id;
 
                 if(commentsLink.dataset)
-                    commentsLink.dataset.disqusIdentifier = entry.disqusIdentifier;
+                    commentsLink.dataset.disqusIdentifier = entry.disqusId;
                 else
-                    commentsLink.setAttribute("data-disqus-identifier", entry.disqusIdentifier);
+                    commentsLink.setAttribute("data-disqus-identifier", entry.disqusId);
 
                 attachListener(id, function() {
                     listeners.linkClick("comments", entry.id, entry.disqusId);
@@ -185,6 +185,8 @@ var Renderer = window.Renderer = (function() {
             storyTextArea.scrollLeft = currentPage * getViewport().width;
             currentPositionPercentage = storyTextArea.scrollLeft / storyTextArea.scrollWidth;
 
+            refreshCommentCount();
+
             listeners[(!!renderObj ? "rendered" : "reflowed")](
                 { numPages : numPages
                 , headingsOnPage : getHeadingsOnPage()
@@ -205,8 +207,10 @@ var Renderer = window.Renderer = (function() {
     function refreshCommentCount() {
         if(!(DISQUSWIDGETS && DISQUSWIDGETS.getCount))
             throw "Unable to refresh comment count: Cannot find DISQUSWIDGETS or DISQUSWIDGETS.getCount.";
-        else
+        else {
+            console.log("Refreshing comment counts.");
             DISQUSWIDGETS.getCount({reset: true});
+        }
     }
 
     //---- EVENT LISTENERS ----

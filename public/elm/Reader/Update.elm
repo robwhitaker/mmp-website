@@ -9,6 +9,7 @@ import Core.Utils.SelectionList as SL exposing (SelectionList)
 import Core.Utils.MaybeExtra exposing (..)
 
 import Reader.Model exposing (..)
+import Reader.Model.Helpers
 import Core.Models.Chapter exposing (Chapter)
 
 ---- TYPE ALIASES ----
@@ -66,7 +67,7 @@ update action model =
                 { model | toc = gotoHeading id model.toc }
 
             Load chapters ->
-                let loadedModel = Reader.Model.fromChapterList chapters
+                let loadedModel = Reader.Model.Helpers.fromChapterList chapters
                 in
                     { loadedModel | state = Rendering }
 

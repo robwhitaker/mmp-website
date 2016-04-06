@@ -46,4 +46,5 @@ view address model =
                 ]
             , div [] [ text <| toString model.toc.selected.id, text " | ", text <| toString model.lastNavAction ]
             ]
+        , div [ id "disqus_thread" ] []
         ]

@@ -18,7 +18,7 @@ var RendererInterface = (function() {
 
     function init(rendererFrame) {
         rendererFrame.addEventListener("load", function() {
-            Renderer = rendererFrame.contentWindow.Renderer;
+            window.Renderer = Renderer = rendererFrame.contentWindow.Renderer;
 
             Renderer.on("rendered", function(renderData) {
                 Reader.ports.chapterRendered.send(
@@ -45,7 +45,13 @@ var RendererInterface = (function() {
             });
 
             Renderer.on("linkClick", function(link, id) {
-                alert(link + " " + id);
+                switch(link) {
+                    case "comments":
+                        console.log("jump to comments");
+                    default:
+                        console.log(link, id);
+
+                }
             });
 
             Renderer.on("arrows", function(arrows) {
@@ -59,9 +65,29 @@ var RendererInterface = (function() {
     });
 
     Reader.ports.currentPage.subscribe(function(pageNum) {
-        if(pageNum >= 0)
+        if(pageNum >= 0) {
             Renderer.goToPage(pageNum);
+        }
     });
+
+    Reader.ports.currentDisqusThread.subscribe(function(disqusData) {
+        DISQUS.reset({
+          reload: true,
+          config: function () {
+            this.page.identifier = disqusData.identifier;
+            this.page.url = disqusData.url;
+            this.page.title = disqusData.title;
+          }
+        });
+    });
+
+    Reader.ports.title.subscribe(function(title) {
+        document.title = title + " | Midnight Murder Party";
+    });
+
+    setInterval(function() {
+        Renderer.refreshCommentCount();
+    }, 1000*60*5);
 
     return { init : init };
 
