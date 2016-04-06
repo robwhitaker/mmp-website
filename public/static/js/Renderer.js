@@ -16,6 +16,9 @@ var Renderer = window.Renderer = (function() {
 
     var currentPositionPercentage = 0;
 
+    //---- PPREARE FOR RENDER ----
+
+    updateDynamicStylesheet();
 
     //---- EXPOSED FUNCTIONS ----
 
@@ -162,7 +165,8 @@ var Renderer = window.Renderer = (function() {
 
             var headings = Array.prototype.filter.call(storyTextArea.querySelectorAll("h1,h2,h3,h4,h5,h6"), function(h) {return true;});
             var bookRect = storyTextArea.getBoundingClientRect();
-            for(heading of headings) {
+            for(key in headings) {
+                var heading = headings[key];
                 var h = document.getElementById(heading.id);
                 if(h == null) continue;
                 var headingRect = h.getBoundingClientRect();
@@ -221,6 +225,12 @@ var Renderer = window.Renderer = (function() {
         });
     };
 
+    function updateDynamicStylesheet() {
+        var dynamicStyle = document.getElementById("dynamic-style");
+        dynamicStyle.innerHTML =
+            dynamicStyle.innerHTML.replace(/width:\s*[0-9]+/gi, "width: " + getViewport().width)
+                                  .replace(/height:\s*[0-9]+/gi, "height: " + getViewport().height);
+    }
 
     window.addEventListener("keydown", function(e) {
         if(keys.indexOf(e.keyCode) < 0)
@@ -236,6 +246,8 @@ var Renderer = window.Renderer = (function() {
 
         triggerArrowListener();
     });
+
+    window.addEventListener("resize", updateDynamicStylesheet);
 
     //---- HELPERS ----
 

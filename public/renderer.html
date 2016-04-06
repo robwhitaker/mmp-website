@@ -11,10 +11,9 @@
 
         #text-container {
             overflow: hidden;
-            width: 530px;
-            height: 600px;
-            -webkit-column-width: 530px;
             -webkit-column-gap: 0px;
+            -moz-column-gap: 0px; /* Firefox */
+            column-gap: 0px;
         }
 
         p.link-line {
@@ -36,6 +35,16 @@
             text-decoration: none;
         }
 
+    </style>
+
+    <style id="dynamic-style">
+        #text-container {
+            width: 0px;
+            height: 0px;
+            -webkit-column-width: 0px;
+            -moz-column-width: 0px;
+            column-width: 0px;
+        }
     </style>
 </head>
 <body>
