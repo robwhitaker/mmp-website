@@ -2,21 +2,20 @@ module Reader.Utils where
 
 import String
 
-import Reader.Model exposing (TOC)
-import Core.Utils.SelectionList as SL
+import Core.Utils.SelectionList as SL exposing (SelectionList)
 import Editor.Parser exposing (stripTags)
 
-selectedTitleFromTOC : TOC -> String
-selectedTitleFromTOC toc =
-    SL.toList toc
-    |> List.take (SL.selectedIndex toc + 1)
+selectedTitleFromSL : SelectionList { a | heading : String, level : Int } -> String
+selectedTitleFromSL sl =
+    SL.toList sl
+    |> List.take (SL.selectedIndex sl + 1)
     |> List.reverse
     |> List.foldl (\elem (acc,lastLevel) ->
             if elem.level < lastLevel then
                 (stripTags elem.heading :: acc, elem.level)
             else
                 (acc, lastLevel)
-        ) ([stripTags toc.selected.heading], toc.selected.level)
+        ) ([stripTags sl.selected.heading], sl.selected.level)
     |> fst
     |> List.intersperse " - "
     |> String.concat

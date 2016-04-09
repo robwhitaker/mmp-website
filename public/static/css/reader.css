@@ -12,10 +12,30 @@ body, html {
 .book {
 	width: 650px;
 	height: 759px;
-	overflow: hidden; /*this is here to offset the .book-text stuff*/
+	/*overflow: hidden; this is here to offset the .book-text stuff*/
 	margin: 0 auto;
 	background-image: url('/static/assets/img/book-final2.png');
 	position: relative;
+}
+
+.drop-down-list {
+	display: none;
+}
+
+.drop-down-list.expanded {
+	display: block;
+}
+
+.drop-down-list .selected {
+	background-color: yellow !important;
+}
+
+.drop-down-list .latest {
+	background-color: green;
+}
+
+.drop-down-list .unread {
+	font-weight: bold;
 }
 
 .comments-container {

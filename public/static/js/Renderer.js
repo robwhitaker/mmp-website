@@ -7,7 +7,8 @@ var Renderer = window.Renderer = (function() {
         "rendered"   : function() {},
         "reflowed"   : function() {},
         "linkClick"  : function() {},
-        "pageTurned" : function() {}
+        "pageTurned" : function() {},
+        "setPage"    : function() {}
     };
 
     var keys = []; //list of currently pressed keys
@@ -33,7 +34,6 @@ var Renderer = window.Renderer = (function() {
         var storyTextArea = document.getElementById("text-container");
         storyTextArea.scrollLeft = getViewport().width * pageNum;
         currentPositionPercentage = storyTextArea.scrollLeft / storyTextArea.scrollWidth;
-        console.log("TURNING PAGE", getHeadingsOnPage());
         listeners.pageTurned(getHeadingsOnPage());
     }
 
@@ -150,7 +150,7 @@ var Renderer = window.Renderer = (function() {
             document.body.innerHTML = "";
             document.body.appendChild(storyTextArea);
 
-            timeout = 0;
+            timeout = 1500;
         } else { timeout = 0; /* handle reflow */ }
 
         //remove any placeholders before rerendering anything
@@ -211,6 +211,19 @@ var Renderer = window.Renderer = (function() {
             console.log("Refreshing comment counts.");
             DISQUSWIDGETS.getCount({reset: true});
         }
+    }
+
+    function goToHeading(eId) {
+        if(!document.getElementById(eId)) return;
+
+        if(getHeadingsOnPage().indexOf(eId) !== -1) return;
+
+        var headingPos = document.getElementById(eId).getBoundingClientRect().left;
+        var scrollLeft = document.getElementById("text-container").scrollLeft;
+
+        var page = (scrollLeft + headingPos)/getViewport().width;
+
+        listeners.setPage(page);
     }
 
     //---- EVENT LISTENERS ----
@@ -337,6 +350,7 @@ var Renderer = window.Renderer = (function() {
         on                  : on,
         render              : render,
         refreshCommentCount : refreshCommentCount,
-        goToPage            : goToPage
+        goToPage            : goToPage,
+        goToHeading         : goToHeading
     };
 })();

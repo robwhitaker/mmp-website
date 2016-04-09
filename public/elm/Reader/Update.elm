@@ -7,10 +7,11 @@ import Effects exposing (Effects, Never)
 
 import Core.Utils.SelectionList as SL exposing (SelectionList)
 import Core.Utils.MaybeExtra exposing (..)
+import Core.Models.Chapter exposing (Chapter)
 
 import Reader.Model exposing (..)
 import Reader.Model.Helpers
-import Core.Models.Chapter exposing (Chapter)
+import Reader.Components.Dropdown as Dropdown
 
 ---- TYPE ALIASES ----
 
@@ -23,11 +24,11 @@ type alias HeadingIDsOnPage = List RenderElementID
 
 type Action
     = TurnPage Direction
-    | JumpToHeading RenderElementID
-    | Load (List Chapter)
+    | Load (List Chapter) (List (RenderElementID, Bool))
     | ChapterHasRendered NumPages HeadingIDsOnPage
     | ChapterHasReflowed CurrentPage NumPages (Maybe FocusedElementID) HeadingIDsOnPage
     | UpdateHeadingsOnPage (List String)
+    | Dropdown Dropdown.Action
     | Dump String
     | NoOp
 
@@ -63,11 +64,33 @@ update action model =
                                 , lastNavAction = PageTurn Backward
                             }
 
-            JumpToHeading id ->
-                { model | toc = gotoHeading id model.toc }
+                    PageNum num ->
+                        if num >= model.pages.total || num < 0 then
+                            model
+                        else
+                            { model | pages = { current = num, total = model.pages.total }, lastNavAction = PageTurn (PageNum num) }
 
-            Load chapters ->
-                let loadedModel = Reader.Model.Helpers.fromChapterList chapters
+            Dropdown (maybeRenderElemID, maybeExpanded) ->
+                let expanded = Maybe.withDefault model.tocExpanded maybeExpanded
+
+                    nextUntilContent toc =
+                        if toc.selected.body == "" && SL.next toc /= toc then
+                            nextUntilContent (SL.next toc)
+                        else
+                            toc
+
+                    (newToc, lastNavAction) =
+                        case maybeRenderElemID of
+                            Just id ->
+                                let nToc = nextUntilContent (gotoHeading id model.toc)
+                                in (nToc, PageJump nToc.selected.id)
+                            Nothing ->
+                                (model.toc, model.lastNavAction)
+                in
+                    { model | toc = newToc, tocExpanded = expanded, lastNavAction = lastNavAction }
+
+            Load chapters readEntries ->
+                let loadedModel = Reader.Model.Helpers.fromChapterList chapters (Dict.fromList readEntries)
                 in
                     { loadedModel | state = Rendering }
 
@@ -130,6 +153,8 @@ update action model =
                                                 )
                                             ] ? model.toc.selected.id
 
+                                    _ -> model.toc.selected.id
+
                             PageJump headingID ->
                                 headingID
 
@@ -137,7 +162,7 @@ update action model =
                                 model.toc.selected.id
 
                             Render ->
-                                Debug.log "wat" <| List.head headings ? model.toc.selected.id
+                                List.head headings ? model.toc.selected.id
                 in
                     { model
                         | headingIDsOnPage = headings
@@ -168,4 +193,8 @@ gotoHeading : RenderElementID -> TOC -> TOC
 gotoHeading headingID toc =
     SL.indexOf (.id >> (==) headingID) toc `Maybe.andThen` (\index ->
         Just <| SL.goto index toc
-    ) |> Maybe.withDefault toc
+    ) |> Maybe.withDefault toc |> markSelectedRead
+
+markSelectedRead : TOC -> TOC
+markSelectedRead toc =
+    SL.mapSelected (\selected -> { selected | isRead = True }) toc

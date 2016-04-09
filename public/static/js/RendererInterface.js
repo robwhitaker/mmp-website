@@ -10,11 +10,21 @@ var RendererInterface = (function() {
         , chapterReflowed : [0, 0, null, []]
         , headingUpdate : []
         , iframeArrows : { x : 0, y : 0 }
+        , readEntries : getLocalStorage()
+        , setPage : 0
         }
     );
 
     window.location.hash = "";
 
+    function getLocalStorage() {
+        var items = [];
+        var data = JSON.parse(localStorage.getItem("MMP_ReaderData") || "{}");
+        for(key in data)
+            items.push([key,data[key]]);
+
+        return items;
+    }
 
     function init(rendererFrame) {
         rendererFrame.addEventListener("load", function() {
@@ -57,11 +67,29 @@ var RendererInterface = (function() {
             Renderer.on("arrows", function(arrows) {
                 Reader.ports.iframeArrows.send(arrows);
             });
+
+            Renderer.on("setPage", function(pageNum) {
+                console.log("setPage", pageNum);
+                Reader.ports.setPage.send(pageNum);
+            });
         });
     }
 
     Reader.ports.currentChapter.subscribe(function(chapter) {
         Renderer.render(chapter);
+    });
+
+    Reader.ports.currentEntry.subscribe(function(data) {
+        var eId = data[0];
+        var shouldJump = data[1];
+
+        if(shouldJump) Renderer.goToHeading(eId);
+
+        if(!localStorage) return;
+
+        var data = JSON.parse(localStorage.getItem("MMP_ReaderData") || "{}");
+        data[eId] = true;
+        localStorage.setItem("MMP_ReaderData", JSON.stringify(data));
     });
 
     Reader.ports.currentPage.subscribe(function(pageNum) {

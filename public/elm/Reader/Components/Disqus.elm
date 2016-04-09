@@ -1,7 +1,7 @@
 module Reader.Components.Disqus where
 
 import Reader.Model exposing (RenderElement, TOC)
-import Reader.Utils exposing (selectedTitleFromTOC)
+import Reader.Utils exposing (selectedTitleFromSL)
 import Core.Utils.SelectionList as SL
 
 type alias DisqusData =
@@ -14,7 +14,7 @@ disqusDataFromTOC : TOC -> DisqusData
 disqusDataFromTOC toc =
     { identifier = renderElemToDisqusId toc.selected
     , url        = "http://localhost:4567/#!/" ++ renderElemToDisqusId toc.selected
-    , title      = selectedTitleFromTOC toc
+    , title      = selectedTitleFromSL toc
     }
 
 renderElemToDisqusId : RenderElement -> String

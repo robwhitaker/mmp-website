@@ -11,7 +11,7 @@ type alias RenderElementID = String
 type alias Stylesheet = String
 type alias TOC = SelectionList RenderElement
 
-type Direction = Forward | Backward
+type Direction = Forward | Backward | PageNum Int
 type LastNavAction = PageTurn Direction | PageJump RenderElementID | PageReflow | Render
 type State = Ready | Loading | Reflowing | Rendering
 
@@ -22,6 +22,7 @@ type alias Model =
     , headingIDsOnPage : List String
     , lastNavAction    : LastNavAction
     , state            : State
+    , tocExpanded      : Bool
     }
 
 type alias RenderElement =
@@ -32,6 +33,8 @@ type alias RenderElement =
     , authorsNote : String
     , chapter : ChapterID
     , level : Int
+    , isRead : Bool
+    , releaseDate : String
     }
 
 type alias RenderBlob =
@@ -49,6 +52,7 @@ empty =
     , headingIDsOnPage = []
     , lastNavAction = Render
     , state = Loading
+    , tocExpanded = False
     }
 
 emptyRenderElement : RenderElement
@@ -60,4 +64,6 @@ emptyRenderElement =
     , authorsNote = ""
     , chapter = -1
     , level = -1
+    , isRead = False
+    , releaseDate = ""
     }

@@ -2,6 +2,7 @@ module Reader.View where
 
 import Reader.Model exposing (..)
 import Reader.Update exposing (Action(..))
+import Reader.Components.Dropdown as Dropdown
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -44,7 +45,11 @@ view address model =
                 [ button [onClick address (TurnPage Backward)] [ text "Backward" ]
                 , button [onClick address (TurnPage Forward)] [ text "Forward" ]
                 ]
-            , div [] [ text <| toString model.toc.selected.id, text " | ", text <| toString model.lastNavAction ]
+            , div []
+                [ text <| toString model.toc.selected.id
+                , text " | ", text <| toString model.lastNavAction
+                , Dropdown.view (Signal.forwardTo address Dropdown) model.toc model.tocExpanded
+                ]
             ]
         , div [ id "disqus_thread" ] []
         ]

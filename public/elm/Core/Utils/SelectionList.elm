@@ -74,3 +74,6 @@ indexOf pred sl =
     in
         indexOf' 0 (toList sl)
 
+mapSelected : (a -> a) -> SelectionList a -> SelectionList a
+mapSelected fn sl =
+    { sl | selected = fn sl.selected }
