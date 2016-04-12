@@ -197,4 +197,10 @@ gotoHeading headingID toc =
 
 markSelectedRead : TOC -> TOC
 markSelectedRead toc =
-    SL.mapSelected (\selected -> { selected | isRead = True }) toc
+    let selectedIndex = SL.selectedIndex toc
+        markTocRead t last =
+            if t.selected.level < last.selected.level && t.selected.body == "" then
+                markTocRead (SL.previous (SL.mapSelected (\selected -> { selected | isRead = True }) t)) t
+            else
+                SL.goto selectedIndex t
+    in markTocRead (SL.previous (SL.mapSelected (\selected -> { selected | isRead = True }) toc)) toc

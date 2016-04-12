@@ -8,7 +8,8 @@ var Renderer = window.Renderer = (function() {
         "reflowed"   : function() {},
         "linkClick"  : function() {},
         "pageTurned" : function() {},
-        "setPage"    : function() {}
+        "setPage"    : function() {},
+        "click"      : function() {}
     };
 
     var keys = []; //list of currently pressed keys
@@ -150,7 +151,7 @@ var Renderer = window.Renderer = (function() {
             document.body.innerHTML = "";
             document.body.appendChild(storyTextArea);
 
-            timeout = 1500;
+            timeout = 0;
         } else { timeout = 0; /* handle reflow */ }
 
         //remove any placeholders before rerendering anything
@@ -265,6 +266,10 @@ var Renderer = window.Renderer = (function() {
     });
 
     window.addEventListener("resize", updateDynamicStylesheet);
+
+    document.addEventListener("click", function() {
+        listeners.click();
+    });
 
     //---- HELPERS ----
 

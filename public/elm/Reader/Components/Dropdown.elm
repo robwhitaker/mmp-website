@@ -34,12 +34,14 @@ type alias DropdownItem a =
 
 view : ExportAddress -> DropdownList a -> Bool -> Html
 view exportAddress dropdownList expanded =
-    div [ class "drop-down-container" ]
+    div [ classList [ ("drop-down-container", True), ("expanded", expanded)] ]
         [ div [ class "selected-label"
               , onClick exportAddress (Nothing, Just (not expanded))
               ]
-              [ text <| selectedTitleFromSL dropdownList ]
-        , ul  [ classList [("drop-down-list", True), ("expanded", expanded)] ] (mkDropdownList exportAddress dropdownList)
+              [ div [ class "label-text" ] [ text <| String.toUpper <| selectedTitleFromSL dropdownList ]
+              , div [ class "arrow-down" ] []
+              ]
+        , ul  [] (mkDropdownList exportAddress dropdownList)
         ]
 
 mkDropdownList : ExportAddress -> DropdownList a -> List Html
@@ -65,7 +67,9 @@ mkDropdownList exportAddress list =
                     ]
                 , onClick exportAddress (Just item.id, Just False)
                 ]
-                [ Markdown.toHtml <| String.repeat item.level "&nbsp;" ++ stripTags item.heading ]
+                [ div [ class "li-label" ] [ Markdown.toHtml <| String.repeat item.level "<div class=\"drop-down-spacer\"></div>" ++ stripTags item.heading ]
+                , div [ class "alert" ] [ text "(new!)" ]
+                ]
         ) (SL.toList list)
 
 

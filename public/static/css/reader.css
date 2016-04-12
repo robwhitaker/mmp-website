@@ -1,127 +1,296 @@
 @import url(https://fonts.googleapis.com/css?family=Tangerine);
 
+/* ======== GENERAL ======== */
+
 * {
     padding: 0;
     margin: 0;
 }
 
 body, html {
-	height: 100%;
+    height: 100%;
 }
+
+body {
+    background: url('http://www.freevectors.net/files/large/DarkPattern.jpg');
+    background-attachment: fixed;
+}
+
+body > div, body > div > div {
+    height: 100%;
+}
+
+/* ======== PAGE SECTIONS ======== */
+
+section {
+    min-height: 100%;
+}
+
+section.reader {
+    background: url("/static/assets/img/wood-bg.png");
+    background-size: cover;
+}
+
+/* ======== READER SECTION ======== */
+
+/* ---- Banner ---- */
+
+.banner {
+    background: url("/static/assets/img/logo-2.png");
+/*    width: 705px;
+    height: 150px;*/
+    height: 15vh;
+    width: 70.5vh;
+    background-size: cover;
+    margin: 0 auto;
+}
+
+/* ---- Loader Overlay ---- */
+
+.book .loader {
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    background-image: url('/static/assets/img/book-final2.png');
+    background-size: cover;
+    display: none;
+    z-index: 100;
+    font-family: 'Tangerine', cursive;
+    font-size: 50px;
+    font-weight: bold;
+    color: #333;
+    vertical-align: middle;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    flex-direction: column;
+}
+
+.book .loader.isDisplayed {
+    display: flex;
+}
+
+.book .loader .loading-label {
+    text-align: center;
+}
+
+/* ---- Book Display ---- */
 
 .book {
-	width: 650px;
-	height: 759px;
-	/*overflow: hidden; this is here to offset the .book-text stuff*/
-	margin: 0 auto;
-	background-image: url('/static/assets/img/book-final2.png');
-	position: relative;
+/*    width: 650px;
+    height: 759px;*/
+    height: 80vh;
+    width: 68.5vh;
+    margin: 0 auto;
+    background-image: url('/static/assets/img/book-final2.png');
+    background-size: cover;
+    position: relative;
 }
 
-.drop-down-list {
-	display: none;
+.book .book-inner {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 2%; bottom: 2%; left: 9%; right: 9%;
 }
 
-.drop-down-list.expanded {
-	display: block;
+.book .book-inner .top-bar {
+    padding: 22px 0 0 0;
+    text-align: center;
 }
 
-.drop-down-list .selected {
-	background-color: yellow !important;
+.book .book-inner iframe {
+    flex: 1;
+    border: none;
 }
 
-.drop-down-list .latest {
-	background-color: green;
+.book .book-inner .bottom-bar {
+    text-align: center;
+    display: flex;
+    padding-bottom: 1em;
 }
 
-.drop-down-list .unread {
-	font-weight: bold;
+.book .book-inner .bottom-bar > div {
+    flex: 1;
+}
+
+/* ---- Book Display > Dropdown Menu ---- */
+
+.drop-down-container {
+    display: inline-block;
+    max-width: 90%;
+    white-space: nowrap;
+    margin: 0 auto;
+    cursor: pointer;
+    position: relative;
+}
+
+.drop-down-container .selected-label {
+    text-align: center;
+    overflow: hidden;
+    display: flex;
+    max-width: 100%;
+    border: 1px solid rgba(0,0,0,0);
+    border-top-left-radius: 0.2em;
+    border-top-right-radius: 0.2em;
+    padding: 0.5em 1em;
+    font-size: 14px;
+}
+
+.drop-down-container.expanded .selected-label {
+    background-color: #eee;
+    border: 1px solid #999;
+    border-bottom-style: dashed;
+}
+
+.drop-down-container .selected-label:hover {
+    box-shadow: 0px 0px 2px #999;
+}
+
+.drop-down-container .selected-label .label-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 0.5em;
+}
+
+.drop-down-container .arrow-down {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    display: inline-block;
+    margin-top: 5px;
+    margin-left: 0.3em;
+    border-top: 5px solid #000;
+    vertical-align: bottom;
+}
+
+.drop-down-container.expanded .arrow-down {
+    visibility: hidden;
+}
+
+
+.drop-down-container .drop-down-spacer {
+    width: 6%;
+    display: inline-block;
+}
+
+.drop-down-container ul {
+    border: 1px solid #999;
+    border-top: none;
+    text-align: left;
+    list-style: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 100000;
+    display: none;
+    background-color: #eee;
+    border-bottom-left-radius: 0.2em;
+    border-bottom-right-radius: 0.2em;
+    max-height: 60vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.drop-down-container.expanded ul {
+    display: block;
+}
+
+.drop-down-container ul li {
+    padding: 0.2em 0.5em;
+    max-width: 100%;
+    overflow: hidden;
+    display: flex;
+}
+
+.drop-down-container ul li .li-label {
+    flex: 1;
+    max-width: 100%;
+}
+
+.drop-down-container ul li .li-label > div, .drop-down-container ul li .li-label > div > p {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.drop-down-container ul li:hover {
+    background-color: #E9E3DD;
+}
+
+.drop-down-container ul li .alert {
+    display: none;
+}
+
+.drop-down-container.expanded ul li.latest .alert {
+    display: inline-block;
+}
+
+.drop-down-container ul li.latest {
+    color: goldenrod;
+    font-style: italic;
+}
+
+.drop-down-container ul li.selected {
+    background-color: #E9E3DD;
+}
+
+.drop-down-container ul li.unread {
+    font-weight: bold;
+}
+
+/* ======== COMMENTS / AUTHOR'S NOTE SECTION ======== */
+
+.comments {
+    background: rgba(0,0,0,0.4);
+    max-width: 705px;
+    margin: 0 auto;
 }
 
 .comments-container {
-	width: 650px;
-	overflow: hidden;
-	margin: 0 auto;
-	border: 1px solid #ccc;
-	border-radius: 0.4em;
+    width: 650px;
+    overflow: hidden;
+    margin: 0 auto;
+    border: 1px solid #ccc;
+    border-radius: 0.4em;
 }
 
 .comments-container ul li {
-	background-color: #ddd;
-	border-bottom: 1px solid #ccc;
-	color: #999;
-	cursor: pointer;
-	padding: 0 10px;
-	-webkit-transition: padding 0.3s;
+    background-color: #ddd;
+    border-bottom: 1px solid #ccc;
+    color: #999;
+    cursor: pointer;
+    padding: 0 10px;
+    -webkit-transition: padding 0.3s;
 }
 
 .comments-container ul li:last-child {
-	border-bottom: none;
+    border-bottom: none;
 }
 
 .comments-container ul li.selected {
-	background-color: yellow;
-	color: black;
-	cursor: default;
-	padding: 10px;
+    background-color: yellow;
+    color: black;
+    cursor: default;
+    padding: 10px;
 }
 
 .comments-container-inner {
-	min-height: 200px;
-	opacity: 1;
-	-webkit-transition: opacity 5s;
+    min-height: 200px;
+    opacity: 1;
+    -webkit-transition: opacity 5s;
 }
 
 .comments-container-inner.hidden {
-	display: none;
-	opacity: 0;
+    display: none;
+    opacity: 0;
 }
 
-.book .top-bar {
-	text-align: right;
-	padding: 30px 70px 0 0;
-}
 
-.book-text {
-	margin: 40px auto 0 auto;
-	width: 530px;
-	height: 600px;
-	display: block;
-	/*border: 1px solid black;*/
-	overflow: hidden;
-	position: relative;
-}
 
-.book-text iframe {
-	width: 100%;
-	height: 100%;
-	border: none;
-}
-
-/*.book-text .cover {
-	position: absolute;
-	top: 0; right: 0; bottom: 0; left: 0;
-	z-index: 10;
-}*/
 
 .hidden { visibility: hidden; }
 
-.book .loader {
-	position: absolute;
-	top: 0; right: 0; bottom: 0; left: 0;
-	width: 650px;
-	height: 759px;
-	background-image: url('/static/assets/img/book-final2.png');
-	display: none;
-	z-index: 100;
-	font-family: 'Tangerine', cursive;
-	font-size: 50px;
-	font-weight: bold;
-	color: #333;
-}
 
-.book .loader.isDisplayed { display: block;}
-
-.book .loader .loading-label {
-	text-align: center;
-}

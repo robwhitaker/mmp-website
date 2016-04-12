@@ -1,6 +1,9 @@
 module Reader.Utils where
 
 import String
+import Regex
+
+import Core.Utils.MaybeExtra exposing (..)
 
 import Core.Utils.SelectionList as SL exposing (SelectionList)
 import Editor.Parser exposing (stripTags)
@@ -12,10 +15,21 @@ selectedTitleFromSL sl =
     |> List.reverse
     |> List.foldl (\elem (acc,lastLevel) ->
             if elem.level < lastLevel then
-                (stripTags elem.heading :: acc, elem.level)
+                ((elem.level, stripTags elem.heading) :: acc, elem.level)
             else
                 (acc, lastLevel)
-        ) ([stripTags sl.selected.heading], sl.selected.level)
+        ) ([(sl.selected.level, stripTags sl.selected.heading)], sl.selected.level)
     |> fst
-    |> List.intersperse " - "
-    |> String.concat
+    |> List.foldl (\(lvl, heading) (section, title) ->
+            let str = String.trim heading
+                splitStr = Regex.replace (Regex.AtMost 1) (Regex.regex "\\.\\s+") (always "<~!~>^^%") str
+                                |> Regex.replace (Regex.AtMost 1) (Regex.regex "[0-9]+\\s+") (.match >> flip (++) "<~!~>^^%")
+                                |> String.split "<~!~>^^%"
+                segSect = List.head splitStr ? "" |> String.trim
+                segTitle = List.head (List.drop 1 splitStr) ? "" |> String.trim
+            in
+                ( if String.isEmpty section then segSect else section ++ "-" ++ segSect
+                , if String.isEmpty segTitle then title else segTitle
+                )
+        ) ("","")
+    |> (\(section, title) -> section ++ " - " ++ title)

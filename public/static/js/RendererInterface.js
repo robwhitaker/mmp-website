@@ -12,6 +12,7 @@ var RendererInterface = (function() {
         , iframeArrows : { x : 0, y : 0 }
         , readEntries : getLocalStorage()
         , setPage : 0
+        , mouseClick : []
         }
     );
 
@@ -29,6 +30,23 @@ var RendererInterface = (function() {
     function init(rendererFrame) {
         rendererFrame.addEventListener("load", function() {
             window.Renderer = Renderer = rendererFrame.contentWindow.Renderer;
+
+            window.s2 = function autoScroll(elem, duration) {
+                var wy = window.scrollY;
+                var ey = elem.getBoundingClientRect().top;
+
+                var step = (ey - wy)/duration;
+                var timer = 0;
+
+                var interval = setInterval(function() {
+                    window.scrollTo(0, window.scrollY + step*timer);
+                    timer+=50;
+                    if(timer >= duration || elem.getBoundingClientRect().top <= window.scrollY) {
+                        window.scrollTo(0,elem.getBoundingClientRect().top);
+                        clearInterval(interval);
+                    }
+                }, 50);
+            }
 
             Renderer.on("rendered", function(renderData) {
                 Reader.ports.chapterRendered.send(
@@ -71,6 +89,10 @@ var RendererInterface = (function() {
             Renderer.on("setPage", function(pageNum) {
                 console.log("setPage", pageNum);
                 Reader.ports.setPage.send(pageNum);
+            });
+
+            Renderer.on("click", function() {
+                Reader.ports.mouseClick.send([]);
             });
         });
     }

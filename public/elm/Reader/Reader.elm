@@ -8,6 +8,8 @@ import Effects exposing (Effects, Never)
 import Task exposing (Task)
 import Html exposing (Html)
 
+import Mouse
+
 import Core.Utils.SelectionList as SL
 import Core.Utils.MaybeExtra exposing (..)
 
@@ -26,7 +28,7 @@ init : (Model, Effects Action)
 init =
     (,)
         Reader.Model.empty
-        (Task.sleep 1500 `Task.andThen` (\_ -> Task.succeed (Load [testChapter] readEntries)) |> Effects.task) --TODO: Retrieve TOC and current chapter from server
+        (Task.sleep 500 `Task.andThen` (\_ -> Task.succeed (Load [testChapter] readEntries)) |> Effects.task) --TODO: Retrieve TOC and current chapter from server
 
 genRenderBlob : Model -> RenderBlob
 genRenderBlob model =
@@ -52,7 +54,7 @@ app = StartApp.start
     { init   = init
     , update = update
     , view   = view
-    , inputs = [ arrowKeys, chapterRenderedIn, chapterReflowIn, headingsUpdated, pageSet ]
+    , inputs = [ arrowKeys, chapterRenderedIn, chapterReflowIn, headingsUpdated, pageSet, closeDropdown ]
     }
 
 main : Signal Html
@@ -93,6 +95,12 @@ pageSet : Signal Action
 pageSet =
     Signal.map (PageNum >> TurnPage) setPage
 
+closeDropdown : Signal Action
+closeDropdown =
+    Signal.merge
+        (Signal.map (\_ -> Dropdown (Nothing, Just False)) mouseClick)
+        (Signal.sampleOn Mouse.clicks (Signal.constant <| Dropdown (Nothing, Just False)))
+
 -- Static Ports --
 
 port location : String
@@ -110,6 +118,8 @@ port headingUpdate : Signal (List String)
 port iframeArrows : Signal { x : Int, y : Int }
 
 port setPage : Signal Int
+
+port mouseClick : Signal ()
 
 -- Outbound Ports --
 
