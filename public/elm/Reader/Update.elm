@@ -13,19 +13,23 @@ import Reader.Model exposing (..)
 import Reader.Model.Helpers
 import Reader.Components.Dropdown as Dropdown
 
+import String
+
 ---- TYPE ALIASES ----
 
 type alias CurrentPage = Int
 type alias NumPages = Int
 type alias FocusedElementID = RenderElementID
 type alias HeadingIDsOnPage = List RenderElementID
+type alias LocationHash = String
 
 ---- ACTIONS ----
 
 type Action
     = TurnPage Direction
-    | Load (List Chapter) (List (RenderElementID, Bool))
-    | ChapterHasRendered NumPages HeadingIDsOnPage
+    | CoverClick
+    | Load (List Chapter) (List (RenderElementID, Bool)) LocationHash
+    | ChapterHasRendered CurrentPage NumPages HeadingIDsOnPage
     | ChapterHasReflowed CurrentPage NumPages (Maybe FocusedElementID) HeadingIDsOnPage
     | UpdateHeadingsOnPage (List String)
     | Dropdown Dropdown.Action
@@ -38,8 +42,13 @@ update : Action -> Model -> (Model, Effects Action)
 update action model =
     flip (,) Effects.none <|
         case action of
+
+            CoverClick -> { model | showCover = False }
+
             TurnPage dir ->
-                case dir of
+                if model.showCover then
+                    model
+                else case dir of
                     Forward ->
                         if model.pages.current + 1 >= model.pages.total -- >= because 0 indexed
                         then model --TODO: Load next chapter
@@ -89,18 +98,20 @@ update action model =
                 in
                     { model | toc = newToc, tocExpanded = expanded, lastNavAction = lastNavAction }
 
-            Load chapters readEntries ->
-                let loadedModel = Reader.Model.Helpers.fromChapterList chapters (Dict.fromList readEntries)
+            Load chapters readEntries locationHash ->
+                let targetID = Debug.log "wookie" <| String.dropLeft 3 locationHash
+                    loadedModel = Reader.Model.Helpers.fromChapterList chapters (Dict.fromList readEntries)
+                    newToc = gotoHeading targetID loadedModel.toc
                 in
-                    { loadedModel | state = Rendering }
+                    { loadedModel | state = Rendering, toc = newToc, showCover = loadedModel.toc == newToc }
 
-            ChapterHasRendered numPages headingIds ->
+            ChapterHasRendered currentPage numPages headingIds ->
                 let headings = headingIdFilter model.toc headingIds
                     newToc = gotoHeading (List.head headings ? "") model.toc
                 in
                     { model
                         | pages =
-                            { current = 0
+                            { current = currentPage
                             , total = numPages
                             }
                         , state = Ready

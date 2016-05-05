@@ -20,6 +20,13 @@ view address model =
                 [ class "book" ]
                 [ div
                     [ classList
+                        [ ("loader cover", True)
+                        , ("isDisplayed", model.showCover)
+                        ]
+                    , onClick address CoverClick
+                    ] []
+                , div
+                    [ classList
                         [ ("loader", True)
                         , ("isDisplayed", model.state == Rendering || model.state == Loading)
                         ]

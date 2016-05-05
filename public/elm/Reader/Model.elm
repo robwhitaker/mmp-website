@@ -19,6 +19,7 @@ type alias Model =
     { toc              : TOC
     , stylesheets      : Dict ChapterID Stylesheet
     , pages            : { current : Int, total : Int }
+    , showCover        : Bool
     , headingIDsOnPage : List String
     , lastNavAction    : LastNavAction
     , state            : State
@@ -49,6 +50,7 @@ empty =
     { toc = SL.fromList emptyRenderElement []
     , stylesheets = Dict.empty
     , pages = { current = 0, total = 0 }
+    , showCover = True
     , headingIDsOnPage = []
     , lastNavAction = Render
     , state = Loading

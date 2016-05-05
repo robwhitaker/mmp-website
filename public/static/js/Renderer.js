@@ -38,7 +38,7 @@ var Renderer = window.Renderer = (function() {
         listeners.pageTurned(getHeadingsOnPage());
     }
 
-    function render(renderObj) {
+    function render(renderObj, eId) {
         var storyTextArea = null;
         var timeout = 0;
 
@@ -182,8 +182,15 @@ var Renderer = window.Renderer = (function() {
             //---- TRY TO PLACE READER BACK NEAR PROPER PAGE ----
             //---- GET IMPORTANT VALUES FROM RENDER AND PASS TO CALLBACK ----
             var numPages = Math.round(storyTextArea.scrollWidth/getViewport().width)
-            var currentPage = Math.round(numPages * currentPositionPercentage);
-            storyTextArea.scrollLeft = currentPage * getViewport().width;
+            var currentPage = 0;
+
+            if(!renderObj) {
+                currentPage = Math.round(numPages * currentPositionPercentage);
+                storyTextArea.scrollLeft = currentPage * getViewport().width;
+            } else {
+                currentPage = goToHeading_(eId) || 0;
+            }
+
             currentPositionPercentage = storyTextArea.scrollLeft / storyTextArea.scrollWidth;
 
             refreshCommentCount();
@@ -214,7 +221,7 @@ var Renderer = window.Renderer = (function() {
         }
     }
 
-    function goToHeading(eId) {
+    function goToHeading_(eId) {
         if(!document.getElementById(eId)) return;
 
         if(getHeadingsOnPage().indexOf(eId) !== -1) return;
@@ -224,7 +231,12 @@ var Renderer = window.Renderer = (function() {
 
         var page = (scrollLeft + headingPos)/getViewport().width;
 
-        listeners.setPage(page);
+        return page;
+    }
+
+    function goToHeading(eId) {
+        var page = goToHeading_(eId);
+        if(page != null) listeners.setPage(page);
     }
 
     //---- EVENT LISTENERS ----

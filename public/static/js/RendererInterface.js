@@ -4,7 +4,8 @@ var RendererInterface = (function() {
     var Reader = Elm.fullscreen(Elm.Reader.Reader,
         { location : window.location.hash
         , chapterRendered :
-            { numPages : 0
+            { currentPage : 0
+            , numPages : 0
             , headingsOnPage : []
             }
         , chapterReflowed : [0, 0, null, []]
@@ -50,7 +51,8 @@ var RendererInterface = (function() {
 
             Renderer.on("rendered", function(renderData) {
                 Reader.ports.chapterRendered.send(
-                    { "numPages" : renderData.numPages
+                    { "currentPage" : renderData.currentPage
+                    , "numPages" : renderData.numPages
                     , "headingsOnPage" : Array.prototype.filter.call(renderData.headingsOnPage, function() { return true; })
                     }
                 );
@@ -97,13 +99,16 @@ var RendererInterface = (function() {
         });
     }
 
-    Reader.ports.currentChapter.subscribe(function(chapter) {
-        Renderer.render(chapter);
+    Reader.ports.currentChapter.subscribe(function(data) {
+        Renderer.render(data.renderObj, data.eId);
+        console.log(data);
     });
 
     Reader.ports.currentEntry.subscribe(function(data) {
         var eId = data[0];
         var shouldJump = data[1];
+
+        console.log(data);
 
         if(shouldJump) Renderer.goToHeading(eId);
 

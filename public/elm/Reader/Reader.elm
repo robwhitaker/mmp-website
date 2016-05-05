@@ -28,7 +28,7 @@ init : (Model, Effects Action)
 init =
     (,)
         Reader.Model.empty
-        (Task.sleep 500 `Task.andThen` (\_ -> Task.succeed (Load [testChapter] readEntries)) |> Effects.task) --TODO: Retrieve TOC and current chapter from server
+        (Task.sleep 500 `Task.andThen` (\_ -> Task.succeed (Load [testChapter] readEntries location)) |> Effects.task) --TODO: Retrieve TOC and current chapter from server
 
 genRenderBlob : Model -> RenderBlob
 genRenderBlob model =
@@ -40,8 +40,8 @@ genRenderBlob model =
                         (Regex.AtMost 1)
                         (Regex.regex "\">")
                         (always <| "\" id=\"" ++ renderElem.id ++ "\">")
-                        renderElem.heading,
-                isRead = False -- ignore changing isRead so chapter doesn't rerender
+                        renderElem.heading --,
+                --isRead = False -- ignore changing isRead so chapter doesn't rerender
             }
     in
         { stylesheet = Dict.get model.toc.selected.chapter model.stylesheets ? ""
@@ -76,7 +76,7 @@ chapterRenderedIn : Signal Action
 chapterRenderedIn =
     chapterRendered
     |> Signal.map
-        (\{numPages, headingsOnPage} -> ChapterHasRendered numPages headingsOnPage)
+        (\{currentPage, numPages, headingsOnPage} -> ChapterHasRendered currentPage numPages headingsOnPage)
     |> Signal.dropRepeats
 
 chapterReflowIn : Signal Action
@@ -109,7 +109,7 @@ port readEntries : List (RenderElementID, Bool)
 
 -- Inbound Ports --
 
-port chapterRendered : Signal { numPages : Int, headingsOnPage : List String }
+port chapterRendered : Signal { currentPage : Int, numPages : Int, headingsOnPage : List String }
 
 port chapterReflowed : Signal (Int, Int, Maybe String, List String)
 
@@ -134,14 +134,15 @@ port currentPage =
             if model.lastNavAction == PageReflow then
                 -1
             else
-                model.pages.current
+                Debug.log "p: " model.pages.current
         )
     |> Signal.dropRepeats
 
-port currentChapter : Signal RenderBlob
+port currentChapter : Signal { renderObj : RenderBlob, eId : RenderElementID }
 port currentChapter =
     app.model
-    |> Signal.map genRenderBlob
+    |> Signal.map (\model -> { renderObj = genRenderBlob model, eId = model.toc.selected.id })
+    |> Signal.sampleOn (Signal.map (.toc >> .selected >> .chapter) app.model |> Signal.dropRepeats)
     |> Signal.dropRepeats
 
 port currentDisqusThread : Signal DisqusData
