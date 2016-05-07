@@ -32,6 +32,7 @@ type Action
     | ChapterHasRendered CurrentPage NumPages HeadingIDsOnPage
     | ChapterHasReflowed CurrentPage NumPages (Maybe FocusedElementID) HeadingIDsOnPage
     | UpdateHeadingsOnPage (List String)
+    | ChangeSelectedHeadingForComments String
     | Dropdown Dropdown.Action
     | Dump String
     | NoOp
@@ -44,6 +45,9 @@ update action model =
         case action of
 
             CoverClick -> { model | showCover = False }
+
+            ChangeSelectedHeadingForComments hId ->
+                { model | toc = gotoHeading hId model.toc, lastNavAction = CommentsLinkClick }
 
             TurnPage dir ->
                 if model.showCover then
@@ -99,7 +103,7 @@ update action model =
                     { model | toc = newToc, tocExpanded = expanded, lastNavAction = lastNavAction }
 
             Load chapters readEntries locationHash ->
-                let targetID = Debug.log "wookie" <| String.dropLeft 3 locationHash
+                let targetID = String.dropLeft 3 locationHash
                     loadedModel = Reader.Model.Helpers.fromChapterList chapters (Dict.fromList readEntries)
                     newToc = gotoHeading targetID loadedModel.toc
                 in
@@ -174,6 +178,8 @@ update action model =
 
                             Render ->
                                 List.head headings ? model.toc.selected.id
+
+                            _ -> model.toc.selected.id
                 in
                     { model
                         | headingIDsOnPage = headings

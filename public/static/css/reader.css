@@ -9,6 +9,8 @@
 
 body, html {
     height: 100%;
+    width: 100%;
+    max-width: 100%;
 }
 
 body {
@@ -27,8 +29,19 @@ section {
 }
 
 section.reader {
-    background: url("/static/assets/img/wood-bg.png");
+    background: url("/static/assets/img/wood-bg-11.png");
     background-size: cover;
+    background-position: center top;
+    box-shadow: 0px 20px 1em rgba(0,0,0,0.8);
+}
+
+section.comments {
+    display: flex;
+    width: 1000px;
+    max-width: 100%;
+    margin: 0 auto;
+    align-items: center top;
+    flex-flow: row wrap;
 }
 
 /* ======== READER SECTION ======== */
@@ -36,7 +49,13 @@ section.reader {
 /* ---- Banner ---- */
 
 .banner {
-    background: url("/static/assets/img/logo-2.png");
+    /*background-image: linear-gradient(rgba(0,0,0,0.7),rgba(0,0,0,0) 50%);*/
+    background-size: 100% 100%;
+    background-position: center center;
+}
+
+.banner-logo {
+    background-image: url("/static/assets/img/logo-2.png");
 /*    width: 705px;
     height: 150px;*/
     height: 15vh;
@@ -76,6 +95,21 @@ section.reader {
 .book .loader.cover:hover {
     background-image: url('/static/assets/img/book-cover.png');
 }
+
+.book .loader.cover:hover div {
+    color: #EAC694;
+}
+
+.book .loader.cover div {
+    position: absolute;
+    bottom: 6%;
+    right: 8%;
+    color: #CE9046;
+    font-size: 40px;
+    font-weight: normal;
+    font-family: Tangerine;
+}
+
 .book .loader.isDisplayed {
     display: flex;
 }
@@ -92,7 +126,7 @@ section.reader {
     height: 80vh;
     width: 68.5vh;
     max-width: 100%;
-    margin: 0 auto;
+    margin: 1vh auto 0 auto;
     background-image: url('/static/assets/img/book-final2.png');
     background-size: 100% 100%;
     position: relative;
@@ -255,52 +289,34 @@ section.reader {
 
 /* ======== COMMENTS / AUTHOR'S NOTE SECTION ======== */
 
-.comments {
-    background: rgba(0,0,0,0.4);
-    max-width: 705px;
-    margin: 0 auto;
-}
-
-.comments-container {
-    width: 650px;
-    overflow: hidden;
-    margin: 0 auto;
-    border: 1px solid #ccc;
+#disqus_thread, #authors-note {
     border-radius: 0.4em;
+    margin: 15px 0.5em;
+    background: rgba(38, 30, 53, 0.8);
+    background-size: cover;
+    background-position: center;
+    border: 1px solid rgba(200,200,200,0.2);
+    max-width: 100%;
 }
 
-.comments-container ul li {
-    background-color: #ddd;
-    border-bottom: 1px solid #ccc;
-    color: #999;
-    cursor: pointer;
-    padding: 0 10px;
-    -webkit-transition: padding 0.3s;
+#disqus_thread {
+    flex: 3;
+    padding: 0.5em 1em;
+    box-sizing: border-box;
+    min-width: 300px;
 }
 
-.comments-container ul li:last-child {
-    border-bottom: none;
+#authors-note {
+    flex: 1;
+    min-width: 200px;
 }
 
-.comments-container ul li.selected {
-    background-color: yellow;
-    color: black;
-    cursor: default;
-    padding: 10px;
+/* ======== FOOTER ======== */
+
+footer {
+    height: 200px;
+    background: black;
 }
-
-.comments-container-inner {
-    min-height: 200px;
-    opacity: 1;
-    -webkit-transition: opacity 5s;
-}
-
-.comments-container-inner.hidden {
-    display: none;
-    opacity: 0;
-}
-
-
 
 
 .hidden { visibility: hidden; }

@@ -54,7 +54,7 @@ app = StartApp.start
     { init   = init
     , update = update
     , view   = view
-    , inputs = [ arrowKeys, chapterRenderedIn, chapterReflowIn, headingsUpdated, pageSet, closeDropdown ]
+    , inputs = [ arrowKeys, chapterRenderedIn, chapterReflowIn, headingsUpdated, pageSet, closeDropdown, commentsLinkClick ]
     }
 
 main : Signal Html
@@ -101,6 +101,9 @@ closeDropdown =
         (Signal.map (\_ -> Dropdown (Nothing, Just False)) mouseClick)
         (Signal.sampleOn Mouse.clicks (Signal.constant <| Dropdown (Nothing, Just False)))
 
+commentsLinkClick : Signal Action
+commentsLinkClick = Signal.map ChangeSelectedHeadingForComments changeHeadingFromCommentsLink
+
 -- Static Ports --
 
 port location : String
@@ -114,6 +117,8 @@ port chapterRendered : Signal { currentPage : Int, numPages : Int, headingsOnPag
 port chapterReflowed : Signal (Int, Int, Maybe String, List String)
 
 port headingUpdate : Signal (List String)
+
+port changeHeadingFromCommentsLink : Signal String
 
 port iframeArrows : Signal { x : Int, y : Int }
 
@@ -134,7 +139,7 @@ port currentPage =
             if model.lastNavAction == PageReflow then
                 -1
             else
-                Debug.log "p: " model.pages.current
+                model.pages.current
         )
     |> Signal.dropRepeats
 

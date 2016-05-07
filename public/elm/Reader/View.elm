@@ -15,7 +15,7 @@ view address model =
     div []
         [ section
             [ class "reader" ]
-            [ div [ class "banner" ] []
+            [ div [ class "banner" ] [ div [ class "banner-logo" ] [] ]
             , div
                 [ class "book" ]
                 [ div
@@ -24,7 +24,7 @@ view address model =
                         , ("isDisplayed", model.showCover)
                         ]
                     , onClick address CoverClick
-                    ] []
+                    ] [ div [] [ text "Updates every Sunday!" ] ]
                 , div
                     [ classList
                         [ ("loader", True)
@@ -57,4 +57,7 @@ view address model =
             [ div [ id "authors-note" ] [ text model.toc.selected.authorsNote ]
             , div [ id "disqus_thread" ] []
             ]
+        , footer
+            []
+            []
         ]

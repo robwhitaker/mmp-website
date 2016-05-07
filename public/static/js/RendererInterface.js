@@ -14,6 +14,7 @@ var RendererInterface = (function() {
         , readEntries : getLocalStorage()
         , setPage : 0
         , mouseClick : []
+        , changeHeadingFromCommentsLink : ""
         }
     );
 
@@ -32,21 +33,28 @@ var RendererInterface = (function() {
         rendererFrame.addEventListener("load", function() {
             window.Renderer = Renderer = rendererFrame.contentWindow.Renderer;
 
-            window.s2 = function autoScroll(elem, duration) {
-                var wy = window.scrollY;
-                var ey = elem.getBoundingClientRect().top;
-
-                var step = (ey - wy)/duration;
-                var timer = 0;
-
-                var interval = setInterval(function() {
-                    window.scrollTo(0, window.scrollY + step*timer);
-                    timer+=50;
-                    if(timer >= duration || elem.getBoundingClientRect().top <= window.scrollY) {
-                        window.scrollTo(0,elem.getBoundingClientRect().top);
-                        clearInterval(interval);
+            var scrollToElem = function(elem, onScrollFinish) {
+                if(elem == null) return;
+                var elemPos = elem.getBoundingClientRect().top - 15; //TODO: replace 15 with computed margin-top
+                var scrollY = window.scrollY;
+                var multiplier = 0;
+                var multIncr = 0.0001;
+                var step = setInterval(function() {
+                    if(multiplier < 0.5)
+                        multIncr += 0.0006;
+                    else
+                        multIncr -= 0.0006;
+                    if(multIncr <= 0) multIncr = 0.0001;
+                    multiplier += multIncr;
+                    if(multiplier >= 1) {
+                        window.scrollTo(0, elemPos + scrollY);
+                        clearInterval(step);
+                        step = null;
+                        (onScrollFinish || function(){})();
+                    } else {
+                        window.scrollTo(0, elemPos * multiplier + scrollY);
                     }
-                }, 50);
+                }, 10);
             }
 
             Renderer.on("rendered", function(renderData) {
@@ -77,7 +85,15 @@ var RendererInterface = (function() {
             Renderer.on("linkClick", function(link, id) {
                 switch(link) {
                     case "comments":
-                        console.log("jump to comments");
+                        scrollToElem(document.getElementById("disqus_thread"), function() {
+                            Reader.ports.changeHeadingFromCommentsLink.send(id);
+                        });
+                        break;
+                    case "authorsnote":
+                        scrollToElem(document.getElementById("authors-note"), function() {
+                            Reader.ports.changeHeadingFromCommentsLink.send(id);
+                        });
+                        break;
                     default:
                         console.log(link, id);
 
@@ -89,7 +105,7 @@ var RendererInterface = (function() {
             });
 
             Renderer.on("setPage", function(pageNum) {
-                console.log("setPage", pageNum);
+                // console.log("setPage", pageNum);
                 Reader.ports.setPage.send(pageNum);
             });
 
@@ -99,16 +115,17 @@ var RendererInterface = (function() {
         });
     }
 
-    Reader.ports.currentChapter.subscribe(function(data) {
-        Renderer.render(data.renderObj, data.eId);
-        console.log(data);
+    Reader.ports.currentChapter.subscribe(function renderChapter(data) {
+        if(!Renderer || !Renderer.render) {
+            setTimeout(function() { renderChapter(data); }, 100);
+        } else {
+            Renderer.render(data.renderObj, data.eId);
+        }
     });
 
     Reader.ports.currentEntry.subscribe(function(data) {
         var eId = data[0];
         var shouldJump = data[1];
-
-        console.log(data);
 
         if(shouldJump) Renderer.goToHeading(eId);
 
@@ -126,6 +143,7 @@ var RendererInterface = (function() {
     });
 
     Reader.ports.currentDisqusThread.subscribe(function(disqusData) {
+        if(!DISQUS || !DISQUS.reset) return;
         DISQUS.reset({
           reload: true,
           config: function () {

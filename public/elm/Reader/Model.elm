@@ -12,7 +12,7 @@ type alias Stylesheet = String
 type alias TOC = SelectionList RenderElement
 
 type Direction = Forward | Backward | PageNum Int
-type LastNavAction = PageTurn Direction | PageJump RenderElementID | PageReflow | Render
+type LastNavAction = PageTurn Direction | PageJump RenderElementID | PageReflow | Render | CommentsLinkClick
 type State = Ready | Loading | Reflowing | Rendering
 
 type alias Model =

@@ -18,6 +18,8 @@ var Renderer = window.Renderer = (function() {
 
     var currentPositionPercentage = 0;
 
+    var lastHeadingId = null;
+
     //---- PPREARE FOR RENDER ----
 
     updateDynamicStylesheet();
@@ -35,16 +37,22 @@ var Renderer = window.Renderer = (function() {
         var storyTextArea = document.getElementById("text-container");
         storyTextArea.scrollLeft = getViewport().width * pageNum;
         currentPositionPercentage = storyTextArea.scrollLeft / storyTextArea.scrollWidth;
+        lastHeadingId = getHeadingsOnPage()[0];
+
         listeners.pageTurned(getHeadingsOnPage());
     }
 
     function render(renderObj, eId) {
+        var renderMode = !!renderObj ? "render" : "reflow";
+
+        console.log("Beginning render in mode: " + renderMode);
+
         var storyTextArea = null;
-        var timeout = 0;
 
         if(watcher != null) watcher.stop(); // STOP WATCHER IF IT IS RUNNING
 
         if(!!renderObj) {
+            console.log("Rendering segments...");
             var style = document.createElement("style");
             style.innerHTML = renderObj.stylesheet;
             style.id = "injected-style";
@@ -131,7 +139,7 @@ var Renderer = window.Renderer = (function() {
                 return shareLink;
             }
 
-            var storyTextArea = renderObj.renderElements.reduce(function(acc, entry) {
+            storyTextArea = renderObj.renderElements.reduce(function(acc, entry) {
                 acc.innerHTML += entry.heading + entry.body;
 
                 if(entry.body === "") return acc;
@@ -151,65 +159,97 @@ var Renderer = window.Renderer = (function() {
             document.body.innerHTML = "";
             document.body.appendChild(storyTextArea);
 
-            timeout = 0;
-        } else { timeout = 0; /* handle reflow */ }
+        }
 
-        //remove any placeholders before rerendering anything
         storyTextArea = storyTextArea || document.getElementById('text-container');
-        Array.prototype.map.call(storyTextArea.getElementsByClassName("placeholder"), function(placeholder) {
-            (storyTextArea).removeChild(placeholder);
-        });
 
-        setTimeout(function() {
+        setTimeout(function renderIfReady() {
+            //remove any placeholders before rerendering anything
+            Array.prototype.map.call(storyTextArea.getElementsByClassName("placeholder"), function(placeholder) {
+                storyTextArea.removeChild(placeholder);
+            });
 
-            //---- BUMP HEADINGS AT BOTTOM TO NEXT PAGE ----
-
-            var headings = Array.prototype.filter.call(storyTextArea.querySelectorAll("h1,h2,h3,h4,h5,h6"), function(h) {return true;});
-            var bookRect = storyTextArea.getBoundingClientRect();
-            for(key in headings) {
-                var heading = headings[key];
-                var h = document.getElementById(heading.id);
-                if(h == null) continue;
-                var headingRect = h.getBoundingClientRect();
-                if(headingRect.bottom >= bookRect.bottom - Math.max(bookRect.bottom * 0.04, headingRect.height)) { //TODO: (maybe) make sure hRect.height exists
-                    var placeholder = document.createElement("div");
-                    placeholder.style.height = (bookRect.height - headingRect.top) + "px"; //TODO: (maybe) make sure hRect.height exists
-                    placeholder.className = "placeholder";
-                    (heading.parentElement || heading.parentNode).insertBefore(placeholder,heading); //TODO: double check on Element vs Node stuff
-                }
+            //if there are any placeholders or not all the headings are loaded, we're not ready to continue yet. Try again in 50ms.
+            if(storyTextArea.getElementsByClassName("placeholder").length > 0 || (!!renderObj && renderObj.renderElements.length > getHeadings().length)) {
+                console.log("DOM not ready: Waiting...");
+                setTimeout(renderIfReady, 50);
+                return;
             }
 
-            //---- TRY TO PLACE READER BACK NEAR PROPER PAGE ----
-            //---- GET IMPORTANT VALUES FROM RENDER AND PASS TO CALLBACK ----
-            var numPages = Math.round(storyTextArea.scrollWidth/getViewport().width)
-            var currentPage = 0;
+            console.log("DOM " + renderMode + " complete: Correcting heading placement...");
 
-            if(!renderObj) {
-                currentPage = Math.round(numPages * currentPositionPercentage);
-                storyTextArea.scrollLeft = currentPage * getViewport().width;
-            } else {
-                currentPage = goToHeading_(eId) || 0;
+            function prependPlaceholder(h) {
+                var heading = document.getElementById(h.id);
+                if(heading == null) return;
+                var placeholder = document.createElement("div");
+                placeholder.style.height = (document.getElementById("text-container").getBoundingClientRect().height - heading.getBoundingClientRect().top) + "px"; //TODO: (maybe) make sure hRect.height exists
+                placeholder.className = "placeholder";
+                (heading.parentElement || heading.parentNode).insertBefore(placeholder,heading); //TODO: double check on Element vs Node stuff
             }
 
-            currentPositionPercentage = storyTextArea.scrollLeft / storyTextArea.scrollWidth;
-
-            refreshCommentCount();
-
-            listeners[(!!renderObj ? "rendered" : "reflowed")](
-                { numPages : numPages
-                , headingsOnPage : getHeadingsOnPage()
-                , focusedHeading : getFocusedHeading()
-                , currentPage : currentPage
+            var headingIds = getHeadings().map(function(h) { return h.id; });
+            var currentId = -1;
+            var abortMission = 0;
+            var hInterval = setInterval(function() {
+                if(headingIds.length == 0) {
+                    clearInterval(hInterval);
+                    renderIfReadyP2();
+                    return;
                 }
-            );
+                var heading = document.getElementById(headingIds[0]);
+                if(isDangling(heading) && currentId != headingIds[0]) {
+                    console.log("Found dangling heading: " + headingIds[0] + "; bumping to next page...");
+                    prependPlaceholder(heading);
+                    currentId = headingIds[0];
+                } else if(!isDangling(heading)) {
+                    headingIds.shift();
+                } else {
+                    if(abortMission++ >= 15) {
+                        headingIds.shift();
+                        abortMission = 0;
+                    }
+                }
+            }, 0);
 
-            //---- RESTART WATCHER, OR START IT IF IT DOESN'T EXIST ----
+            function renderIfReadyP2() {
+                console.log("No more dangling headings: Continuing...");
 
-            if(watcher != null)
-                watcher.start();
-            else
-                watcher = new Watcher(getTextContainerScrollWidth, function() {render();});
-        }, timeout);
+                //---- TRY TO PLACE READER BACK NEAR PROPER PAGE ----
+                //---- GET IMPORTANT VALUES FROM RENDER AND PASS TO CALLBACK ----
+                var numPages = Math.round(storyTextArea.scrollWidth/getViewport().width)
+                var currentPage = 0;
+
+                if(!renderObj) {
+                    if(lastHeadingId != null)
+                        currentPage = goToHeading_(lastHeadingId) || 0;
+                    else
+                        currentPage = Math.round(numPages * currentPositionPercentage);
+                    storyTextArea.scrollLeft = currentPage * getViewport().width;
+                } else
+                    currentPage = goToHeading_(eId) || 0;
+
+                currentPositionPercentage = storyTextArea.scrollLeft / storyTextArea.scrollWidth;
+
+                lastHeadingId = getHeadingsOnPage()[0];
+
+                refreshCommentCount();
+
+                listeners[(!!renderObj ? "rendered" : "reflowed")](
+                    { numPages : numPages
+                    , headingsOnPage : getHeadingsOnPage()
+                    , focusedHeading : getFocusedHeading()
+                    , currentPage : currentPage
+                    }
+                );
+
+                //---- RESTART WATCHER, OR START IT IF IT DOESN'T EXIST ----
+
+                if(watcher != null)
+                    watcher.start();
+                else
+                    watcher = new Watcher(getTextContainerScrollWidth, function() {render();});
+            }
+        }, 0);
     }
 
     function refreshCommentCount() {
@@ -292,6 +332,12 @@ var Renderer = window.Renderer = (function() {
         };
     }
 
+    var getHeadings = function() {
+        var storyTextArea = document.getElementById('text-container');
+        if(storyTextArea == null) return [];
+        return Array.prototype.filter.call(storyTextArea.querySelectorAll("h1,h2,h3,h4,h5,h6"), function() { return true; });
+    }
+
     var getHeadingsOnPage = function() {
         var storyTextArea = document.getElementById("text-container");
         if(storyTextArea == null) return [];
@@ -304,10 +350,21 @@ var Renderer = window.Renderer = (function() {
     var collidesWithBook = function(item) {
         var storyTextArea = document.getElementById("text-container");
         if(storyTextArea == null) return false;
-            var bookRect = storyTextArea.getBoundingClientRect();
-            var itemRect = item.getBoundingClientRect();
+        var bookRect = storyTextArea.getBoundingClientRect();
+        var itemRect = item.getBoundingClientRect();
 
         return !(bookRect.right - 10 <= itemRect.left || bookRect.left + 10 >= itemRect.right);
+    };
+
+    var isDangling = function(heading) {
+        var storyTextArea = document.getElementById("text-container");
+        if(storyTextArea == null) return false;
+        var hRect = heading.getBoundingClientRect();
+        var nRect = heading.nextSibling.getBoundingClientRect();
+
+        // console.log("pos " + heading.id, !(nRect.right == hRect.right && nRect.left == hRect.left) && heading.nextSibling.tagName === "P");
+
+        return !(nRect.right == hRect.right && nRect.left == hRect.left) && heading.nextSibling.tagName === "P";
     };
 
     var getFocusedHeading = function() {
