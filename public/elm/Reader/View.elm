@@ -4,6 +4,8 @@ import Reader.Model exposing (..)
 import Reader.Update exposing (Action(..))
 import Reader.Components.Dropdown as Dropdown
 
+import Reader.Utils as Utils
+
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -53,9 +55,18 @@ view address model =
                 ]
             ]
         , section
-            [ class "comments" ]
-            [ div [ id "authors-note" ] [ text model.toc.selected.authorsNote ]
-            , div [ id "disqus_thread" ] []
+            [ classList [("comments", True), ("no-display", model.showCover)] ]
+            [ div
+                [ id "authors-note", classList [("no-display", model.toc.selected.authorsNote == "")] ]
+                [ h2  [ class "fancy-heading no-bottom-margin" ]     [ text "Author's Note" ]
+                , div [ class "byline" ]            [ span [ class "highlight-color" ] [ text <| Utils.selectedTitleFromSL model.toc ] ]
+                , div [ class "authors-note-text" ] [ text model.toc.selected.authorsNote ]
+                ]
+            , div
+                [ id "comments-box" ]
+                [ h2 [ class "fancy-heading" ] [ text "Discussion for ", span [ class "highlight-color" ] [ text <| Utils.selectedTitleFromSL model.toc ] ]
+                , div [ id "disqus_thread" ] []
+                ]
             ]
         , footer
             []

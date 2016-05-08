@@ -42,7 +42,7 @@ var Renderer = window.Renderer = (function() {
         listeners.pageTurned(getHeadingsOnPage());
     }
 
-    function render(renderObj, eId) {
+    function render(renderObj, eId, isPageTurnBack) {
         var renderMode = !!renderObj ? "render" : "reflow";
 
         console.log("Beginning render in mode: " + renderMode);
@@ -87,7 +87,7 @@ var Renderer = window.Renderer = (function() {
             }
 
             function mkAuthorsNoteLink(entry) {
-                if(entry.authorsNote || true) {
+                if(entry.authorsNote) {
                     var authorsNoteLink = document.createElement("span");
                     authorsNoteLink.innerHTML = "Author's Note";
 
@@ -162,6 +162,7 @@ var Renderer = window.Renderer = (function() {
         }
 
         storyTextArea = storyTextArea || document.getElementById('text-container');
+        var lastScrollWidth = getTextContainerScrollWidth();
 
         setTimeout(function renderIfReady() {
             //remove any placeholders before rerendering anything
@@ -170,9 +171,10 @@ var Renderer = window.Renderer = (function() {
             });
 
             //if there are any placeholders or not all the headings are loaded, we're not ready to continue yet. Try again in 50ms.
-            if(storyTextArea.getElementsByClassName("placeholder").length > 0 || (!!renderObj && renderObj.renderElements.length > getHeadings().length)) {
+            if(storyTextArea.getElementsByClassName("placeholder").length > 0 || (!!renderObj && renderObj.renderElements.length > getHeadings().length) || lastScrollWidth != getTextContainerScrollWidth()) {
                 console.log("DOM not ready: Waiting...");
-                setTimeout(renderIfReady, 50);
+                lastScrollWidth = getTextContainerScrollWidth();
+                setTimeout(renderIfReady, 100);
                 return;
             }
 
@@ -221,12 +223,14 @@ var Renderer = window.Renderer = (function() {
 
                 if(!renderObj) {
                     if(lastHeadingId != null)
-                        currentPage = goToHeading_(lastHeadingId) || 0;
+                        currentPage = getPageOfId(lastHeadingId) || 0;
                     else
                         currentPage = Math.round(numPages * currentPositionPercentage);
-                    storyTextArea.scrollLeft = currentPage * getViewport().width;
                 } else
-                    currentPage = goToHeading_(eId) || 0;
+                    currentPage = isPageTurnBack ? (numPages - 1) : (getPageOfId(eId) || 0);
+
+                storyTextArea.scrollLeft = currentPage * getViewport().width;
+
 
                 currentPositionPercentage = storyTextArea.scrollLeft / storyTextArea.scrollWidth;
 
@@ -249,7 +253,7 @@ var Renderer = window.Renderer = (function() {
                 else
                     watcher = new Watcher(getTextContainerScrollWidth, function() {render();});
             }
-        }, 0);
+        }, 100);
     }
 
     function refreshCommentCount() {
@@ -261,21 +265,19 @@ var Renderer = window.Renderer = (function() {
         }
     }
 
-    function goToHeading_(eId) {
+    function getPageOfId(eId) {
         if(!document.getElementById(eId)) return;
-
-        if(getHeadingsOnPage().indexOf(eId) !== -1) return;
 
         var headingPos = document.getElementById(eId).getBoundingClientRect().left;
         var scrollLeft = document.getElementById("text-container").scrollLeft;
 
-        var page = (scrollLeft + headingPos)/getViewport().width;
+        var page = Math.round((scrollLeft + headingPos)/getViewport().width);
 
         return page;
     }
 
     function goToHeading(eId) {
-        var page = goToHeading_(eId);
+        var page = getPageOfId(eId);
         if(page != null) listeners.setPage(page);
     }
 

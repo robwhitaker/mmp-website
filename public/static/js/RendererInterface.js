@@ -85,7 +85,7 @@ var RendererInterface = (function() {
             Renderer.on("linkClick", function(link, id) {
                 switch(link) {
                     case "comments":
-                        scrollToElem(document.getElementById("disqus_thread"), function() {
+                        scrollToElem(document.getElementById("comments-box"), function() {
                             Reader.ports.changeHeadingFromCommentsLink.send(id);
                         });
                         break;
@@ -117,13 +117,16 @@ var RendererInterface = (function() {
 
     Reader.ports.currentChapter.subscribe(function renderChapter(data) {
         if(!Renderer || !Renderer.render) {
+            console.log("Renderer not loaded: Waiting...");
             setTimeout(function() { renderChapter(data); }, 100);
         } else {
-            Renderer.render(data.renderObj, data.eId);
+            // console.log("render", data);
+            Renderer.render(data.renderObj, data.eId, data.isPageTurnBack);
         }
     });
 
     Reader.ports.currentEntry.subscribe(function(data) {
+        // console.log("entryChange", data);
         var eId = data[0];
         var shouldJump = data[1];
 
@@ -138,11 +141,13 @@ var RendererInterface = (function() {
 
     Reader.ports.currentPage.subscribe(function(pageNum) {
         if(pageNum >= 0) {
+            // console.log("Goto page: " + pageNum);
             Renderer.goToPage(pageNum);
         }
     });
 
     Reader.ports.currentDisqusThread.subscribe(function(disqusData) {
+        // console.log("disqus", disqusData);
         if(!DISQUS || !DISQUS.reset) return;
         DISQUS.reset({
           reload: true,

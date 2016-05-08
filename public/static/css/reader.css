@@ -289,7 +289,7 @@ section.comments {
 
 /* ======== COMMENTS / AUTHOR'S NOTE SECTION ======== */
 
-#disqus_thread, #authors-note {
+#comments-box, #authors-note {
     border-radius: 0.4em;
     margin: 15px 0.5em;
     background: rgba(38, 30, 53, 0.8);
@@ -297,28 +297,60 @@ section.comments {
     background-position: center;
     border: 1px solid rgba(200,200,200,0.2);
     max-width: 100%;
-}
-
-#disqus_thread {
-    flex: 3;
     padding: 0.5em 1em;
     box-sizing: border-box;
+}
+
+#comments-box {
+    flex: 3;
     min-width: 300px;
 }
 
 #authors-note {
     flex: 1;
     min-width: 200px;
+    color: #ddd;
+}
+
+h2.fancy-heading {
+    color: white;
+    font-family: Tangerine;
+    font-size: 45px;
+    text-align: center;
+    font-weight: normal;
+    margin: 0.5em 0;
+}
+
+h2.fancy-heading.no-bottom-margin {
+    margin-bottom: 0;
+}
+
+.byline {
+    font-style: italic;
+    text-align: center;
+}
+
+.authors-note-text {
+    margin-top: 1em;
+    /*text-indent: 2em;*/
+    text-align: justify;
+    line-height: 1.4em;
+}
+
+a { color: #CE9046; }
+
+section.comments span.highlight-color {
+    color: #CE9046;
 }
 
 /* ======== FOOTER ======== */
 
 footer {
     height: 200px;
-    background: black;
+    background: #79131B;
 }
 
 
 .hidden { visibility: hidden; }
 
-
+.no-display { display: none!important; }

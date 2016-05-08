@@ -51,11 +51,29 @@ update action model =
 
             TurnPage dir ->
                 if model.showCover then
-                    model
+                    if dir == Forward then
+                        { model | showCover = False }
+                    else
+                        model
                 else case dir of
                     Forward ->
                         if model.pages.current + 1 >= model.pages.total -- >= because 0 indexed
-                        then model --TODO: Load next chapter
+                        then
+                            let nToc = untilContent SL.next <| SL.next model.toc
+                            in
+                                if nToc == model.toc then
+                                    { model
+                                        | toc = SL.goto 0 model.toc
+                                        , lastNavAction = PageTurn Forward
+                                        , state = Rendering
+                                        , showCover = True
+                                    }
+                                else
+                                    { model
+                                        | toc = nToc
+                                        , lastNavAction = PageTurn Forward
+                                        , state = Rendering
+                                    }
                         else
                             { model
                                 | pages =
@@ -67,7 +85,21 @@ update action model =
 
                     Backward ->
                         if model.pages.current - 1 < 0
-                        then model --TODO: Load previous chapter
+                        then
+                            let nToc = untilContent SL.previous <| SL.previous model.toc
+                            in
+                                if nToc == SL.previous model.toc then
+                                    { model | showCover = True }
+                                else
+                                    { model
+                                        | pages =
+                                            { current = model.pages.current - 1
+                                            , total = model.pages.total
+                                            }
+                                        , toc = nToc
+                                        , lastNavAction = PageTurn Backward
+                                        , state = Rendering
+                                    }
                         else
                             { model
                                 | pages =
@@ -86,21 +118,27 @@ update action model =
             Dropdown (maybeRenderElemID, maybeExpanded) ->
                 let expanded = Maybe.withDefault model.tocExpanded maybeExpanded
 
-                    nextUntilContent toc =
-                        if toc.selected.body == "" && SL.next toc /= toc then
-                            nextUntilContent (SL.next toc)
-                        else
-                            toc
+                    nextUntilContent = untilContent SL.next
 
-                    (newToc, lastNavAction) =
+                    newToc =
                         case maybeRenderElemID of
                             Just id ->
-                                let nToc = nextUntilContent (gotoHeading id model.toc)
-                                in (nToc, PageJump nToc.selected.id)
+                                nextUntilContent (gotoHeading id model.toc)
                             Nothing ->
-                                (model.toc, model.lastNavAction)
+                                model.toc
+
+                    triggersRender = newToc.selected.chapter /= model.toc.selected.chapter
+
+                    lastNavAction =
+                        if newToc == model.toc then
+                            model.lastNavAction
+                        else
+                            if triggersRender then
+                                Render
+                            else
+                                PageJump newToc.selected.id
                 in
-                    { model | toc = newToc, tocExpanded = expanded, lastNavAction = lastNavAction }
+                    { model | toc = newToc, tocExpanded = expanded, lastNavAction = lastNavAction, state = if triggersRender then Rendering else model.state }
 
             Load chapters readEntries locationHash ->
                 let targetID = String.dropLeft 3 locationHash
@@ -111,7 +149,7 @@ update action model =
 
             ChapterHasRendered currentPage numPages headingIds ->
                 let headings = headingIdFilter model.toc headingIds
-                    newToc = gotoHeading (List.head headings ? "") model.toc
+                    newToc = gotoHeading (List.head headings ? model.toc.selected.id) model.toc
                 in
                     { model
                         | pages =
@@ -121,6 +159,7 @@ update action model =
                         , state = Ready
                         , headingIDsOnPage = headings
                         , toc = newToc
+                        , lastNavAction = Render
                     }
 
             ChapterHasReflowed currentPage numPages maybeFocusedId headingIds ->
@@ -193,6 +232,18 @@ update action model =
             _ -> model
 
 ---- HELPERS ----
+
+untilContent : (TOC -> TOC) -> TOC -> TOC
+untilContent f toc =
+    if toc.selected.body == "" && f toc /= toc then
+        let nToc = untilContent f (f toc)
+        in
+            if nToc.selected.body == "" then
+                toc
+            else
+                nToc
+    else
+        toc
 
 headingIdFilter : TOC -> HeadingIDsOnPage -> HeadingIDsOnPage
 headingIdFilter toc headingIds =
