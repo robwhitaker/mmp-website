@@ -167,8 +167,12 @@ port currentDisqusThread =
 port title : Signal String
 port title =
     app.model
-    |> Signal.map (.toc >> selectedTitleFromSL)
-    |> Signal.dropRepeats
+    |> Signal.map (\model ->
+        if model.showCover then
+            "Midnight Murder Party"
+        else
+            selectedTitleFromSL model.toc ++ " | Midnight Murder Party"
+    ) |> Signal.dropRepeats
 
 port currentEntry : Signal (RenderElementID, Bool)
 port currentEntry =

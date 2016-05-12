@@ -22,6 +22,10 @@ body > div, body > div > div {
     height: 100%;
 }
 
+div#fb-root {
+    display: none;
+}
+
 /* ======== PAGE SECTIONS ======== */
 
 section {
@@ -49,20 +53,17 @@ section.comments {
 /* ---- Banner ---- */
 
 .banner {
-    /*background-image: linear-gradient(rgba(0,0,0,0.7),rgba(0,0,0,0) 50%);*/
-    background-size: 100% 100%;
-    background-position: center center;
+    height: 15vh;
+    width: 70.5vh;
+    max-width: 100%;
+    margin: 0 auto;
 }
 
 .banner-logo {
     background-image: url("/static/assets/img/logo-2.png");
-/*    width: 705px;
-    height: 150px;*/
-    height: 15vh;
-    width: 70.5vh;
-    max-width: 100%;
     background-size: cover;
-    margin: 0 auto;
+    height: 100%;
+    max-width: 100%;
 }
 
 /* ---- Loader Overlay ---- */
@@ -337,7 +338,13 @@ h2.fancy-heading.no-bottom-margin {
     line-height: 1.4em;
 }
 
-a { color: #CE9046; }
+.authors-note-text p {
+    margin-bottom: 1.4em;
+}
+
+a { color: #CE9046; text-decoration: none; }
+
+a:hover { text-decoration: underline; }
 
 section.comments span.highlight-color {
     color: #CE9046;
@@ -346,10 +353,47 @@ section.comments span.highlight-color {
 /* ======== FOOTER ======== */
 
 footer {
-    height: 200px;
-    background: #79131B;
+    background: black;
+    box-sizing: border-box;
+    padding: 2em 0 0.2em 0;
 }
 
+footer .footer-link-block {
+    display: flex;
+    flex-flow: row wrap;
+}
+
+footer ul { list-style: none; }
+
+footer h2.fancy-heading {
+    margin: 0;
+    font-size: 36px;
+}
+
+footer .link-section .follow-share {
+    text-align: left;
+}
+
+footer .link-section .follow-share > div {
+    margin: 0.2em auto;
+}
+
+footer .link-section {
+    flex: 1;
+    text-align: center;
+    margin: 1em 0.5em;
+    min-width: 200px;
+}
+
+.copy {
+    text-align: center;
+    font-size: 14px;
+    color: #777;
+    margin-top: 1em;
+    display: block;
+}
+
+/* ======== MISC ======== */
 
 .hidden { visibility: hidden; }
 

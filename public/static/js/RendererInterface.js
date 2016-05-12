@@ -35,7 +35,7 @@ var RendererInterface = (function() {
 
             var scrollToElem = function(elem, onScrollFinish) {
                 if(elem == null) return;
-                var elemPos = elem.getBoundingClientRect().top - 15; //TODO: replace 15 with computed margin-top
+                var elemPos = elem.getBoundingClientRect().top - parseInt((elem.currentStyle || window.getComputedStyle(elem)).marginTop);
                 var scrollY = window.scrollY;
                 var multiplier = 0;
                 var multIncr = 0.0001;
@@ -160,7 +160,7 @@ var RendererInterface = (function() {
     });
 
     Reader.ports.title.subscribe(function(title) {
-        document.title = title + " | Midnight Murder Party";
+        document.title = title;
     });
 
     setInterval(function() {
