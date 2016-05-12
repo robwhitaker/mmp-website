@@ -60,12 +60,17 @@ genRenderBlob model =
 app = StartApp.start
     { init   = init
     , update = update
-    , view   = view
+    , view   = view shareButtonClicks.address
     , inputs = [ arrowKeys, chapterRenderedIn, chapterReflowIn, headingsUpdated, pageSet, closeDropdown, commentsLinkClick ]
     }
 
 main : Signal Html
 main = app.html
+
+-- Mailboxes --
+
+shareButtonClicks : Signal.Mailbox { id : String, width: Int, height: Int }
+shareButtonClicks = Signal.mailbox { id = "", width = 0, height = 0}
 
 -- Inputs --
 
@@ -186,3 +191,7 @@ port currentEntry =
             in (model.toc.selected.id, shouldJump)
         )
     |> Signal.dropRepeats
+
+port shareClicked : Signal { id : String, width: Int, height: Int }
+port shareClicked =
+    shareButtonClicks.signal

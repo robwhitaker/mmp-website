@@ -163,6 +163,18 @@ var RendererInterface = (function() {
         document.title = title;
     });
 
+    Reader.ports.shareClicked.subscribe(function(data) {
+        var elem = document.getElementById(data.id);
+        if(!elem) return;
+
+        var endpoint = elem.getAttribute("data-endpoint");
+
+        var top = (window.screen.availHeight/2 - data.height/2) * 0.3;
+        var left = (window.screen.availWidth/2 - data.width/2) * 0.3;
+
+        window.open(endpoint, "Share", "height="+data.height+",width="+data.width+",top="+top+",left="+left);
+    });
+
     setInterval(function() {
         Renderer.refreshCommentCount();
     }, 1000*60*5);

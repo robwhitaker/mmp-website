@@ -356,6 +356,7 @@ footer {
     background: black;
     box-sizing: border-box;
     padding: 2em 0 0.2em 0;
+    font: 14px Helvetica, Arial, sans-serif;
 }
 
 footer .footer-link-block {
@@ -366,16 +367,28 @@ footer .footer-link-block {
 footer ul { list-style: none; }
 
 footer h2.fancy-heading {
-    margin: 0;
+    margin: 0 0 0.2em 0;
     font-size: 36px;
 }
 
-footer .link-section .follow-share {
-    text-align: left;
+footer img {
+    width: 30px;
+    height: 30px;
+    margin: 0px 0.2em;
 }
 
-footer .link-section .follow-share > div {
-    margin: 0.2em auto;
+footer img[src="/static/assets/img/ello-icon.jpg"] {
+    box-sizing: border-box;
+    padding: 2px;
+    background-color: white;
+}
+
+footer input {
+    margin-top: 0.4em;
+    border-radius: 0.2em;
+    padding: 0.4em;
+    border: none;
+    text-align: center;
 }
 
 footer .link-section {
@@ -385,12 +398,128 @@ footer .link-section {
     min-width: 200px;
 }
 
+footer .share-btn {
+    display: block;
+    margin: 0.5em auto;
+}
+
 .copy {
     text-align: center;
     font-size: 14px;
     color: #777;
     margin-top: 1em;
     display: block;
+}
+
+/* ======== MAILCHIMP ======== */
+
+#mc_embed_signup {
+    clear: left;
+    font: 14px Helvetica, Arial, sans-serif;
+    width: 100%;
+}
+
+#mc_embed_signup_scroll {
+    display: flex;
+    flex-flow: row wrap;
+    margin: 0 auto;
+    max-width: 250px;
+
+}
+
+#mc_embed_signup input.email {
+    flex: 2;
+    min-width: 100px;
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+#mc_embed_signup .clear {
+    flex: 1;
+}
+
+#mc_embed_signup .button {
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+    width: 100%;
+    padding: 0;
+}
+
+/* ======== Share Buttons ======== */
+
+.share-btn {
+    position: relative;
+    background-color: grey;
+    overflow: hidden;
+    font: 12px Helvetica, Arial, sans-serif;
+    text-align: center;
+    height: 20px;
+    display: inline-block;
+    border-radius: 0.25em;
+    cursor: pointer;
+    color: white;
+    font-weight: bold;
+    text-shadow: 1px 1px black;
+    min-width: 75px;
+    max-width: 75px;
+    display: inline-block;
+}
+
+.share-btn img {
+    height: 20px;
+    width: 20px;
+    margin: 0;
+    min-height: 100%;
+    vertical-align: middle;
+    float: left;
+}
+
+.share-btn span {
+    vertical-align: middle;
+    margin: 0 0.6em 0 0.4em;
+    height: 100%;
+    line-height: 20px;
+}
+
+.share-btn .hover-overlay {
+    position: absolute;
+    background: rgba(255,255,255,0.1);
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: none;
+}
+
+.share-btn:hover .hover-overlay {
+    display: block;
+}
+
+/* ---- Custom Share Buttons ---- */
+
+.share-btn.facebook-share-btn {
+    background-image: -webkit-linear-gradient(top, rgba(74, 104, 183,1), rgba(59,86,161,1));
+}
+
+.share-btn.twitter-share-btn {
+    background-image: -webkit-linear-gradient(top, #FEFEFE, #E1E1E1);
+    color: #333;
+    text-shadow: none;
+}
+
+.share-btn.twitter-share-btn .hover-overlay { background: rgba(255,255,255,0.3); }
+
+.share-btn.tumblr-share-btn {
+    background-image: -webkit-linear-gradient(top, #36465D, #36465D);
+}
+
+.share-btn.gplus-share-btn {
+    background-image: -webkit-linear-gradient(top, #bf483b, #C43B2B);
+}
+
+.share-btn.reddit-share-btn img {
+    width: 100%;
+}
+
+.share-btn.reddit-share-btn .hover-overlay {
+    background: rgba(255,255,255,0.3);
 }
 
 /* ======== MISC ======== */
