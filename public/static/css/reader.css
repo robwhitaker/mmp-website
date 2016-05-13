@@ -449,6 +449,7 @@ footer .share-btn {
 
 .share-btn {
     position: relative;
+    z-index: 0;
     background-color: grey;
     overflow: hidden;
     font: 12px Helvetica, Arial, sans-serif;
@@ -462,7 +463,6 @@ footer .share-btn {
     text-shadow: 1px 1px black;
     min-width: 75px;
     max-width: 75px;
-    display: inline-block;
 }
 
 .share-btn img {
@@ -520,6 +520,117 @@ footer .share-btn {
 
 .share-btn.reddit-share-btn .hover-overlay {
     background: rgba(255,255,255,0.3);
+}
+
+/* ======== SHARE DIALOG ======== */
+
+.share-dialog-container {
+    position: fixed;
+    top: 0; bottom: 0; left: 0; right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1500;
+    animation: fadein 0.4s;
+    animation-fill-mode: forwards;
+}
+
+.share-dialog-container.fade-out {
+    animation: fadeout 0.4s;
+    animation-fill-mode: forwards;
+}
+
+.share-dialog {
+    flex: 1;
+    max-width: 500px;
+    padding: 1em;
+    border-radius: 0.4em;
+    color: white;
+    position: relative;
+    z-index: 1501;
+    cursor: text;
+    font: 18px Helvetica, Arial, sans-serif;
+    overflow: auto;
+    max-height: 100%;
+}
+
+.share-dialog h2.fancy-heading {
+
+}
+
+.share-dialog .url-container input {
+    width: 100%;
+    border-radius: 0.4em;
+    border: none;
+    font-size: 24px;
+    padding: 0.5em 1em;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.share-dialog .url-container {
+    margin-bottom: 1em;
+}
+
+.share-dialog span {
+
+}
+
+.share-dialog input[type="checkbox"] {
+    width: 30px;
+    height: 30px;
+    margin: 0.4em 1em 0 0;
+    margin-left: 3em;
+    float: left;
+    cursor: pointer;
+}
+
+.share-dialog .share-section-title {
+    font-size: 15px;
+    font-style: italic;
+    color: #CE9046;
+}
+
+.share-dialog .social-media-buttons {
+    margin-top: 2em;
+    padding-top: 1em;
+    text-align: center;
+    border-top: 1px solid #ccc;
+}
+
+.share-dialog .social-media-buttons > div {
+    margin: 0.5em 1em;
+}
+
+.share-dialog-container .overlay {
+    position: absolute;
+    top: 0; bottom: 0; left: 0; right: 0;
+    z-index: 1500;
+    background-color: rgba(0,0,0,0.9);
+}
+
+.share-dialog .close {
+    color: white;
+    position: absolute;
+    right: 20px;
+    top: 10px;
+    font-size: 30px;
+    cursor: pointer;
+    z-index: 100000;
+}
+
+.share-dialog .close:hover {
+    transform: scale(1.4);
+}
+
+@keyframes fadein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes fadeout {
+    from { opacity: 1; }
+    to   { opacity: 0; }
 }
 
 /* ======== MISC ======== */

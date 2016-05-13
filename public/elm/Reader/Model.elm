@@ -16,14 +16,17 @@ type LastNavAction = PageTurn Direction | PageJump RenderElementID | PageReflow 
 type State = Ready | Loading | Reflowing | Rendering
 
 type alias Model =
-    { toc              : TOC
-    , stylesheets      : Dict ChapterID Stylesheet
-    , pages            : { current : Int, total : Int }
-    , showCover        : Bool
-    , headingIDsOnPage : List String
-    , lastNavAction    : LastNavAction
-    , state            : State
-    , tocExpanded      : Bool
+    { toc               : TOC
+    , stylesheets       : Dict ChapterID Stylesheet
+    , pages             : { current : Int, total : Int }
+    , showCover         : Bool
+    , showShareDialog   : Bool
+    , shareFromHeading  : Bool
+    , headingIDsOnPage  : List String
+    , lastNavAction     : LastNavAction
+    , fadingShareDialog : Bool
+    , state             : State
+    , tocExpanded       : Bool
     }
 
 type alias RenderElement =
@@ -51,8 +54,11 @@ empty =
     , stylesheets = Dict.empty
     , pages = { current = 0, total = 0 }
     , showCover = True
+    , showShareDialog = False
+    , shareFromHeading = True
     , headingIDsOnPage = []
     , lastNavAction = Render
+    , fadingShareDialog = False
     , state = Loading
     , tocExpanded = False
     }

@@ -15,6 +15,7 @@ var RendererInterface = (function() {
         , setPage : 0
         , mouseClick : []
         , changeHeadingFromCommentsLink : ""
+        , readerShareClicked : ""
         }
     );
 
@@ -93,6 +94,9 @@ var RendererInterface = (function() {
                         scrollToElem(document.getElementById("authors-note"), function() {
                             Reader.ports.changeHeadingFromCommentsLink.send(id);
                         });
+                        break;
+                    case "share":
+                        Reader.ports.readerShareClicked.send(id);
                         break;
                     default:
                         console.log(link, id);

@@ -14,6 +14,7 @@ import Reader.Model.Helpers
 import Reader.Components.Dropdown as Dropdown
 
 import String
+import Task
 
 ---- TYPE ALIASES ----
 
@@ -28,6 +29,10 @@ type alias LocationHash = String
 type Action
     = TurnPage Direction
     | CoverClick
+    | ShareFromHeading Bool
+    | ShowShareDialog RenderElementID
+    | HideShareDialogIn Float
+    | HideShareDialog
     | Load (List Chapter) (List (RenderElementID, Bool)) LocationHash
     | ChapterHasRendered CurrentPage NumPages HeadingIDsOnPage
     | ChapterHasReflowed CurrentPage NumPages (Maybe FocusedElementID) HeadingIDsOnPage
@@ -41,16 +46,36 @@ type Action
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
-    flip (,) Effects.none <|
-        case action of
+    case action of
 
-            CoverClick -> { model | showCover = False }
+        CoverClick ->
+            flip (,) Effects.none
+                { model | showCover = False }
 
-            ChangeSelectedHeadingForComments hId ->
+        ShareFromHeading willShare ->
+            flip (,) Effects.none
+                { model | shareFromHeading = willShare }
+
+        ShowShareDialog hId ->
+            flip (,) Effects.none
+                { model | toc = gotoHeading hId model.toc, lastNavAction = CommentsLinkClick, showShareDialog = True, shareFromHeading = True }
+
+        HideShareDialog ->
+            flip (,) Effects.none
+                { model | showShareDialog = False, fadingShareDialog = False }
+
+        HideShareDialogIn milli ->
+            (,)
+                { model | fadingShareDialog = True }
+                ((Task.sleep milli `Task.andThen` \_ -> Task.succeed HideShareDialog) |> Effects.task)
+
+        ChangeSelectedHeadingForComments hId ->
+            flip (,) Effects.none
                 { model | toc = gotoHeading hId model.toc, lastNavAction = CommentsLinkClick }
 
-            TurnPage dir ->
-                if model.showCover then
+        TurnPage dir ->
+            flip (,) Effects.none <|
+                if model.showCover || model.showShareDialog then
                     if dir == Forward then
                         { model | showCover = False }
                     else
@@ -115,42 +140,45 @@ update action model =
                         else
                             { model | pages = { current = num, total = model.pages.total }, lastNavAction = PageTurn (PageNum num) }
 
-            Dropdown (maybeRenderElemID, maybeExpanded) ->
-                let expanded = Maybe.withDefault model.tocExpanded maybeExpanded
+        Dropdown (maybeRenderElemID, maybeExpanded) ->
+            let expanded = Maybe.withDefault model.tocExpanded maybeExpanded
 
-                    nextUntilContent = untilContent SL.next
+                nextUntilContent = untilContent SL.next
 
-                    newToc =
-                        case maybeRenderElemID of
-                            Just id ->
-                                nextUntilContent (gotoHeading id model.toc)
-                            Nothing ->
-                                model.toc
+                newToc =
+                    case maybeRenderElemID of
+                        Just id ->
+                            nextUntilContent (gotoHeading id model.toc)
+                        Nothing ->
+                            model.toc
 
-                    triggersRender = newToc.selected.chapter /= model.toc.selected.chapter
+                triggersRender = newToc.selected.chapter /= model.toc.selected.chapter
 
-                    lastNavAction =
-                        if newToc == model.toc then
-                            model.lastNavAction
+                lastNavAction =
+                    if newToc == model.toc then
+                        model.lastNavAction
+                    else
+                        if triggersRender then
+                            Render
                         else
-                            if triggersRender then
-                                Render
-                            else
-                                PageJump newToc.selected.id
-                in
+                            PageJump newToc.selected.id
+            in
+                flip (,) Effects.none
                     { model | toc = newToc, tocExpanded = expanded, lastNavAction = lastNavAction, state = if triggersRender then Rendering else model.state }
 
-            Load chapters readEntries locationHash ->
-                let targetID = String.dropLeft 3 locationHash
-                    loadedModel = Reader.Model.Helpers.fromChapterList chapters (Dict.fromList readEntries)
-                    newToc = gotoHeading targetID loadedModel.toc
-                in
+        Load chapters readEntries locationHash ->
+            let targetID = String.dropLeft 3 locationHash
+                loadedModel = Reader.Model.Helpers.fromChapterList chapters (Dict.fromList readEntries)
+                newToc = gotoHeading targetID loadedModel.toc
+            in
+                flip (,) Effects.none
                     { loadedModel | state = Rendering, toc = newToc, showCover = loadedModel.toc == newToc }
 
-            ChapterHasRendered currentPage numPages headingIds ->
-                let headings = headingIdFilter model.toc headingIds
-                    newToc = gotoHeading (List.head headings ? model.toc.selected.id) model.toc
-                in
+        ChapterHasRendered currentPage numPages headingIds ->
+            let headings = headingIdFilter model.toc headingIds
+                newToc = gotoHeading (List.head headings ? model.toc.selected.id) model.toc
+            in
+                flip (,) Effects.none
                     { model
                         | pages =
                             { current = currentPage
@@ -162,17 +190,18 @@ update action model =
                         , lastNavAction = Render
                     }
 
-            ChapterHasReflowed currentPage numPages maybeFocusedId headingIds ->
-                let headings = headingIdFilter model.toc headingIds
+        ChapterHasReflowed currentPage numPages maybeFocusedId headingIds ->
+            let headings = headingIdFilter model.toc headingIds
 
-                    newFocusedId =
-                        if List.length headings == 0 && maybeFocusedId /= Nothing then
-                            maybeFocusedId ? model.toc.selected.id
-                        else if List.member model.toc.selected.id headings then
-                            model.toc.selected.id
-                        else
-                            List.head headings ? model.toc.selected.id
-                in
+                newFocusedId =
+                    if List.length headings == 0 && maybeFocusedId /= Nothing then
+                        maybeFocusedId ? model.toc.selected.id
+                    else if List.member model.toc.selected.id headings then
+                        model.toc.selected.id
+                    else
+                        List.head headings ? model.toc.selected.id
+            in
+                flip (,) Effects.none
                     { model
                         | pages =
                             { current = currentPage
@@ -184,52 +213,53 @@ update action model =
                         , lastNavAction = PageReflow
                     }
 
-            UpdateHeadingsOnPage headingIds ->
-                let headings = headingIdFilter model.toc headingIds
-                    newSelectedId =
-                        case model.lastNavAction of
-                            PageTurn dir ->
-                                case dir of
-                                    Forward ->
-                                        if List.length headings > 0 && model.toc.selected.id /= "" then
-                                            (List.reverse >> List.head) model.headingIDsOnPage ? model.toc.selected.id
-                                        else
-                                            Maybe.oneOf
-                                                [ List.head headings
-                                                , (List.reverse >> List.head) model.headingIDsOnPage
-                                                ] ? model.toc.selected.id
-
-                                    Backward ->
+        UpdateHeadingsOnPage headingIds ->
+            let headings = headingIdFilter model.toc headingIds
+                newSelectedId =
+                    case model.lastNavAction of
+                        PageTurn dir ->
+                            case dir of
+                                Forward ->
+                                    if List.length headings > 0 && model.toc.selected.id /= "" then
+                                        (List.reverse >> List.head) model.headingIDsOnPage ? model.toc.selected.id
+                                    else
                                         Maybe.oneOf
-                                            [(List.reverse >> List.head) headings
-                                            , (List.head model.headingIDsOnPage) `Maybe.andThen` (\firstIDOnPrevPage ->
-                                                    Just (gotoHeading firstIDOnPrevPage model.toc |> SL.previous |> .selected |> .id)
-                                                )
+                                            [ List.head headings
+                                            , (List.reverse >> List.head) model.headingIDsOnPage
                                             ] ? model.toc.selected.id
 
-                                    _ -> model.toc.selected.id
+                                Backward ->
+                                    Maybe.oneOf
+                                        [(List.reverse >> List.head) headings
+                                        , (List.head model.headingIDsOnPage) `Maybe.andThen` (\firstIDOnPrevPage ->
+                                                Just (gotoHeading firstIDOnPrevPage model.toc |> SL.previous |> .selected |> .id)
+                                            )
+                                        ] ? model.toc.selected.id
 
-                            PageJump headingID ->
-                                headingID
+                                _ -> model.toc.selected.id
 
-                            PageReflow ->
-                                model.toc.selected.id
+                        PageJump headingID ->
+                            headingID
 
-                            Render ->
-                                List.head headings ? model.toc.selected.id
+                        PageReflow ->
+                            model.toc.selected.id
 
-                            _ -> model.toc.selected.id
-                in
+                        Render ->
+                            List.head headings ? model.toc.selected.id
+
+                        _ -> model.toc.selected.id
+            in
+                flip (,) Effects.none
                     { model
                         | headingIDsOnPage = headings
                         , toc = gotoHeading newSelectedId model.toc
                     }
 
-            Dump msg ->
-                let dump = Debug.log "Dump: " msg
-                in model
+        Dump msg ->
+            let dump = Debug.log "Dump: " msg
+            in flip (,) Effects.none model
 
-            _ -> model
+        _ -> flip (,) Effects.none model
 
 ---- HELPERS ----
 

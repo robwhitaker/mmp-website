@@ -54,6 +54,36 @@ view shareBtnAddress address model =
                         ]
                     ]
                 ]
+            , div
+                [ classList [ ("share-dialog-container", True), ("no-display", not model.showShareDialog), ("fade-out", model.fadingShareDialog) ] ]
+                [ div
+                    [ class "overlay", onClick address <| HideShareDialogIn 400 ]
+                    []
+                , div
+                    [ class "share-dialog" ]
+                    [ i [ class "fa fa-times fa-6 close", attribute "aria-hidden" "true", onClick address <| HideShareDialogIn 400 ] []
+                    , h2 [ class "fancy-heading" ] [ text "Share" ]
+                    , div
+                        [ class "url-container" ]
+                        [ input [ disabled True, value <| "localhost:4567" ++ if model.shareFromHeading then "/#!/" ++ model.toc.selected.id else "" ] [] ]
+                    , input
+                        [ type' "checkbox"
+                        , checked model.shareFromHeading
+                        , on "change" targetChecked <| Signal.message address << ShareFromHeading
+                        ] []
+                    , span [] [ text <| "Share from current heading "]
+                    , span [ class "share-section-title" ] [ text <| "(" ++ Utils.selectedTitleFromSL model.toc ++ ")" ]
+                    , span [] [ text "?" ]
+                    , div
+                        [ class "social-media-buttons" ]
+                        [ fbShareLink      shareBtnAddress "fb-inline-share"      ""
+                        , twitterShareLink shareBtnAddress "twitter-inline-share" ""
+                        , tumblrShareLink  shareBtnAddress "tumblr-inline-share"  ""
+                        , gplusShareLink   shareBtnAddress "gplus-inline-share"   ""
+                        , redditShareLink  shareBtnAddress "reddit-inline-share"  ""
+                        ]
+                    ]
+                ]
             ]
         , section
             [ classList [("comments", True), ("no-display", model.showCover)] ]
@@ -138,16 +168,60 @@ mkLinks links =
         ) links
 
 share addr =
-    let basicShareLink = mkShareLink addr (565,386)
-    in
-        div [] --<| List.map (\html -> div [ class "half-pair" ] [ html ])
-            [ basicShareLink "fb-footer-share" (Txt "facebook-icon.png" "Share") "https://www.facebook.com/sharer/sharer.php?u=http%3A//midnightmurderparty.com" "facebook-share-btn"
-            , basicShareLink "twitter-footer-share" (Txt "twitter-icon.png" "Tweet") "https://twitter.com/intent/tweet?text=Join%20in%20on%20a%20night%20of%20silly%20shenanigans%2C%20spooky%20stories%2C%20and%20murder%20at%20the%20Midnight%20Murder%20Party!&tw_p=tweetbutton&url=http%3A%2F%2Fmidnightmurderparty.com&via=MMPWebSeries" "twitter-share-btn"
-            , basicShareLink "tumblr-footer-share" (Txt "tumblr-icon.png" "Post") "https://www.tumblr.com/widgets/share/tool?posttype=link&title=Midnight%20Murder%20Party&content=http%3A%2F%2Fwww.midnightmurderparty.com&tags=novel%2C%20web%20comic%2C%20midnight%20murder%20party%2C%20MMP%2C%20episodic%2C%20horror&canonicalUrl=http%3A%2F%2Fwww.midnightmurderparty.com" "tumblr-share-btn"
-            , basicShareLink "gplus-footer-share" (Txt "//www.gstatic.com/images/icons/gplus-32.png" "Share") "//plus.google.com/share?url=http%3A%2F%2Fwww.midnightmurderparty.com" "gplus-share-btn"
-            , mkShareLink addr (875,750) "reddit-footer-share" (Img "//www.redditstatic.com/spreddit8.gif") "http://www.reddit.com/submit?url=http%3A%2F%2Fwww.midnightmurderparty.com" "reddit-share-btn"
-            ]
+    div []
+        [ fbShareLink      addr "fb-footer-share"      ""
+        , twitterShareLink addr "twitter-footer-share" ""
+        , tumblrShareLink  addr "tumblr-footer-share"  ""
+        , gplusShareLink   addr "gplus-footer-share"   ""
+        , redditShareLink  addr "reddit-footer-share"  ""
+        ]
 
+basicPopupSize = (565,386)
+
+fbShareLink addr domId hId =
+    mkShareLink
+        addr
+        basicPopupSize
+        domId
+        (Txt "facebook-icon.png" "Share")
+        ("https://www.facebook.com/sharer/sharer.php?u=http%3A//midnightmurderparty.com" ++ if hId /= "" then "%2F%23!%2F" ++ hId else "")
+        "facebook-share-btn"
+
+twitterShareLink addr domId hId =
+    mkShareLink
+        addr
+        basicPopupSize
+        domId
+        (Txt "twitter-icon.png" "Tweet")
+        ("https://twitter.com/intent/tweet?text=Join%20in%20on%20a%20night%20of%20silly%20shenanigans%2C%20spooky%20stories%2C%20and%20murder%20at%20the%20Midnight%20Murder%20Party!&tw_p=tweetbutton&url=http%3A%2F%2Fmidnightmurderparty.com" ++ if hId /= "" then "%2F%23!%2F" ++ hId else "" ++ "&via=MMPWebSeries")
+        "twitter-share-btn"
+
+tumblrShareLink addr domId hId =
+    mkShareLink
+        addr
+        basicPopupSize
+        domId
+        (Txt "tumblr-icon.png" "Post")
+        ("https://www.tumblr.com/widgets/share/tool?posttype=link&title=Midnight%20Murder%20Party&content=http%3A%2F%2Fwww.midnightmurderparty.com" ++ if hId /= "" then "%2F%23!%2F" ++ hId else "" ++ "&tags=novel%2C%20web%20comic%2C%20midnight%20murder%20party%2C%20MMP%2C%20episodic%2C%20horror&canonicalUrl=http%3A%2F%2Fwww.midnightmurderparty.com")
+        "tumblr-share-btn"
+
+gplusShareLink addr domId hId =
+    mkShareLink
+        addr
+        basicPopupSize
+        domId
+        (Txt "//www.gstatic.com/images/icons/gplus-32.png" "Share")
+        ("//plus.google.com/share?url=http%3A%2F%2Fwww.midnightmurderparty.com" ++ if hId /= "" then "%2F%23!%2F" ++ hId else "")
+        "gplus-share-btn"
+
+redditShareLink addr domId hId =
+    mkShareLink
+        addr
+        (875,750)
+        domId
+        (Img "//www.redditstatic.com/spreddit8.gif")
+        ("http://www.reddit.com/submit?url=http%3A%2F%2Fwww.midnightmurderparty.com" ++ if hId /= "" then "%2F%23!%2F" ++ hId else "")
+        "reddit-share-btn"
 
 extras = mkLinks
     [ ("MMP Halloween - 2015", "/interactive/HalloweenSpecial2015/") ]

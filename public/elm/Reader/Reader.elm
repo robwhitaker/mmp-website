@@ -61,7 +61,7 @@ app = StartApp.start
     { init   = init
     , update = update
     , view   = view shareButtonClicks.address
-    , inputs = [ arrowKeys, chapterRenderedIn, chapterReflowIn, headingsUpdated, pageSet, closeDropdown, commentsLinkClick ]
+    , inputs = [ arrowKeys, chapterRenderedIn, chapterReflowIn, headingsUpdated, pageSet, closeDropdown, commentsLinkClick, readerShareClick ]
     }
 
 main : Signal Html
@@ -70,7 +70,7 @@ main = app.html
 -- Mailboxes --
 
 shareButtonClicks : Signal.Mailbox { id : String, width: Int, height: Int }
-shareButtonClicks = Signal.mailbox { id = "", width = 0, height = 0}
+shareButtonClicks = Signal.mailbox { id = "", width = 0, height = 0 }
 
 -- Inputs --
 
@@ -116,6 +116,9 @@ closeDropdown =
 commentsLinkClick : Signal Action
 commentsLinkClick = Signal.map ChangeSelectedHeadingForComments changeHeadingFromCommentsLink
 
+readerShareClick : Signal Action
+readerShareClick = Signal.map ShowShareDialog readerShareClicked
+
 -- Static Ports --
 
 port location : String
@@ -137,6 +140,8 @@ port iframeArrows : Signal { x : Int, y : Int }
 port setPage : Signal Int
 
 port mouseClick : Signal ()
+
+port readerShareClicked : Signal RenderElementID
 
 -- Outbound Ports --
 
