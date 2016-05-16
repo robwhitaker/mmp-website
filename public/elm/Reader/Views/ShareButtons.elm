@@ -12,6 +12,7 @@ type alias Msg =
     { srcBtnClass : String
     , width       : Int
     , height      : Int
+    , endpoint    : String
     }
 
 type ShareLinkType = Txt String String | Img String
@@ -53,8 +54,12 @@ mkShareLink shareButton =
                     ]
     in
         div [ class <| "share-btn " ++ shareButton.cssClass
-            , attribute "data-endpoint" shareButton.endpoint
-            , onClick { srcBtnClass = shareButton.cssClass, width = fst shareButton.popupDimensions, height = snd shareButton.popupDimensions }
+            , onClick
+                { srcBtnClass = shareButton.cssClass
+                , width = fst shareButton.popupDimensions
+                , height = snd shareButton.popupDimensions
+                , endpoint = shareButton.endpoint
+                }
             ] btnContents
 
 ---- BUTTONS ----
