@@ -1,10 +1,9 @@
-module Core.HTTP.Requests where
+module Core.HTTP.Requests exposing (send, RequestType(..))
 
 import Http
 import Json.Encode as Json
 import Json.Decode exposing (Decoder)
 import Task exposing (Task)
-import Effects exposing (Effects)
 
 type RequestType = Post Json.Value | Get
 
@@ -26,14 +25,3 @@ send secretKey reqType decoder endpoint =
 
             Get ->
                 Http.get decoder route
-
-toEffect : (success -> action) -> (error -> action) -> Task error success -> Effects action
-toEffect onSuccess onError task =
-    task
-    |> Task.toResult
-    |> Task.map (\result ->
-        case result of
-            Ok val -> onSuccess val
-            Err val -> onError val
-        )
-    |> Effects.task

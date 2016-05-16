@@ -1,9 +1,9 @@
-module Reader.Model.Helpers where
+module Reader.Model.Helpers exposing (..)
 
 import Dict exposing (Dict)
 
 import Reader.Model exposing (..)
-import Reader.Components.Disqus exposing (toDisqusId)
+import Reader.Utils.Disqus exposing (toDisqusId)
 
 import Core.Utils.Either exposing (..)
 import Core.Utils.SelectionList as SL exposing (SelectionList)

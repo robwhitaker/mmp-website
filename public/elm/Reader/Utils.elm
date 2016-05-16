@@ -1,4 +1,4 @@
-module Reader.Utils where
+module Reader.Utils exposing (..)
 
 import String
 import Regex
@@ -6,7 +6,7 @@ import Regex
 import Core.Utils.MaybeExtra exposing (..)
 
 import Core.Utils.SelectionList as SL exposing (SelectionList)
-import Editor.Parser exposing (stripTags)
+import Core.Utils.String exposing (stripTags)
 
 selectedTitleFromSL : SelectionList { a | heading : String, level : Int } -> String
 selectedTitleFromSL sl =

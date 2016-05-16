@@ -1,21 +1,9 @@
 var RendererInterface = (function() {
 
     var Renderer;
-    var Reader = Elm.fullscreen(Elm.Reader.Reader,
+    var Reader = window.Reader = Elm.Reader.Main.fullscreen(
         { location : window.location.hash
-        , chapterRendered :
-            { currentPage : 0
-            , numPages : 0
-            , headingsOnPage : []
-            }
-        , chapterReflowed : [0, 0, null, []]
-        , headingUpdate : []
-        , iframeArrows : { x : 0, y : 0 }
         , readEntries : getLocalStorage()
-        , setPage : 0
-        , mouseClick : []
-        , changeHeadingFromCommentsLink : ""
-        , readerShareClicked : ""
         }
     );
 
@@ -30,7 +18,13 @@ var RendererInterface = (function() {
         return items;
     }
 
-    function init(rendererFrame) {
+    function init(rendererFrameId) {
+        var rendererFrame = document.getElementById(rendererFrameId);
+        if(!rendererFrame) {
+            setTimeout(function() { init(rendererFrameId); }, 100);
+            return;
+        }
+
         rendererFrame.addEventListener("load", function() {
             window.Renderer = Renderer = rendererFrame.contentWindow.Renderer;
 
@@ -62,6 +56,7 @@ var RendererInterface = (function() {
                 Reader.ports.chapterRendered.send(
                     { "currentPage" : renderData.currentPage
                     , "numPages" : renderData.numPages
+                    , "focusedHeading" : null
                     , "headingsOnPage" : Array.prototype.filter.call(renderData.headingsOnPage, function() { return true; })
                     }
                 );
@@ -69,16 +64,16 @@ var RendererInterface = (function() {
 
             Renderer.on("reflowed", function(renderData) {
                 Reader.ports.chapterReflowed.send(
-                    [ renderData.currentPage
-                    , renderData.numPages
-                    , renderData.focusedHeading
-                    , Array.prototype.filter.call(renderData.headingsOnPage, function() { return true; })
-                    ]
+                    { "currentPage" : renderData.currentPage
+                    , "numPages" : renderData.numPages
+                    , "focusedHeading" : renderData.focusedHeading
+                    , "headingsOnPage" : Array.prototype.filter.call(renderData.headingsOnPage, function() { return true; })
+                    }
                 );
             });
 
             Renderer.on("pageTurned", function(headingsOnPage) {
-                Reader.ports.headingUpdate.send(
+                Reader.ports.headingsUpdated.send(
                     Array.prototype.filter.call(headingsOnPage, function() { return true; })
                 );
             });
@@ -87,16 +82,16 @@ var RendererInterface = (function() {
                 switch(link) {
                     case "comments":
                         scrollToElem(document.getElementById("comments-box"), function() {
-                            Reader.ports.changeHeadingFromCommentsLink.send(id);
+                            Reader.ports.inlineLinkClicked.send(id);
                         });
                         break;
                     case "authorsnote":
                         scrollToElem(document.getElementById("authors-note"), function() {
-                            Reader.ports.changeHeadingFromCommentsLink.send(id);
+                            Reader.ports.inlineLinkClicked.send(id);
                         });
                         break;
                     case "share":
-                        Reader.ports.readerShareClicked.send(id);
+                        Reader.ports.inlineShareClicked.send(id);
                         break;
                     default:
                         console.log(link, id);
@@ -104,38 +99,31 @@ var RendererInterface = (function() {
                 }
             });
 
-            Renderer.on("arrows", function(arrows) {
-                Reader.ports.iframeArrows.send(arrows);
+            Renderer.on("keyPress", function(keyCode) {
+                Reader.ports.keyPressedInReader.send(keyCode);
             });
 
             Renderer.on("setPage", function(pageNum) {
-                // console.log("setPage", pageNum);
-                Reader.ports.setPage.send(pageNum);
+                console.log(pageNum)
+                Reader.ports.pageSet.send(pageNum);
             });
 
             Renderer.on("click", function() {
-                Reader.ports.mouseClick.send([]);
+                Reader.ports.mouseClickedInReader.send(null);
             });
         });
     }
 
-    Reader.ports.currentChapter.subscribe(function renderChapter(data) {
+    Reader.ports.renderChapter.subscribe(function renderChapter(data) {
         if(!Renderer || !Renderer.render) {
             console.log("Renderer not loaded: Waiting...");
             setTimeout(function() { renderChapter(data); }, 100);
         } else {
-            // console.log("render", data);
             Renderer.render(data.renderObj, data.eId, data.isPageTurnBack);
         }
     });
 
-    Reader.ports.currentEntry.subscribe(function(data) {
-        // console.log("entryChange", data);
-        var eId = data[0];
-        var shouldJump = data[1];
-
-        if(shouldJump) Renderer.goToHeading(eId);
-
+    Reader.ports.setReadInStorage.subscribe(function(eId) {
         if(!localStorage) return;
 
         var data = JSON.parse(localStorage.getItem("MMP_ReaderData") || "{}");
@@ -143,15 +131,16 @@ var RendererInterface = (function() {
         localStorage.setItem("MMP_ReaderData", JSON.stringify(data));
     });
 
-    Reader.ports.currentPage.subscribe(function(pageNum) {
-        if(pageNum >= 0) {
-            // console.log("Goto page: " + pageNum);
-            Renderer.goToPage(pageNum);
-        }
+    Reader.ports.jumpToEntry.subscribe(function(eId) {
+        console.log(eId);
+        Renderer.goToHeading(eId);
     });
 
-    Reader.ports.currentDisqusThread.subscribe(function(disqusData) {
-        // console.log("disqus", disqusData);
+    Reader.ports.setPage.subscribe(function(pageNum) {
+        Renderer.goToPage(pageNum);
+    });
+
+    Reader.ports.switchDisqusThread.subscribe(function(disqusData) {
         if(!DISQUS || !DISQUS.reset) return;
         DISQUS.reset({
           reload: true,
@@ -163,12 +152,12 @@ var RendererInterface = (function() {
         });
     });
 
-    Reader.ports.title.subscribe(function(title) {
+    Reader.ports.setTitle.subscribe(function(title) {
         document.title = title;
     });
 
-    Reader.ports.shareClicked.subscribe(function(data) {
-        var elem = document.getElementById(data.id);
+    Reader.ports.openSharePopup.subscribe(function(data) {
+        var elem = document.getElementsByClassName(data.srcBtnClass)[0];
         if(!elem) return;
 
         var endpoint = elem.getAttribute("data-endpoint");
@@ -180,6 +169,7 @@ var RendererInterface = (function() {
     });
 
     setInterval(function() {
+        if(!Renderer) return;
         Renderer.refreshCommentCount();
     }, 1000*60*5);
 

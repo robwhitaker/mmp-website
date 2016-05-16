@@ -1,4 +1,4 @@
-module Core.Utils.SelectionList where
+module Core.Utils.SelectionList exposing (..)
 
 type alias SelectionList a =
     { previous : List a
@@ -73,6 +73,19 @@ indexOf pred sl =
                 Nothing -> Nothing
     in
         indexOf' 0 (toList sl)
+
+traverseFromSelectedUntil : (SelectionList a -> SelectionList a) -> (a -> Bool) -> SelectionList a -> Maybe (SelectionList a)
+traverseFromSelectedUntil traverse pred sl =
+    let
+        go list =
+            if pred list.selected then
+                Just list
+            else if traverse list /= list then
+                go (traverse list)
+            else
+                Nothing
+    in
+        go (traverse sl)
 
 mapSelected : (a -> a) -> SelectionList a -> SelectionList a
 mapSelected fn sl =

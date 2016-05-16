@@ -1,4 +1,4 @@
-module Reader.Components.Disqus where
+module Reader.Utils.Disqus exposing (..)
 
 import Reader.Model exposing (RenderElement, TOC)
 import Reader.Utils exposing (selectedTitleFromSL)

@@ -1,4 +1,4 @@
-module Core.Models.Chapter where
+module Core.Models.Chapter exposing (..)
 
 import Core.Models.Entry as Entry exposing (Entry)
 

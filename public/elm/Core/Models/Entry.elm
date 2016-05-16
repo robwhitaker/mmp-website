@@ -1,4 +1,4 @@
-module Core.Models.Entry where
+module Core.Models.Entry exposing (..)
 
 import Json.Decode as Decoder exposing (Decoder, (:=))
 import Json.Encode as Encoder exposing (Value)

@@ -1,9 +1,8 @@
-module Reader.Update where
+module Reader.Update exposing (..)
 
 import Dict exposing (Dict)
 import Maybe
-import Effects exposing (Effects, Never)
-
+import Regex
 
 import Core.Utils.SelectionList as SL exposing (SelectionList)
 import Core.Utils.MaybeExtra exposing (..)
@@ -11,81 +10,59 @@ import Core.Models.Chapter exposing (Chapter)
 
 import Reader.Model exposing (..)
 import Reader.Model.Helpers
-import Reader.Components.Dropdown as Dropdown
+import Reader.Messages exposing (..)
+import Reader.Ports exposing (..)
+import Reader.Utils exposing (selectedTitleFromSL)
+import Reader.Utils.Cmd exposing (renderCmd, switchSelectedIdCmd, setTitleCmd)
+import Reader.Utils.Disqus as Disqus
+
+import Reader.Components.ShareDialog.Messages as ShareDialog
+import Reader.Components.ShareDialog.Update as ShareDialog
 
 import String
 import Task
-
----- TYPE ALIASES ----
-
-type alias CurrentPage = Int
-type alias NumPages = Int
-type alias FocusedElementID = RenderElementID
-type alias HeadingIDsOnPage = List RenderElementID
-type alias LocationHash = String
-
----- ACTIONS ----
-
-type Action
-    = TurnPage Direction
-    | CoverClick
-    | ShareFromHeading Bool
-    | ShowShareDialog RenderElementID
-    | HideShareDialogIn Float
-    | HideShareDialog
-    | Load (List Chapter) (List (RenderElementID, Bool)) LocationHash
-    | ChapterHasRendered CurrentPage NumPages HeadingIDsOnPage
-    | ChapterHasReflowed CurrentPage NumPages (Maybe FocusedElementID) HeadingIDsOnPage
-    | UpdateHeadingsOnPage (List String)
-    | ChangeSelectedHeadingForComments String
-    | Dropdown Dropdown.Action
-    | Dump String
-    | NoOp
+import Process
 
 ---- UPDATE ----
 
-update : Action -> Model -> (Model, Effects Action)
-update action model =
-    case action of
+update : Msg -> Model -> (Model, Cmd Msg)
+update msg model =
+    case msg of
 
         CoverClick ->
-            flip (,) Effects.none
+            let newModel =
                 { model | showCover = False }
+            in
+                newModel
+                    ! [ setTitleCmd newModel ]
 
-        ShareFromHeading willShare ->
-            flip (,) Effects.none
-                { model | shareFromHeading = willShare }
+        OpenSharePopup sharePopupSettings ->
+            model
+                ! [ openSharePopup sharePopupSettings ]
 
-        ShowShareDialog hId ->
-            flip (,) Effects.none
-                { model | toc = gotoHeading hId model.toc, lastNavAction = CommentsLinkClick, showShareDialog = True, shareFromHeading = True }
+        ShowShareDialog id ->
+            update (ShareDialogMsg <| ShareDialog.ShowWith id <| selectedTitleFromSL <| gotoHeading id model.toc) model
 
-        HideShareDialog ->
-            flip (,) Effects.none
-                { model | showShareDialog = False, fadingShareDialog = False }
+        ShareDialogMsg sdmsg ->
+            let (newDialog, cmds) = ShareDialog.update sdmsg model.shareDialog
+            in
+                { model | shareDialog = newDialog }
+                    ! [ Cmd.map ShareDialogMsg cmds ]
 
-        HideShareDialogIn milli ->
-            (,)
-                { model | fadingShareDialog = True }
-                ((Task.sleep milli `Task.andThen` \_ -> Task.succeed HideShareDialog) |> Effects.task)
-
-        ChangeSelectedHeadingForComments hId ->
-            flip (,) Effects.none
+        ChangeSelectedHeading hId ->
+            let newModel =
                 { model | toc = gotoHeading hId model.toc, lastNavAction = CommentsLinkClick }
+            in
+                newModel
+                    ! [ switchSelectedIdCmd False model newModel ]
 
         TurnPage dir ->
-            flip (,) Effects.none <|
-                if model.showCover || model.showShareDialog then
-                    if dir == Forward then
-                        { model | showCover = False }
-                    else
-                        model
-                else case dir of
-                    Forward ->
-                        if model.pages.current + 1 >= model.pages.total -- >= because 0 indexed
-                        then
-                            let nToc = untilContent SL.next <| SL.next model.toc
-                            in
+            case dir of
+                Forward ->
+                    if model.pages.current + 1 >= model.pages.total -- >= because 0 indexed
+                    then
+                        let nToc = untilContent SL.next model.toc
+                            newModel =
                                 if nToc == model.toc then
                                     { model
                                         | toc = SL.goto 0 model.toc
@@ -99,46 +76,72 @@ update action model =
                                         , lastNavAction = PageTurn Forward
                                         , state = Rendering
                                     }
-                        else
-                            { model
-                                | pages =
-                                    { current = model.pages.current + 1
-                                    , total = model.pages.total
-                                    }
-                                , lastNavAction = PageTurn Forward
-                            }
+                        in
+                            newModel
+                                ! [ renderCmd False newModel ]
+                    else
+                        let
+                            newModel =
+                                { model
+                                    | pages =
+                                        { current = model.pages.current + 1
+                                        , total = model.pages.total
+                                        }
+                                    , lastNavAction = PageTurn Forward
+                                }
+                        in
+                            newModel
+                                ! [ setPage newModel.pages.current ]
 
-                    Backward ->
-                        if model.pages.current - 1 < 0
-                        then
-                            let nToc = untilContent SL.previous <| SL.previous model.toc
-                            in
-                                if nToc == SL.previous model.toc then
-                                    { model | showCover = True }
-                                else
+                Backward ->
+                    if model.pages.current - 1 < 0
+                    then
+                        let nToc = untilContent SL.previous model.toc
+                        in
+                            if nToc == model.toc then
+                                let newModel = { model | showCover = True }
+                                in
+                                    newModel
+                                        ! [ setTitleCmd newModel ]
+                            else
+                                let newModel =
                                     { model
-                                        | pages =
-                                            { current = model.pages.current - 1
-                                            , total = model.pages.total
-                                            }
-                                        , toc = nToc
+                                        | toc = nToc
                                         , lastNavAction = PageTurn Backward
                                         , state = Rendering
                                     }
-                        else
+                                in
+                                    newModel
+                                        ! [ renderCmd True newModel ]
+                    else
+                        let
+                            newModel =
+                                { model
+                                    | pages =
+                                        { current = model.pages.current - 1
+                                        , total = model.pages.total
+                                        }
+                                    , lastNavAction = PageTurn Backward
+                                }
+                        in
+                            newModel
+                                ! [ setPage newModel.pages.current ]
+
+                PageNum num ->
+                    if num >= model.pages.total || num < 0 then
+                        model ! []
+                    else
+                        let newModel =
                             { model
                                 | pages =
-                                    { current = model.pages.current - 1
+                                    { current = num
                                     , total = model.pages.total
                                     }
-                                , lastNavAction = PageTurn Backward
+                                , lastNavAction = PageTurn (PageNum num)
                             }
-
-                    PageNum num ->
-                        if num >= model.pages.total || num < 0 then
-                            model
-                        else
-                            { model | pages = { current = num, total = model.pages.total }, lastNavAction = PageTurn (PageNum num) }
+                        in
+                            newModel
+                                ! [ setPage newModel.pages.current ]
 
         Dropdown (maybeRenderElemID, maybeExpanded) ->
             let expanded = Maybe.withDefault model.tocExpanded maybeExpanded
@@ -148,7 +151,12 @@ update action model =
                 newToc =
                     case maybeRenderElemID of
                         Just id ->
-                            nextUntilContent (gotoHeading id model.toc)
+                            let targetToc = gotoHeading id model.toc
+                            in
+                                if targetToc.selected.body == "" then
+                                    untilContent SL.next targetToc
+                                else
+                                    targetToc
                         Nothing ->
                             model.toc
 
@@ -162,23 +170,34 @@ update action model =
                             Render
                         else
                             PageJump newToc.selected.id
-            in
-                flip (,) Effects.none
+                newModel =
                     { model | toc = newToc, tocExpanded = expanded, lastNavAction = lastNavAction, state = if triggersRender then Rendering else model.state }
+
+                nextCmd =
+                    if triggersRender then
+                        renderCmd False newModel
+                    else
+                        if model.toc.selected.id == newModel.toc.selected.id then
+                            Cmd.none
+                        else
+                            jumpToEntry newModel.toc.selected.id
+            in
+                newModel
+                    ! [ nextCmd ]
 
         Load chapters readEntries locationHash ->
             let targetID = String.dropLeft 3 locationHash
                 loadedModel = Reader.Model.Helpers.fromChapterList chapters (Dict.fromList readEntries)
                 newToc = gotoHeading targetID loadedModel.toc
+                newModel = { loadedModel | state = Rendering, toc = newToc, showCover = loadedModel.toc == newToc }
             in
-                flip (,) Effects.none
-                    { loadedModel | state = Rendering, toc = newToc, showCover = loadedModel.toc == newToc }
+                newModel
+                    ! [ renderCmd False newModel ]
 
         ChapterHasRendered currentPage numPages headingIds ->
             let headings = headingIdFilter model.toc headingIds
                 newToc = gotoHeading (List.head headings ? model.toc.selected.id) model.toc
-            in
-                flip (,) Effects.none
+                newModel =
                     { model
                         | pages =
                             { current = currentPage
@@ -189,6 +208,9 @@ update action model =
                         , toc = newToc
                         , lastNavAction = Render
                     }
+            in
+                newModel
+                    ! [ switchSelectedIdCmd True model newModel ]
 
         ChapterHasReflowed currentPage numPages maybeFocusedId headingIds ->
             let headings = headingIdFilter model.toc headingIds
@@ -200,8 +222,7 @@ update action model =
                         model.toc.selected.id
                     else
                         List.head headings ? model.toc.selected.id
-            in
-                flip (,) Effects.none
+                newModel =
                     { model
                         | pages =
                             { current = currentPage
@@ -212,6 +233,9 @@ update action model =
                         , headingIDsOnPage = headings
                         , lastNavAction = PageReflow
                     }
+            in
+                newModel
+                    ! [ switchSelectedIdCmd False model newModel ]
 
         UpdateHeadingsOnPage headingIds ->
             let headings = headingIdFilter model.toc headingIds
@@ -248,32 +272,35 @@ update action model =
                             List.head headings ? model.toc.selected.id
 
                         _ -> model.toc.selected.id
-            in
-                flip (,) Effects.none
+
+                newModel =
                     { model
                         | headingIDsOnPage = headings
                         , toc = gotoHeading newSelectedId model.toc
                     }
 
+                forceUpdate =
+                    case model.lastNavAction of
+                        PageTurn (PageNum _) -> True
+                        _ -> False
+
+                a = Debug.log "KJAOIASJD" model.lastNavAction
+            in
+                newModel
+                    ! [ switchSelectedIdCmd forceUpdate model newModel ]
+
         Dump msg ->
             let dump = Debug.log "Dump: " msg
-            in flip (,) Effects.none model
+            in model ! []
 
-        _ -> flip (,) Effects.none model
+        NoOp -> model ! []
 
 ---- HELPERS ----
 
 untilContent : (TOC -> TOC) -> TOC -> TOC
-untilContent f toc =
-    if toc.selected.body == "" && f toc /= toc then
-        let nToc = untilContent f (f toc)
-        in
-            if nToc.selected.body == "" then
-                toc
-            else
-                nToc
-    else
-        toc
+untilContent traverse toc =
+    SL.traverseFromSelectedUntil traverse (.body >> (/=) "") toc
+    |> Maybe.withDefault toc
 
 headingIdFilter : TOC -> HeadingIDsOnPage -> HeadingIDsOnPage
 headingIdFilter toc headingIds =

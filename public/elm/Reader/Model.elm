@@ -1,15 +1,24 @@
-module Reader.Model where
+module Reader.Model exposing (..)
 
 import Dict exposing (Dict)
 
+import Reader.Components.ShareDialog.Model as ShareDialog
 import Core.Utils.SelectionList as SL exposing (SelectionList)
 
----- MODELS ----
+---- TYPE ALIASES ----
 
-type alias ChapterID  = Int
-type alias RenderElementID = String
-type alias Stylesheet = String
-type alias TOC = SelectionList RenderElement
+type alias ChapterID        = Int
+type alias CurrentPage      = PageNum
+type alias FocusedElementID = RenderElementID
+type alias HeadingIDsOnPage = List RenderElementID
+type alias LocationHash     = String
+type alias NumPages         = Int
+type alias PageNum          = Int
+type alias RenderElementID  = String
+type alias Stylesheet       = String
+type alias TOC              = SelectionList RenderElement
+
+---- MODELS ----
 
 type Direction = Forward | Backward | PageNum Int
 type LastNavAction = PageTurn Direction | PageJump RenderElementID | PageReflow | Render | CommentsLinkClick
@@ -20,11 +29,9 @@ type alias Model =
     , stylesheets       : Dict ChapterID Stylesheet
     , pages             : { current : Int, total : Int }
     , showCover         : Bool
-    , showShareDialog   : Bool
-    , shareFromHeading  : Bool
+    , shareDialog       : ShareDialog.Model
     , headingIDsOnPage  : List String
     , lastNavAction     : LastNavAction
-    , fadingShareDialog : Bool
     , state             : State
     , tocExpanded       : Bool
     }
@@ -54,11 +61,9 @@ empty =
     , stylesheets = Dict.empty
     , pages = { current = 0, total = 0 }
     , showCover = True
-    , showShareDialog = False
-    , shareFromHeading = True
+    , shareDialog = ShareDialog.empty
     , headingIDsOnPage = []
     , lastNavAction = Render
-    , fadingShareDialog = False
     , state = Loading
     , tocExpanded = False
     }

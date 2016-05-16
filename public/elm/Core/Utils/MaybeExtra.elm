@@ -1,4 +1,4 @@
-module Core.Utils.MaybeExtra where
+module Core.Utils.MaybeExtra exposing (..)
 
 (?) : Maybe a -> a -> a
 (?) =

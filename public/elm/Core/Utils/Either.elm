@@ -1,4 +1,4 @@
-module Core.Utils.Either where
+module Core.Utils.Either exposing (..)
 
 type Either a b
     = Left  a

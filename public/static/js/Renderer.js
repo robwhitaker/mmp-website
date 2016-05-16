@@ -1,9 +1,8 @@
 var Renderer = window.Renderer = (function() {
-
     //---- VARS ----
 
     var listeners = {
-        "arrows"     : function() {},
+        "keyPress"   : function() {},
         "rendered"   : function() {},
         "reflowed"   : function() {},
         "linkClick"  : function() {},
@@ -283,20 +282,6 @@ var Renderer = window.Renderer = (function() {
 
     //---- EVENT LISTENERS ----
 
-    function triggerArrowListener() {
-        var arrows = {
-            up    : keys.indexOf(38) >= 0 ? 1 : 0,
-            down  : keys.indexOf(40) >= 0 ? 1 : 0,
-            left  : keys.indexOf(37) >= 0 ? 1 : 0,
-            right : keys.indexOf(39) >= 0 ? 1 : 0
-        }
-
-        listeners.arrows({
-            x : arrows.right - arrows.left,
-            y : arrows.up - arrows.down
-        });
-    };
-
     function updateDynamicStylesheet() {
         var dynamicStyle = document.getElementById("dynamic-style");
         dynamicStyle.innerHTML =
@@ -304,19 +289,16 @@ var Renderer = window.Renderer = (function() {
                                   .replace(/height:\s*[0-9]+/gi, "height: " + getViewport().height);
     }
 
+    var preventHold = false;
+    var keysHeld = [];
     window.addEventListener("keydown", function(e) {
-        if(keys.indexOf(e.keyCode) < 0)
-            keys.push(e.keyCode);
-
-        triggerArrowListener();
+        if(keysHeld.indexOf(e.keyCode) !== -1 && preventHold) return;
+        keysHeld.push(e.keyCode);
+        listeners.keyPress(e.keyCode);
     });
 
     window.addEventListener("keyup", function(e) {
-        keys = keys.filter(function(val) {
-            return val !== e.keyCode;
-        });
-
-        triggerArrowListener();
+        keysHeld = keysHeld.filter(function(k) { return  k !== e.keyCode; });
     });
 
     window.addEventListener("resize", updateDynamicStylesheet);
