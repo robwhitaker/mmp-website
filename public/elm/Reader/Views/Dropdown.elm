@@ -1,6 +1,6 @@
 module Reader.Views.Dropdown exposing (..)
 
-import Reader.Model exposing (RenderElementID)
+import Reader.Aliases exposing (RenderElementID)
 import Reader.Utils exposing (selectedTitleFromSL)
 
 import Core.Utils.String exposing (stripTags)
