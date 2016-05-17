@@ -1,10 +1,9 @@
 module Reader.Components.ShareDialog.Messages exposing (Msg(..))
 
+import Reader.Aliases exposing (..)
 import Reader.Views.ShareButtons as ShareButtons
 
 import Time exposing (Time)
-
-type alias RenderElementID = String
 
 type Msg
     = ShowWith RenderElementID String

@@ -3,6 +3,7 @@ module Reader.Model.Helpers exposing (..)
 import Dict exposing (Dict)
 
 import Reader.Model exposing (..)
+import Reader.Aliases exposing (..)
 import Reader.Utils.Disqus exposing (toDisqusId)
 
 import Core.Utils.Either exposing (..)

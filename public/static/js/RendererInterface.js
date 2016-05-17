@@ -132,7 +132,6 @@ var RendererInterface = (function() {
     });
 
     Reader.ports.jumpToEntry.subscribe(function(eId) {
-        console.log(eId);
         Renderer.goToHeading(eId);
     });
 

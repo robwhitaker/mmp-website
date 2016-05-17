@@ -9,6 +9,7 @@ import Core.Utils.MaybeExtra exposing (..)
 import Core.Models.Chapter exposing (Chapter)
 
 import Reader.Model exposing (..)
+import Reader.Aliases exposing (..)
 import Reader.Model.Helpers
 import Reader.Messages exposing (..)
 import Reader.Ports exposing (..)
@@ -51,7 +52,7 @@ update msg model =
 
         ChangeSelectedHeading hId ->
             let newModel =
-                { model | toc = gotoHeading hId model.toc, lastNavAction = CommentsLinkClick }
+                { model | toc = gotoHeading hId model.toc }
             in
                 newModel
                     ! [ switchSelectedIdCmd False model newModel ]
@@ -137,7 +138,10 @@ update msg model =
                                     { current = num
                                     , total = model.pages.total
                                     }
-                                , lastNavAction = PageTurn (PageNum num)
+                                , lastNavAction =
+                                    case model.lastNavAction of
+                                        PageJump _ -> model.lastNavAction
+                                        _          -> PageTurn (PageNum num)
                             }
                         in
                             newModel
@@ -166,10 +170,7 @@ update msg model =
                     if newToc == model.toc then
                         model.lastNavAction
                     else
-                        if triggersRender then
-                            Render
-                        else
-                            PageJump newToc.selected.id
+                        PageJump newToc.selected.id
                 newModel =
                     { model | toc = newToc, tocExpanded = expanded, lastNavAction = lastNavAction, state = if triggersRender then Rendering else model.state }
 
@@ -196,7 +197,12 @@ update msg model =
 
         ChapterHasRendered currentPage numPages headingIds ->
             let headings = headingIdFilter model.toc headingIds
-                newToc = gotoHeading (List.head headings ? model.toc.selected.id) model.toc
+                newToc =
+                    case model.lastNavAction of
+                        PageJump _ ->
+                            model.toc
+                        _ ->
+                            gotoHeading (List.head headings ? model.toc.selected.id) model.toc
                 newModel =
                     { model
                         | pages =
@@ -206,7 +212,6 @@ update msg model =
                         , state = Ready
                         , headingIDsOnPage = headings
                         , toc = newToc
-                        , lastNavAction = Render
                     }
             in
                 newModel
@@ -222,6 +227,7 @@ update msg model =
                         model.toc.selected.id
                     else
                         List.head headings ? model.toc.selected.id
+
                 newModel =
                     { model
                         | pages =
@@ -231,7 +237,6 @@ update msg model =
                         , state = Ready
                         , toc = gotoHeading newFocusedId model.toc
                         , headingIDsOnPage = headings
-                        , lastNavAction = PageReflow
                     }
             in
                 newModel
@@ -265,14 +270,6 @@ update msg model =
                         PageJump headingID ->
                             headingID
 
-                        PageReflow ->
-                            model.toc.selected.id
-
-                        Render ->
-                            List.head headings ? model.toc.selected.id
-
-                        _ -> model.toc.selected.id
-
                 newModel =
                     { model
                         | headingIDsOnPage = headings
@@ -281,10 +278,9 @@ update msg model =
 
                 forceUpdate =
                     case model.lastNavAction of
-                        PageTurn (PageNum _) -> True
+                        PageJump _ -> True
                         _ -> False
 
-                a = Debug.log "KJAOIASJD" model.lastNavAction
             in
                 newModel
                     ! [ switchSelectedIdCmd forceUpdate model newModel ]

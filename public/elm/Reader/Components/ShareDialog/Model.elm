@@ -1,6 +1,6 @@
 module Reader.Components.ShareDialog.Model exposing (Model, empty)
 
-type alias RenderElementID = String
+import Reader.Aliases exposing (..)
 
 type alias Model =
     { shareId          : RenderElementID

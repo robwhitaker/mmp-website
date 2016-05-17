@@ -1,6 +1,7 @@
 port module Reader.Ports exposing (..)
 
 import Reader.Model exposing (..)
+import Reader.Aliases exposing (..)
 import Reader.Utils.Disqus exposing (DisqusData)
 import Keyboard exposing (KeyCode)
 import Reader.Messages exposing (..)

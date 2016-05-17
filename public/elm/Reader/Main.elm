@@ -17,6 +17,7 @@ import Core.Utils.SelectionList as SL
 import Core.Utils.MaybeExtra exposing (..)
 
 import Reader.Model exposing (..)
+import Reader.Aliases exposing (..)
 import Reader.Update exposing (update)
 import Reader.View exposing (view)
 import Reader.Messages exposing (..)

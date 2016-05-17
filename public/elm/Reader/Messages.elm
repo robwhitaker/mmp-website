@@ -1,6 +1,7 @@
 module Reader.Messages exposing (..)
 
 import Reader.Model exposing (..)
+import Reader.Aliases exposing (..)
 import Core.Models.Chapter exposing (Chapter)
 import Reader.Views.Dropdown as Dropdown
 import Reader.Views.ShareButtons as ShareButtons
