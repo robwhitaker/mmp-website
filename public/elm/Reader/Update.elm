@@ -190,7 +190,7 @@ update msg model =
             let targetID = String.dropLeft 3 locationHash
                 loadedModel = Reader.Model.Helpers.fromChapterList chapters (Dict.fromList readEntries)
                 newToc = gotoHeading targetID loadedModel.toc
-                newModel = { loadedModel | state = Rendering, toc = newToc, showCover = loadedModel.toc == newToc }
+                newModel = { loadedModel | state = Rendering, toc = newToc, showCover = loadedModel.toc.selected.id == newToc.selected.id }
             in
                 newModel
                     ! [ renderCmd False newModel ]
