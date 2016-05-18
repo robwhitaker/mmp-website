@@ -1,6 +1,6 @@
 defaults: &defaults
   host: localhost
-  encoding: unicode
+  encoding: utf8
 
 development:
   adapter: sqlite3
@@ -10,6 +10,7 @@ development:
 
 production:
   adapter: postgresql
+  template: template0
   database: mmp
-  username: <%= ENV['PG_USER'] %>
-  password: <%= ENV['PG_PASS'] %>
+  username: <%= ENV['MMP_PG_USER'] %>
+  password: <%= ENV['MMP_PG_PASS'] %>
