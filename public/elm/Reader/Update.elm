@@ -28,7 +28,7 @@ import Process
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-    case msg of
+    case Reader.Messages.debugLog "msg" msg of
 
         CoverClick ->
             let newModel =

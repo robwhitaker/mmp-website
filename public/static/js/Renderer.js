@@ -230,7 +230,6 @@ var Renderer = window.Renderer = (function() {
 
                 storyTextArea.scrollLeft = currentPage * getViewport().width;
 
-
                 currentPositionPercentage = storyTextArea.scrollLeft / storyTextArea.scrollWidth;
 
                 lastHeadingId = getHeadingsOnPage()[0];
@@ -246,7 +245,6 @@ var Renderer = window.Renderer = (function() {
                 );
 
                 //---- RESTART WATCHER, OR START IT IF IT DOESN'T EXIST ----
-
                 if(watcher != null)
                     watcher.start();
                 else

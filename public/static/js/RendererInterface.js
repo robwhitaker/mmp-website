@@ -31,7 +31,7 @@ var RendererInterface = (function() {
             var scrollToElem = function(elem, onScrollFinish) {
                 if(elem == null) return;
                 var elemPos = elem.getBoundingClientRect().top - parseInt((elem.currentStyle || window.getComputedStyle(elem)).marginTop);
-                var scrollY = window.scrollY;
+                var scrollY = window.scrollY || window.pageYOffset;
                 var multiplier = 0;
                 var multIncr = 0.0001;
                 var step = setInterval(function() {

@@ -148,6 +148,7 @@ section.comments {
 .book .book-inner iframe {
     flex: 1;
     border: none;
+    width: 100%;
 }
 
 .book .book-inner .bottom-bar {
@@ -194,7 +195,8 @@ section.comments {
 }
 
 .drop-down-container .selected-label .label-text {
-    flex: 1;
+    display: inline-block;
+    margin: 0 auto;
     overflow: hidden;
     text-overflow: ellipsis;
     margin-right: 0.5em;
@@ -213,7 +215,7 @@ section.comments {
 }
 
 .drop-down-container.expanded .arrow-down {
-    visibility: hidden;
+    display: none;
 }
 
 
@@ -495,11 +497,11 @@ footer .share-btn {
 /* ---- Custom Share Buttons ---- */
 
 .share-btn.facebook-share-btn {
-    background-image: -webkit-linear-gradient(top, rgba(74, 104, 183,1), rgba(59,86,161,1));
+    background-image: linear-gradient(to bottom, rgba(74, 104, 183,1), rgba(59,86,161,1));
 }
 
 .share-btn.twitter-share-btn {
-    background-image: -webkit-linear-gradient(top, #FEFEFE, #E1E1E1);
+    background-image: linear-gradient(to bottom, #FEFEFE, #E1E1E1);
     color: #333;
     text-shadow: none;
 }
@@ -507,11 +509,11 @@ footer .share-btn {
 .share-btn.twitter-share-btn .hover-overlay { background: rgba(255,255,255,0.3); }
 
 .share-btn.tumblr-share-btn {
-    background-image: -webkit-linear-gradient(top, #36465D, #36465D);
+    background-image: linear-gradient(to bottom, #36465D, #36465D);
 }
 
 .share-btn.gplus-share-btn {
-    background-image: -webkit-linear-gradient(top, #bf483b, #C43B2B);
+    background-image: linear-gradient(to bottom, #bf483b, #C43B2B);
 }
 
 .share-btn.reddit-share-btn img {

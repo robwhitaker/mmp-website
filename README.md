@@ -20,3 +20,6 @@ Compiling Elm
 - `cd` into `public/elm`
     + Compile Editor: `elm make Editor/Editor.elm --output=../static/build/editor.js`
     + Compile Reader: `elm make Reader/Reader.elm --output=../static/build/reader.js`
+
+COMPILE ALL THE THINGS
+postcss --use autoprefixer public/static/css/reader.css -d public/static/build/; cd public/elm; elm make Reader/Main.elm --output ../static/build/reader.js;cd ../..; ruby app.rb

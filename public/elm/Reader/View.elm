@@ -50,7 +50,7 @@ view model =
                     [ div
                         [ class "top-bar" ]
                         [ Html.map Dropdown <| Dropdown.view model.toc model.tocExpanded ]
-                    , iframe [ id "book-text-frame", src "/renderer.html" ] []
+                    , iframe [ id "book-text-frame", src "/renderer.html", seamless True ] []
                     , div
                         [ class "bottom-bar" ]
                         [ button [ class "back-btn", onClick (TurnPage Backward) ] [ text "Backward" ]

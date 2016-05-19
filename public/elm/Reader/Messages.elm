@@ -7,6 +7,8 @@ import Reader.Views.Dropdown as Dropdown
 import Reader.Views.ShareButtons as ShareButtons
 import Reader.Components.ShareDialog.Messages as ShareDialog
 
+import Debug
+
 ---- Messages ----
 
 type Msg
@@ -23,3 +25,11 @@ type Msg
     | Dropdown Dropdown.Msg
     | Dump String
     | NoOp
+
+debugLog : String -> Msg -> Msg
+debugLog label msg =
+    let log = Debug.log label <| case msg of
+        Load _ _ _ -> "Load"
+        _ -> toString msg
+    in
+        msg
