@@ -1,11 +1,13 @@
 var RendererInterface = (function() {
 
+    var rendererFrame;
     var Renderer;
     var Reader = window.Reader = Elm.Reader.Main.fullscreen(
         { location : window.location.hash
         , readEntries : getLocalStorage()
         }
     );
+
 
     window.location.hash = "";
 
@@ -19,7 +21,7 @@ var RendererInterface = (function() {
     }
 
     function init(rendererFrameId) {
-        var rendererFrame = document.getElementById(rendererFrameId);
+        rendererFrame = document.getElementById(rendererFrameId);
         if(!rendererFrame) {
             setTimeout(function() { init(rendererFrameId); }, 100);
             return;
@@ -114,13 +116,21 @@ var RendererInterface = (function() {
         });
     }
 
-    Reader.ports.renderChapter.subscribe(function renderChapter(data) {
-        if(!Renderer || !Renderer.render) {
-            console.log("Renderer not loaded: Waiting...");
-            setTimeout(function() { renderChapter(data); }, 100);
-        } else {
-            Renderer.render(data.renderObj, data.eId, data.isPageTurnBack);
-        }
+    Reader.ports.renderChapter.subscribe(function(data) {
+        var errCounter = 0;
+        (function renderChapter(data) {
+            if(!Renderer || !Renderer.render) {
+                console.log("Renderer not loaded: Waiting...", errCounter);
+                if(errCounter++ >= 20 && !!rendererFrame) {
+                    console.log("Renderer timeout: Reloading frame...");
+                    errCounter = 0;
+                    rendererFrame.src = "/renderer.html";
+                }
+                setTimeout(function() { renderChapter(data); }, 100);
+            } else {
+                Renderer.render(data.renderObj, data.eId, data.isPageTurnBack);
+            }
+        })(data);
     });
 
     Reader.ports.setReadInStorage.subscribe(function(eId) {

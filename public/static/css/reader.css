@@ -87,15 +87,15 @@ section.comments {
 }
 
 .book .loader.cover {
-    background-image: url('/static/assets/img/book-cover-dark.png');
+    background-image: url('/static/assets/img/frontcover.png');
     z-index: 101;
     background-color: black;
     cursor: pointer;
 }
 
-.book .loader.cover:hover {
+/*.book .loader.cover:hover {
     background-image: url('/static/assets/img/book-cover.png');
-}
+}*/
 
 .book .loader.cover:hover div {
     color: #EAC694;
@@ -128,7 +128,7 @@ section.comments {
     width: 68.5vh;
     max-width: 100%;
     margin: 1vh auto 0 auto;
-    background-image: url('/static/assets/img/book-final2.png');
+    background-image: url('/static/assets/img/backcovernpages.png');
     background-size: 100% 100%;
     position: relative;
 }
