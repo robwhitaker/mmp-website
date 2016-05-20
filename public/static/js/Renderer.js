@@ -220,7 +220,7 @@ var Renderer = window.Renderer = (function() {
                 //Force Firefox to draw as columns like every other browser
                 if(isFirefox()) {
                     console.log("Firefox detected: Checking for columns...");
-                    if(storyTextArea.scrollWidth < storyTextArea.scrollHeight) {
+                    if(storyTextArea.scrollHeight > storyTextArea.getBoundingClientRect().height) {
                         console.log("No columns found: Forcing Firefox to redraw...");
                         storyTextArea.appendChild(document.createElement("div"));
                     }
