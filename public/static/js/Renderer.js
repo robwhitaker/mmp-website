@@ -163,6 +163,8 @@ var Renderer = window.Renderer = (function() {
         storyTextArea = storyTextArea || document.getElementById('text-container');
         var lastScrollWidth = getTextContainerScrollWidth();
 
+        refreshCommentCount(true);
+
         setTimeout(function renderIfReady() {
             //remove any placeholders before rerendering anything
             Array.prototype.map.call(storyTextArea.getElementsByClassName("placeholder"), function(placeholder) {
@@ -215,6 +217,15 @@ var Renderer = window.Renderer = (function() {
             function renderIfReadyP2() {
                 console.log("No more dangling headings: Continuing...");
 
+                //Force Firefox to draw as columns like every other browser
+                if(isFirefox()) {
+                    console.log("Firefox detected: Checking for columns...");
+                    if(storyTextArea.scrollWidth < storyTextArea.scrollHeight) {
+                        console.log("No columns found: Forcing Firefox to redraw...");
+                        storyTextArea.appendChild(document.createElement("div"));
+                    }
+                }
+
                 //---- TRY TO PLACE READER BACK NEAR PROPER PAGE ----
                 //---- GET IMPORTANT VALUES FROM RENDER AND PASS TO CALLBACK ----
                 var numPages = Math.round(storyTextArea.scrollWidth/getViewport().width)
@@ -248,12 +259,13 @@ var Renderer = window.Renderer = (function() {
                 if(watcher != null)
                     watcher.start();
                 else
-                    watcher = new Watcher(getTextContainerScrollWidth, function() {render();});
+                    watcher = new Watcher(getTextContainerScrollWidth, function() { render(); });
             }
         }, 100);
     }
 
-    function refreshCommentCount() {
+    function refreshCommentCount(forceFF) {
+        if(isFirefox() && !forceFF) return; //hack because Firefox is broken
         if(!(DISQUSWIDGETS && DISQUSWIDGETS.getCount))
             throw "Unable to refresh comment count: Cannot find DISQUSWIDGETS or DISQUSWIDGETS.getCount.";
         else {
@@ -365,6 +377,10 @@ var Renderer = window.Renderer = (function() {
 
     var getTextContainerScrollWidth = function() {
         return document.getElementById('text-container').scrollWidth;
+    }
+
+    function isFirefox() {
+        return navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
     }
 
     // ---- WATCHER ----
