@@ -71,7 +71,7 @@ section.comments {
 .book .loader {
     position: absolute;
     top: 0; right: 0; bottom: 0; left: 0;
-    background-image: url('/static/assets/img/book-final2.png');
+    background-image: url('/static/assets/img/backcovernpages.png');
     background-size: 100% 100%;
     display: none;
     z-index: 100;

@@ -353,12 +353,16 @@ var Renderer = window.Renderer = (function() {
     var isDangling = function(heading) {
         var storyTextArea = document.getElementById("text-container");
         if(storyTextArea == null) return false;
-        var hRect = heading.getBoundingClientRect();
-        var nRect = heading.nextSibling.getBoundingClientRect();
 
-        // console.log("pos " + heading.id, !(nRect.right == hRect.right && nRect.left == hRect.left) && heading.nextSibling.tagName === "P");
+        var textSize = parseFloat((heading.nextSibling.currentStyle || window.getComputedStyle(heading.nextSibling)).fontSize);
 
-        return !(nRect.right == hRect.right && nRect.left == hRect.left) && heading.nextSibling.tagName === "P";
+        var nextIsP = heading.nextSibling.tagName === "P";
+
+        var nextOnPageButNoRoom = heading.offsetLeft == heading.nextSibling.offsetLeft && storyTextArea.offsetHeight - heading.nextSibling.offsetTop <= textSize;
+
+        var nextNotOnPage = heading.nextSibling.offsetLeft >= heading.offsetLeft + heading.offsetWidth;
+
+        return (nextOnPageButNoRoom || nextNotOnPage) && nextIsP;
     };
 
     var getFocusedHeading = function() {
