@@ -359,7 +359,8 @@ var Renderer = window.Renderer = (function() {
         var storyTextArea = document.getElementById("text-container");
         if(storyTextArea == null) return false;
 
-        var textSize = parseFloat((heading.nextSibling.currentStyle || window.getComputedStyle(heading.nextSibling)).fontSize);
+        // multiply by 2 to lower the threshold to detect a dangling heading
+        var textSize = parseFloat((heading.nextSibling.currentStyle || window.getComputedStyle(heading.nextSibling)).fontSize) * 2;
 
         var nextIsP = heading.nextSibling.tagName === "P";
 
