@@ -20,11 +20,14 @@ type Msg
     | Load (List Chapter) (List (RenderElementID, Bool)) LocationHash
     | ChapterHasRendered CurrentPage NumPages HeadingIDsOnPage
     | ChapterHasReflowed CurrentPage NumPages (Maybe FocusedElementID) HeadingIDsOnPage
-    | UpdateHeadingsOnPage HeadingIDsOnPage
+    | UpdateHeadingsOnPage HeadingUpdate
     | ChangeSelectedHeading RenderElementID
     | Dropdown Dropdown.Msg
     | Dump String
     | NoOp
+
+
+type alias HeadingUpdate = { headingsOnPage : List RenderElementID, headingAtTop : Bool }
 
 debugLog : String -> Msg -> Msg
 debugLog label msg =

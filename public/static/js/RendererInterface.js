@@ -74,9 +74,11 @@ var RendererInterface = (function() {
                 );
             });
 
-            Renderer.on("pageTurned", function(headingsOnPage) {
+            Renderer.on("pageTurned", function(headingsOnPage, headingAtTop) {
                 Reader.ports.headingsUpdated.send(
-                    Array.prototype.filter.call(headingsOnPage, function() { return true; })
+                    { headingsOnPage : Array.prototype.filter.call(headingsOnPage, function() { return true; })
+                    , headingAtTop   : headingAtTop
+                    }
                 );
             });
 

@@ -242,14 +242,14 @@ update msg model =
                 newModel
                     ! [ switchSelectedIdCmd False model newModel ]
 
-        UpdateHeadingsOnPage headingIds ->
-            let headings = headingIdFilter model.toc headingIds
+        UpdateHeadingsOnPage { headingsOnPage, headingAtTop } ->
+            let headings = headingIdFilter model.toc headingsOnPage
                 newSelectedId =
                     case model.lastNavAction of
                         PageTurn dir ->
                             case dir of
                                 Forward ->
-                                    if List.length headings > 0 && model.toc.selected.id /= "" then
+                                    if List.length headings > 0 && model.toc.selected.id /= "" && not headingAtTop then
                                         (List.reverse >> List.head) model.headingIDsOnPage ? model.toc.selected.id
                                     else
                                         Maybe.oneOf
