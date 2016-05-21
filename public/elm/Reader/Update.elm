@@ -62,7 +62,13 @@ update msg model =
                 Forward ->
                     if model.pages.current + 1 >= model.pages.total -- >= because 0 indexed
                     then
-                        let nToc = untilContent SL.next model.toc
+                        let
+                            nToc =
+                                SL.traverseFromSelectedUntil
+                                    SL.next
+                                    (\entry -> entry.body /= "" && entry.chapter /= model.toc.selected.chapter)
+                                    model.toc
+                                        |> Maybe.withDefault model.toc
                             newModel =
                                 if nToc == model.toc then
                                     { model
