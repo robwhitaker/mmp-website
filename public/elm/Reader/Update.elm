@@ -14,7 +14,7 @@ import Reader.Model.Helpers
 import Reader.Messages exposing (..)
 import Reader.Ports exposing (..)
 import Reader.Utils exposing (selectedTitleFromSL)
-import Reader.Utils.Cmd exposing (renderCmd, switchSelectedIdCmd, setTitleCmd)
+import Reader.Utils.Cmd exposing (renderCmd, switchSelectedIdCmd, setTitleCmd, setDisqusThread)
 import Reader.Utils.Disqus as Disqus
 
 import Reader.Components.ShareDialog.Messages as ShareDialog
@@ -35,7 +35,7 @@ update msg model =
                 { model | showCover = False }
             in
                 newModel
-                    ! [ setTitleCmd newModel ]
+                    ! [ setTitleCmd newModel, setDisqusThread newModel ]
 
         OpenSharePopup sharePopupSettings ->
             model
