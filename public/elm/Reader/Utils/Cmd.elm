@@ -12,6 +12,9 @@ import Core.Utils.SelectionList as SL exposing (SelectionList)
 import Dict
 import Regex
 import String
+import Task
+import Process
+import Time exposing (Time)
 
 ---- COMMAND BUILDERS ----
 
@@ -61,6 +64,11 @@ setTitleCmd model =
 setDisqusThread : Model -> Cmd msg
 setDisqusThread model =
     switchDisqusThread <| Disqus.disqusDataFromTOC model.toc
+
+after : msg -> Time -> Cmd msg
+after msg dur =
+    (Process.sleep dur `Task.andThen` \_ -> Task.succeed msg) |> Task.perform (\_ -> msg) identity
+
 
 ---- HELPERS ----
 
