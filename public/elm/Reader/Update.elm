@@ -103,7 +103,12 @@ update msg model =
                 Backward ->
                     if model.pages.current - 1 < 0
                     then
-                        let nToc = untilContent SL.previous model.toc
+                        let nToc =
+                            SL.traverseFromSelectedUntil
+                                    SL.previous
+                                    (\entry -> entry.body /= "" && entry.chapter /= model.toc.selected.chapter)
+                                    model.toc
+                                        |> Maybe.withDefault model.toc
                         in
                             if nToc == model.toc then
                                 let newModel = { model | showCover = True }
