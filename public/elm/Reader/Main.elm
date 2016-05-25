@@ -58,14 +58,14 @@ main =
         , view = view
         , subscriptions =
             \model -> Sub.batch
-                [ keyPressedInReader (keyToMsg model)
-                , Keyboard.downs (keyToMsg model)
-                , chapterRendered (renderResultToMsg False)
+                [ chapterRendered (renderResultToMsg False)
                 , chapterReflowed (renderResultToMsg True)
                 , headingsUpdated UpdateHeadingsOnPage
                 , pageSet (TurnPage << PageNum)
                 , inlineLinkClicked ChangeSelectedHeading
                 , inlineShareClicked ShowShareDialog
+                , keyPressedInReader (keyToMsg model)
+                , Keyboard.downs (keyToMsg model)
                 , mouseClickedInReader (\_ -> Dropdown (Nothing, Just False))
                 , Mouse.clicks (\_ -> Dropdown (Nothing, Just False))
                 ]

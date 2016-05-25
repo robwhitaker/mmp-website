@@ -3,7 +3,6 @@ module Reader.Components.ShareDialog.Update exposing (update)
 import Reader.Components.ShareDialog.Model exposing (Model)
 import Reader.Components.ShareDialog.Messages exposing (Msg(..))
 import Reader.Ports exposing (openSharePopup)
-import Reader.Utils.Cmd exposing (after)
 
 import Task
 import Process
@@ -25,7 +24,7 @@ update msg model =
 
         FadeOutFor milli ->
             { model | fading = True }
-                ! [ Hide `after` milli ]
+                ! [ (Process.sleep milli `Task.andThen` \_ -> Task.succeed Hide) |> Task.perform (\_ -> NoOp) identity ]
 
         Hide ->
             { model | visible = False, fading = False }

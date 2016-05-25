@@ -30,7 +30,6 @@ type alias Model =
     , pages             : { current : Int, total : Int }
     , showCover         : Bool
     , shareDialog       : ShareDialog.Model
-    , keysRateLimited   : Bool
     , headingIDsOnPage  : List RenderElementID
     , lastNavAction     : LastNavAction
     , state             : State
@@ -63,7 +62,6 @@ empty =
     , pages             = { current = 0, total = 0 }
     , showCover         = True
     , shareDialog       = ShareDialog.empty
-    , keysRateLimited   = False
     , headingIDsOnPage  = []
     , lastNavAction     = PageTurn (PageNum 0)
     , state             = Loading

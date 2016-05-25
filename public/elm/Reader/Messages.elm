@@ -16,7 +16,6 @@ type Msg
     | CoverClick
     | OpenSharePopup ShareButtons.Msg
     | ShowShareDialog RenderElementID
-    | StopRateLimit
     | ShareDialogMsg ShareDialog.Msg
     | Load (List Chapter) (List (RenderElementID, Bool)) LocationHash
     | ChapterHasRendered CurrentPage NumPages HeadingIDsOnPage

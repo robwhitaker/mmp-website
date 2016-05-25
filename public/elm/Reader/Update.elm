@@ -14,7 +14,7 @@ import Reader.Model.Helpers
 import Reader.Messages exposing (..)
 import Reader.Ports exposing (..)
 import Reader.Utils exposing (selectedTitleFromSL)
-import Reader.Utils.Cmd exposing (renderCmd, switchSelectedIdCmd, setTitleCmd, setDisqusThread, after)
+import Reader.Utils.Cmd exposing (renderCmd, switchSelectedIdCmd, setTitleCmd, setDisqusThread)
 import Reader.Utils.Disqus as Disqus
 
 import Reader.Components.ShareDialog.Messages as ShareDialog
@@ -28,7 +28,7 @@ import Process
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-    case Reader.Messages.debugLog "msg" msg of
+    case debugLog "msg" msg of
 
         CoverClick ->
             let newModel =
@@ -57,15 +57,12 @@ update msg model =
                 newModel
                     ! [ switchSelectedIdCmd False model newModel ]
 
-        StopRateLimit -> { model | keysRateLimited = False } ! []
-
         TurnPage dir ->
-            let wait = StopRateLimit `after` 50 in
-            case dir of
+            if model.state == Rendering then
+                model ! []
+            else case dir of
                 Forward ->
-                    if model.keysRateLimited then
-                        model ! []
-                    else if model.pages.current + 1 >= model.pages.total -- >= because 0 indexed
+                    if model.pages.current + 1 >= model.pages.total -- >= because 0 indexed
                     then
                         let
                             nToc =
@@ -81,18 +78,16 @@ update msg model =
                                         , lastNavAction = PageTurn Forward
                                         , state = Rendering
                                         , showCover = True
-                                        , keysRateLimited = True
                                     }
                                 else
                                     { model
                                         | toc = nToc
                                         , lastNavAction = PageTurn Forward
                                         , state = Rendering
-                                        , keysRateLimited = True
                                     }
                         in
                             newModel
-                                ! [ renderCmd False newModel, wait ]
+                                ! [ renderCmd False newModel ]
                     else
                         let
                             newModel =
@@ -101,17 +96,14 @@ update msg model =
                                         { current = model.pages.current + 1
                                         , total = model.pages.total
                                         }
-                                    , keysRateLimited = True
                                     , lastNavAction = PageTurn Forward
                                 }
                         in
                             newModel
-                                ! [ setPage newModel.pages.current, wait ]
+                                ! [ setPage newModel.pages.current ]
 
                 Backward ->
-                    if model.keysRateLimited then
-                        model ! []
-                    else if model.pages.current - 1 < 0
+                    if model.pages.current - 1 < 0
                     then
                         let nToc =
                             SL.traverseFromSelectedUntil
@@ -131,11 +123,10 @@ update msg model =
                                         | toc = nToc
                                         , lastNavAction = PageTurn Backward
                                         , state = Rendering
-                                        , keysRateLimited = True
                                     }
                                 in
                                     newModel
-                                        ! [ renderCmd True newModel, wait ]
+                                        ! [ renderCmd True newModel ]
                     else
                         let
                             newModel =
@@ -144,12 +135,11 @@ update msg model =
                                         { current = model.pages.current - 1
                                         , total = model.pages.total
                                         }
-                                    , keysRateLimited = True
                                     , lastNavAction = PageTurn Backward
                                 }
                         in
                             newModel
-                                ! [ setPage newModel.pages.current, wait ]
+                                ! [ setPage newModel.pages.current ]
 
                 PageNum num ->
                     if num >= model.pages.total || num < 0 then
@@ -226,6 +216,7 @@ update msg model =
                             model.toc
                         _ ->
                             gotoHeading (List.head headings ? model.toc.selected.id) model.toc
+                a = Debug.log "(OLD,NEWTOC)" <| (model.toc.selected.id, newToc.selected.id, model.lastNavAction, headings)
                 newModel =
                     { model
                         | pages =
@@ -326,7 +317,7 @@ headingIdFilter toc headingIds =
     let
         elemsWithContent =
             SL.toList toc
-            |> List.filter (.chapter >> (==) toc.selected.chapter)
+            --|> List.filter (.chapter >> (==) toc.selected.chapter)
             |> List.foldl (\renderElem elemDict ->
                     Dict.insert renderElem.id (renderElem.body /= "") elemDict
                 ) Dict.empty
