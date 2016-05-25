@@ -58,7 +58,7 @@ update msg model =
                     ! [ switchSelectedIdCmd False model newModel ]
 
         TurnPage dir ->
-            if model.state == Rendering then
+            if model.state == Rendering || model.state == TurningPage then
                 model ! []
             else case dir of
                 Forward ->
@@ -97,6 +97,7 @@ update msg model =
                                         , total = model.pages.total
                                         }
                                     , lastNavAction = PageTurn Forward
+                                    , state = TurningPage
                                 }
                         in
                             newModel
@@ -136,6 +137,7 @@ update msg model =
                                         , total = model.pages.total
                                         }
                                     , lastNavAction = PageTurn Backward
+                                    , state = TurningPage
                                 }
                         in
                             newModel
@@ -288,6 +290,7 @@ update msg model =
                     { model
                         | headingIDsOnPage = headings
                         , toc = gotoHeading newSelectedId model.toc
+                        , state = Ready
                     }
 
                 forceUpdate =
