@@ -11,6 +11,7 @@ public/static/build
 /elm/elm-stuff
 repl-temp-*
 Gemfile.lock
+shared/log/*
 
 ### Ruby ###
 ## Assorted

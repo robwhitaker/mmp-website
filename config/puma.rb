@@ -1,8 +1,8 @@
 workers 4
 threads 1, 16
 
-bind 'unix://var/run/puma.sock'
-pidfile 'var/run/puma.pid'
+bind 'unix:///var/run/puma.sock'
+pidfile '/var/run/puma.pid'
 
 app_dir = File.expand_path("../", __FILE__)
 shared_dir = "#{app_dir}/shared"
