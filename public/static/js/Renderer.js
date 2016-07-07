@@ -36,9 +36,14 @@ var Renderer = window.Renderer = (function() {
         var storyTextArea = document.getElementById("text-container");
         storyTextArea.scrollLeft = getViewport().width * pageNum;
         currentPositionPercentage = storyTextArea.scrollLeft / storyTextArea.scrollWidth;
-        lastHeadingId = getHeadingsOnPage()[0];
+        var headings = getHeadingsOnPage();
+        lastHeadingId = headings[0];
+        var headingAtTop = false;
+        if(headings.length > 0) {
+            headingAtTop = (document.getElementById(headings[0]) || {}).offsetTop == 0;
+        }
 
-        listeners.pageTurned(getHeadingsOnPage());
+        listeners.pageTurned(headings, headingAtTop);
     }
 
     function render(renderObj, eId, isPageTurnBack) {
@@ -354,7 +359,8 @@ var Renderer = window.Renderer = (function() {
         var storyTextArea = document.getElementById("text-container");
         if(storyTextArea == null) return false;
 
-        var textSize = parseFloat((heading.nextSibling.currentStyle || window.getComputedStyle(heading.nextSibling)).fontSize);
+        // multiply by 2 to lower the threshold to detect a dangling heading
+        var textSize = parseFloat((heading.nextSibling.currentStyle || window.getComputedStyle(heading.nextSibling)).fontSize) * 2;
 
         var nextIsP = heading.nextSibling.tagName === "P";
 
