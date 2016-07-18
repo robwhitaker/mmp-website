@@ -114,7 +114,7 @@ def log(payload)
 end
 
 def authorized?(string)
-  string != nil
+  string == ENV["ADMIN_SECRET"]
 end
 
 def adjust_time_zone(date_string)

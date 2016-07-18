@@ -12,7 +12,7 @@ public/static/build
 repl-temp-*
 Gemfile.lock
 shared/log/*
-var/log/*
+var
 
 ### Ruby ###
 ## Assorted
