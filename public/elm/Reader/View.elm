@@ -26,17 +26,18 @@ view model =
             [ div [ class "banner" ] [ a [ href "/" ] [ div [ class "banner-logo" ] [] ] ]
             , div
                 [ class "book" ]
-                [ div
+                [ div [ class "drop-shadow" ] []
+                , div --COVER LAYER
                     [ classList
                         [ ("loader cover", True)
                         , ("isDisplayed", model.showCover)
                         ]
                     , onClick CoverClick
-                    ] [ div [] [ text "Updates every Sunday!" ] ]
-                , div
+                    ] [ div [ class "glow" ] [] ]
+                , div --LOADER LAYER
                     [ classList
                         [ ("loader", True)
-                        , ("isDisplayed", model.state == Rendering || model.state == Loading)
+                        , ("isDisplayed", not model.showCover && (model.state == Rendering || model.state == Loading))
                         ]
                     ]
                     [ case model.state of
@@ -45,17 +46,19 @@ view model =
                         _ -> text ""
                     , div [ class "loading-label" ] [ img [ src "static/assets/img/ajax-loader-2.gif" ] [] ]
                     ]
-                , div
-                    [ class "book-inner" ]
+                , div [ class "book-back" ]
                     [ div
-                        [ class "top-bar" ]
-                        [ Html.map Dropdown <| Dropdown.view model.toc model.tocExpanded ]
-                    , iframe [ id "book-text-frame", src "/renderer.html", seamless True ] []
-                    , div
-                        [ class "bottom-bar" ]
-                        [ button [ class "back-btn", onClick (TurnPage Backward) ] [ text "Backward" ]
-                        , div [ class "page-num" ] [ text <| toString (model.pages.current + 1) ++ " / " ++ toString model.pages.total ]
-                        , button [ class "forward-btn", onClick (TurnPage Forward) ] [ text "Forward" ]
+                        [ classList [("book-inner",True), ("hidden", model.state == Rendering || model.state == Loading)] ]
+                        [ div
+                            [ class "top-bar" ]
+                            [ Html.map Dropdown <| Dropdown.view model.toc model.tocExpanded ]
+                        , iframe [ id "book-text-frame", src "/renderer.html", seamless True ] []
+                        , div
+                            [ class "bottom-bar" ]
+                            [ div [ class "book-arrow back-btn", onClick (TurnPage Backward) ] []
+                            , div [ class "page-num" ] [ text <| toString (model.pages.current + 1) ++ " / " ++ toString model.pages.total ]
+                            , div [ class "book-arrow forward-btn", onClick (TurnPage Forward) ] []
+                            ]
                         ]
                     ]
                 ]

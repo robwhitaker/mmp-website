@@ -60,8 +60,8 @@ section.comments {
 }
 
 .banner-logo {
-    background-image: url("/static/assets/img/logo-2.png");
-    background-size: cover;
+    background-image: url("/static/assets/img/MMPLogoFinal.png");
+    background-size: 100% 100%;
     height: 100%;
     max-width: 100%;
 }
@@ -71,7 +71,6 @@ section.comments {
 .book .loader {
     position: absolute;
     top: 0; right: 0; bottom: 0; left: 0;
-    background-image: url('/static/assets/img/backcovernpages.png');
     background-size: 100% 100%;
     display: none;
     z-index: 100;
@@ -86,13 +85,41 @@ section.comments {
     flex-direction: column;
 }
 
+.book .book-back {
+    z-index: 1;
+    position: absolute;
+    background-image: url('/static/assets/img/book-back.png'); /*INSIDE*/
+    background-size: 100% 100%;
+    top: 0; bottom: 0; left: 0; right: 0;
+}
+
 .book .loader.cover {
-    background-image: url('/static/assets/img/frontcover.png');
+    background-image: url('/static/assets/img/book-new-5.png');
     z-index: 101;
-    background-color: black;
     cursor: pointer;
 }
 
+
+.book .loader.cover .glow {
+    position: absolute;
+    top: 0;
+    left: 6%;
+    right: 0;
+    bottom: 0;
+    background-image: radial-gradient(circle, rgba(203,128,14,0.25), rgba(203,128,14,0.25) 23%, rgba(0,0,0,0.4) 58%);
+    opacity: 0;
+    animation-name: glow-fade;
+    animation-duration: 3s;
+    animation-timing-function: linear;
+    animation-direction: alternate;
+    animation-iteration-count: infinite;
+}
+
+@keyframes glow-fade {
+  0%   { opacity: 0; }
+  90%  { opacity: 1; }
+  100% { opacity: 1; }
+}
 /*.book .loader.cover:hover {
     background-image: url('/static/assets/img/book-cover.png');
 }*/
@@ -128,9 +155,16 @@ section.comments {
     width: 68.5vh;
     max-width: 100%;
     margin: 1vh auto 0 auto;
-    background-image: url('/static/assets/img/backcovernpages.png');
     background-size: 100% 100%;
     position: relative;
+}
+
+.book .drop-shadow {
+    position: absolute;
+    border-radius: 4px;
+    background: rgba(0,0,0,0.7);
+    top: 0; left: 0; right: 0; bottom: 0;
+    box-shadow: 3px 0px 18px 12px rgba(0,0,0,0.7);
 }
 
 .book .book-inner {
@@ -159,6 +193,19 @@ section.comments {
 
 .book .book-inner .bottom-bar > div {
     flex: 1;
+}
+
+.book .book-arrow {
+    color: red;
+    width: 100px;
+}
+
+.back-btn {
+    background-image
+}
+
+.forward-btn {
+
 }
 
 /* ---- Book Display > Dropdown Menu ---- */
@@ -407,8 +454,8 @@ footer .share-btn {
 
 .copy {
     text-align: center;
-    font-size: 14px;
-    color: #777;
+    font-size: 12px;
+    color: #999;
     margin-top: 1em;
     display: block;
 }
