@@ -2,8 +2,8 @@
 Elm + Sinatra
 
 Requires
-- [Elm](http://elm-lang.org/install) v0.16.0
-- [Ruby](https://www.ruby-lang.org/en/) v2.3.0
+- [Elm](http://elm-lang.org/install) v0.16.0 && v0.17.0
+- [Ruby](https://www.ruby-lang.org/en/) v2.3.1
 
 Setup
 - Install above prerequistites
