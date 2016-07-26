@@ -12,9 +12,6 @@
 
 ActiveRecord::Schema.define(version: 20160118035618) do
 
-  # These are extensions that must be enabled in order to support this database
-  enable_extension "plpgsql"
-
   create_table "chapters", force: :cascade do |t|
     t.integer  "order"
     t.text     "stylesheet"
