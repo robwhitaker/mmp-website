@@ -30,7 +30,7 @@ switchSelectedIdCmd forceChange oldModel newModel =
             if oldModel.toc.selected.id == newModel.toc.selected.id && not forceChange then
                 Cmd.none
             else
-                switchDisqusThread <| Disqus.disqusDataFromTOC newModel.toc
+                setDisqusThread newModel
 
         titleUpdate =
             if oldModel.toc.selected.id == newModel.toc.selected.id && oldModel.showCover == newModel.showCover && not forceChange then
@@ -57,6 +57,10 @@ setTitleCmd model =
             "Midnight Murder Party"
         else
             selectedTitleFromSL model.toc ++ " | Midnight Murder Party"
+
+setDisqusThread : Model -> Cmd msg
+setDisqusThread model =
+    switchDisqusThread <| Disqus.disqusDataFromTOC model.toc
 
 ---- HELPERS ----
 

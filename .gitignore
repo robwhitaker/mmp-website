@@ -11,8 +11,12 @@ public/static/build
 /elm/elm-stuff
 repl-temp-*
 Gemfile.lock
+
 log
 var
+
+
+*.xcf
 
 ### Ruby ###
 ## Assorted

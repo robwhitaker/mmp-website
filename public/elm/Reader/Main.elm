@@ -58,14 +58,14 @@ main =
         , view = view
         , subscriptions =
             \model -> Sub.batch
-                [ keyPressedInReader (keyToMsg model)
-                , Keyboard.downs (keyToMsg model)
-                , chapterRendered (renderResultToMsg False)
+                [ chapterRendered (renderResultToMsg False)
                 , chapterReflowed (renderResultToMsg True)
                 , headingsUpdated UpdateHeadingsOnPage
                 , pageSet (TurnPage << PageNum)
                 , inlineLinkClicked ChangeSelectedHeading
                 , inlineShareClicked ShowShareDialog
+                , keyPressedInReader (keyToMsg model)
+                , Keyboard.downs (keyToMsg model)
                 , mouseClickedInReader (\_ -> Dropdown (Nothing, Just False))
                 , Mouse.clicks (\_ -> Dropdown (Nothing, Just False))
                 ]
@@ -75,7 +75,7 @@ main =
 
 keyToMsg : Model -> KeyCode -> Msg
 keyToMsg model key =
-    if model.showCover || model.shareDialog.visible || model.state == Rendering then
+    if model.showCover || model.shareDialog.visible || model.state == Rendering || model.state == TurningPage then
         NoOp
     else
         case key of

@@ -21,6 +21,7 @@ type State
     = Ready
     | Loading
     | Rendering
+    | TurningPage
 
 type alias TOC = SelectionList RenderElement
 

@@ -32,7 +32,7 @@ port chapterRendered      : (RenderResult -> msg) -> Sub msg
 
 port chapterReflowed      : (RenderResult -> msg) -> Sub msg
 
-port headingsUpdated      : (List RenderElementID -> msg) -> Sub msg
+port headingsUpdated      : (HeadingUpdate -> msg) -> Sub msg
 
 port pageSet              : (PageNum -> msg) -> Sub msg
 

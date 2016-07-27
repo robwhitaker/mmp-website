@@ -32,4 +32,9 @@ selectedTitleFromSL sl =
                 , if String.isEmpty segTitle then title else segTitle
                 )
         ) ("","")
-    |> (\(section, title) -> section ++ " - " ++ title)
+    |> (\(section, title) ->
+        if title == "" then
+            section
+        else
+            section ++ " - " ++ title
+    )

@@ -14,7 +14,7 @@ import Reader.Model.Helpers
 import Reader.Messages exposing (..)
 import Reader.Ports exposing (..)
 import Reader.Utils exposing (selectedTitleFromSL)
-import Reader.Utils.Cmd exposing (renderCmd, switchSelectedIdCmd, setTitleCmd)
+import Reader.Utils.Cmd exposing (renderCmd, switchSelectedIdCmd, setTitleCmd, setDisqusThread)
 import Reader.Utils.Disqus as Disqus
 
 import Reader.Components.ShareDialog.Messages as ShareDialog
@@ -28,14 +28,14 @@ import Process
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-    case Reader.Messages.debugLog "msg" msg of
+    case debugLog "msg" msg of
 
         CoverClick ->
             let newModel =
                 { model | showCover = False }
             in
                 newModel
-                    ! [ setTitleCmd newModel ]
+                    ! [ setTitleCmd newModel, setDisqusThread newModel ]
 
         OpenSharePopup sharePopupSettings ->
             model
@@ -58,11 +58,19 @@ update msg model =
                     ! [ switchSelectedIdCmd False model newModel ]
 
         TurnPage dir ->
-            case dir of
+            if model.state == Rendering || model.state == TurningPage then
+                model ! []
+            else case dir of
                 Forward ->
                     if model.pages.current + 1 >= model.pages.total -- >= because 0 indexed
                     then
-                        let nToc = untilContent SL.next model.toc
+                        let
+                            nToc =
+                                SL.traverseFromSelectedUntil
+                                    SL.next
+                                    (\entry -> entry.body /= "" && entry.chapter /= model.toc.selected.chapter)
+                                    model.toc
+                                        |> Maybe.withDefault model.toc
                             newModel =
                                 if nToc == model.toc then
                                     { model
@@ -89,6 +97,7 @@ update msg model =
                                         , total = model.pages.total
                                         }
                                     , lastNavAction = PageTurn Forward
+                                    , state = TurningPage
                                 }
                         in
                             newModel
@@ -97,7 +106,12 @@ update msg model =
                 Backward ->
                     if model.pages.current - 1 < 0
                     then
-                        let nToc = untilContent SL.previous model.toc
+                        let nToc =
+                            SL.traverseFromSelectedUntil
+                                    SL.previous
+                                    (\entry -> entry.body /= "" && entry.chapter /= model.toc.selected.chapter)
+                                    model.toc
+                                        |> Maybe.withDefault model.toc
                         in
                             if nToc == model.toc then
                                 let newModel = { model | showCover = True }
@@ -123,6 +137,7 @@ update msg model =
                                         , total = model.pages.total
                                         }
                                     , lastNavAction = PageTurn Backward
+                                    , state = TurningPage
                                 }
                         in
                             newModel
@@ -203,6 +218,7 @@ update msg model =
                             model.toc
                         _ ->
                             gotoHeading (List.head headings ? model.toc.selected.id) model.toc
+                a = Debug.log "(OLD,NEWTOC)" <| (model.toc.selected.id, newToc.selected.id, model.lastNavAction, headings)
                 newModel =
                     { model
                         | pages =
@@ -242,14 +258,14 @@ update msg model =
                 newModel
                     ! [ switchSelectedIdCmd False model newModel ]
 
-        UpdateHeadingsOnPage headingIds ->
-            let headings = headingIdFilter model.toc headingIds
+        UpdateHeadingsOnPage { headingsOnPage, headingAtTop } ->
+            let headings = headingIdFilter model.toc headingsOnPage
                 newSelectedId =
                     case model.lastNavAction of
                         PageTurn dir ->
                             case dir of
                                 Forward ->
-                                    if List.length headings > 0 && model.toc.selected.id /= "" then
+                                    if List.length headings > 0 && model.toc.selected.id /= "" && not headingAtTop then
                                         (List.reverse >> List.head) model.headingIDsOnPage ? model.toc.selected.id
                                     else
                                         Maybe.oneOf
@@ -274,6 +290,7 @@ update msg model =
                     { model
                         | headingIDsOnPage = headings
                         , toc = gotoHeading newSelectedId model.toc
+                        , state = Ready
                     }
 
                 forceUpdate =
@@ -303,7 +320,7 @@ headingIdFilter toc headingIds =
     let
         elemsWithContent =
             SL.toList toc
-            |> List.filter (.chapter >> (==) toc.selected.chapter)
+            --|> List.filter (.chapter >> (==) toc.selected.chapter)
             |> List.foldl (\renderElem elemDict ->
                     Dict.insert renderElem.id (renderElem.body /= "") elemDict
                 ) Dict.empty
