@@ -17,7 +17,7 @@ ActiveRecord::Base.establish_connection(databases[env])
 
 configure do
   enable :logging
-  file = File.new("log/app.log", 'a+')
+  file = File.new("shared/log/app.log", 'a+')
   file.sync = true
   use Rack::CommonLogger, file
 end
@@ -108,13 +108,13 @@ def failure_response()
 end
 
 def log(payload)
-  File.open("log/app.log", "a+") do |f|
+  File.open("shared/log/app.log", "a+") do |f|
     f.puts(payload)
   end
 end
 
 def authorized?(string)
-  string != nil
+  string == ENV["ADMIN_SECRET"]
 end
 
 def adjust_time_zone(date_string)
