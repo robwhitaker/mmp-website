@@ -56,7 +56,7 @@ view model =
                         , div
                             [ class "bottom-bar" ]
                             [ div [ class "book-arrow back-btn", onClick (TurnPage Backward) ] []
-                            , div [ class "page-num" ] [ text <| toString (model.pages.current + 1) ++ " / " ++ toString model.pages.total ]
+                            , div [ class "page-num" ] [ text <| toString (model.pages.current + 1) ] --++ " / " ++ toString model.pages.total ]
                             , div [ class "book-arrow forward-btn", onClick (TurnPage Forward) ] []
                             ]
                         ]
