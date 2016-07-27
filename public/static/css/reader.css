@@ -189,7 +189,7 @@ section.comments {
 .book .book-inner .bottom-bar {
     text-align: center;
     display: flex;
-    padding-bottom: 1em;
+    /*padding-bottom: 1em;*/
     /*padding-top: 0.5em;*/
 }
 
