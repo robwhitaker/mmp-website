@@ -108,7 +108,7 @@ def failure_response()
 end
 
 def log(payload)
-  File.open("shared/log/app.log", "a+") do |f|
+  File.open("var/log/app.log", "a+") do |f|
     f.puts(payload)
   end
 end
