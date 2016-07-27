@@ -11,13 +11,13 @@ require './models/entry'
 set :server => :puma,
     :show_exceptions => :after_handler,
     :public_folder => 'public'
-env = ENV['RACK_ENV'] || 'development'
+env = ENV["RACK_ENV"] || "development"
 databases = YAML.load(ERB.new(File.read('config/database.yml')).result)
 ActiveRecord::Base.establish_connection(databases[env])
 
 configure do
   enable :logging
-  file = File.new('var/app.log', 'a+')
+  file = File.new('var/log/app.log', 'a+')
   file.sync = true
   use Rack::CommonLogger, file
 end
