@@ -24,6 +24,7 @@ var
 /db/*.sqlite3
 /db/*.sqlite3-journal
 /shared
+.ruby-version
 
 ## Documentation cache and generated files:
 /.yardoc/
