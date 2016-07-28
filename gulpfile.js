@@ -5,7 +5,6 @@ var rename = require('gulp-rename');
 var minifyCSS = require('gulp-clean-css');
 var uglifyJS = require('gulp-uglify');
 var concat = require('gulp-concat');
-var shell = require('gulp-shell');
 var rimraf = require('rimraf');
 
 gulp.task('build:reader-css', function() {
