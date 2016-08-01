@@ -114,7 +114,11 @@ def log(payload)
 end
 
 def authorized?(string)
-  string == ENV["ADMIN_SECRET"]
+  if ENV["RACK_ENV"] == ("production" || "dev-auth")
+    string == ENV["ADMIN_SECRET"]
+  else
+    true
+  end
 end
 
 def adjust_time_zone(date_string)

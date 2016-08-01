@@ -6,7 +6,7 @@ Requires
 - [NodeJS/NPM](https://nodejs.org/en/)
 - Gulp (`npm install -g gulp`)
 
-Setup
+Dev Setup
 - Install above prerequistites
 - Clone repository
 - `cd` into repository
@@ -14,10 +14,6 @@ Setup
 - `bundle install`
 - `bundle exec rake db:setup`
 - `npm install`
-
-Additional Setup
-- If on Windows: Set environment variable, `DEV_ENV = windows`
-- If you need to use the editor: Set environment variable, `ADMIN_SECRET = xxx` where `xxx` is the secret key
 
 Building the Front End
 - Reader: `gulp build:reader`
