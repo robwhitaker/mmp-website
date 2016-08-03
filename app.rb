@@ -42,14 +42,20 @@ get '/api/chapters/:id' do |id|
   content_type :json
 
   chapter = Chapter.includes(:entries).find(id)
-  success_response()
+  success_response
   json with_entries(chapter)
 end
 
 get '/api/chapters' do # public chapters
   content_type :json
-  success_response()
+  success_response
   json all_chapters_with_entries("restricted")
+end
+
+get '/api/test-rss' do # rss (public chapters)
+  content_type :json
+  success_response
+  json content_by_date
 end
 
 post '/api/chapters' do # all chapters
@@ -59,10 +65,10 @@ post '/api/chapters' do # all chapters
   log(payload)
 
   if authorized? payload["secretKey"]
-    success_response()
-    json all_chapters_with_entries()
+    success_response
+    json all_chapters_with_entries
   else
-    failure_response()
+    failure_response
   end
 end
 
@@ -77,17 +83,17 @@ post '/api/chapters/crupdate' do
     if data["id"].nil? # Create chapter
       chapter = Chapter.new(data)
       chapter.save
-      success_response()
+      success_response
     else # Update chapter
       entries_to_be_deleted = diff_entry_ids(data["id"], data["entries_attributes"])
       Entry.destroy(entries_to_be_deleted)
 
       chapter = Chapter.update(data["id"], data)
       chapter.save
-      success_response()
+      success_response
     end
   else
-    failure_response()
+    failure_response
   end
 end
 
@@ -99,18 +105,18 @@ post '/api/chapters/delete' do
 
   if authorized? payload["secretKey"]
     Chapter.destroy(payload["data"])
-    success_response()
+    success_response
   else
-    failure_response()
+    failure_response
   end
 end
 
-def success_response()
+def success_response
   status 200
   body '{"data": 1}'
 end
 
-def failure_response()
+def failure_response
   status 418
   body '{"data": 0}'
 end
@@ -170,6 +176,32 @@ def all_chapters_with_entries(type = "unrestricted")
   end
 
   chapters_with_entries
+end
+
+def content_by_date
+  @current_date_key = ""
+  content_by_date = {}
+  chapters = Chapter.order(release_date: :asc).where('release_date <= ?', DateTime.now)
+
+  chapters.each do |chapter|
+    if chapter.release_date != @current_date_key
+      @current_date_key = chapter.release_date.to_s
+      content_by_date[@current_date_key] = [chapter]
+
+      chapter.entries.each do |entry|
+        if entry.release_date != @current_date_key
+          @current_date_key = entry.release_date.to_s
+          content_by_date[@current_date_key] = [entry]
+        else
+          content_by_date[@current_date_key].push(entry)
+        end
+      end
+    else
+      content_by_date[@current_date_key].push(chapter)
+    end
+  end
+
+  content_by_date
 end
 
 def diff_entry_ids(chapter_id, entries)
