@@ -199,33 +199,33 @@ section.comments {
 }
 
 .book .book-arrow {
-    color: red;
+    /*color: red;*/
     max-width: 60px;
     max-height: 60px;
     background-size: 83% 83%;
     background-position: center center;
     background-repeat: no-repeat;
+    font-size: 35px;
+    color: #444;
+    display: flex;
+    align-items: center;
 }
 
 .book .book-arrow:hover {
     cursor: pointer;
-    background-size: 100% 100%;
+    font-size: 38px;
 }
 
 .book .page-num {
     font-family: 'Mirza', cursive;
     height: 60px;
     font-size: 20px;
-    line-height: 60px;
+    line-height: 70px;
     color: #444;
 }
 
-.back-btn {
-    background-image: url('/static/assets/img/book-btn-back.png');
-}
-
-.forward-btn {
-    background-image: url('/static/assets/img/book-btn-forward.png');
+.forward-btn i {
+    margin-left: auto;
 }
 
 /* ---- Book Display > Dropdown Menu ---- */

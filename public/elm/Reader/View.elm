@@ -57,9 +57,17 @@ view model =
                         , iframe [ id "book-text-frame", src "/renderer.html", seamless True ] []
                         , div
                             [ class "bottom-bar" ]
-                            [ div [ class "book-arrow back-btn", onClick (TurnPage Backward) ] []
+                            [ div 
+                                [ class "book-arrow back-btn", onClick (TurnPage Backward) ] 
+                                [
+                                    i [ class "fa fa-angle-left" ] []
+                                ]
                             , div [ class "page-num" ] [ text <| toString (model.pages.current + 1) ] --++ " / " ++ toString model.pages.total ]
-                            , div [ class "book-arrow forward-btn", onClick (TurnPage Forward) ] []
+                            , div 
+                                [ class "book-arrow forward-btn", onClick (TurnPage Forward) ] 
+                                [
+                                    i [ class "fa fa-angle-right" ] []
+                                ]
                             ]
                         ]
                     ]
