@@ -109,9 +109,9 @@ section.comments {
     right: 0;
     bottom: 0;
     background-image: radial-gradient(circle, rgba(203,128,14,0.25), rgba(203,128,14,0.4) 23%, rgba(0,0,0,0.4) 58%);
-    opacity: 1;
+    opacity: 0.5;
     animation-name: glow-fade;
-    animation-duration: 3s;
+    animation-duration: 0.5s;
     animation-timing-function: linear;
     animation-direction: alternate;
     animation-iteration-count: infinite;
@@ -143,9 +143,17 @@ section.comments {
   94%  { opacity: 1; }
   100% { opacity: 1; }
 }
-/*.book .loader.cover:hover {
-    background-image: url('/static/assets/img/book-cover.png');
-}*/
+
+@keyframes fadeInFrom {
+    0%   { opacity: 0.65; }
+    100% { opacity: 1; }
+}
+
+.book .loader.cover .glow:hover {
+    opacity: 0.6;
+    animation: fadeInFrom 0.3s linear forwards;
+    background-image: radial-gradient(circle, rgba(203,128,14,0.35), rgba(203,128,14,0.45) 23%, rgba(0,0,0,0.5) 58%);
+}
 
 .book .loader.cover:hover div {
     color: #EAC694;
@@ -478,7 +486,6 @@ footer li {
 
 footer li a {
     font-family: 'Open Sans Condensed', sans-serif;
-    text-transform: uppercase;
     font-size: 18px;
 }
 

@@ -102,7 +102,7 @@ mkFooterSection heading content =
         , content
         ]
 
-footerHeadings = [ "Follow", "Share", "Extras", "Thanks to..." ]
+footerHeadings = [ "Follow", "Share", "Extras" ]
 
 footerContent = [ follow, share, extras ]
 
@@ -161,22 +161,3 @@ extras =
         [ a [ href "/extras/halloween2015/play", target "_BLANK" ] [ text "Halloween Special 2015" ]
         , a [ onClick (CreditsRollMsg CreditsRollM.ShowCredits) ] [ text "Credits" ]
         ]
-
-thanksTo = mkLinks
-    [ ("Christina Ramos - Art", "")
-    , ("JP Welsh - Beta Reading, Editing", "")
-    , ("Katie Craven - Beta Reading, Editing", "")
-    , ("Nicholas La Roux - Back-end, Beta Reading", "")
-    ]
-
-mkLinks links =
-    ul [] <| List.map (\(txt, url) ->
-            let
-                attribs =
-                    if url == "" then
-                        []
-                    else
-                        [ href url, target "_BLANK" ]
-            in
-                li [] [ a attribs [ text txt ] ]
-        ) links
