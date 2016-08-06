@@ -108,8 +108,8 @@ section.comments {
     left: 6%;
     right: 0;
     bottom: 0;
-    background-image: radial-gradient(circle, rgba(203,128,14,0.25), rgba(203,128,14,0.25) 23%, rgba(0,0,0,0.4) 58%);
-    opacity: 0;
+    background-image: radial-gradient(circle, rgba(203,128,14,0.25), rgba(203,128,14,0.4) 23%, rgba(0,0,0,0.4) 58%);
+    opacity: 1;
     animation-name: glow-fade;
     animation-duration: 3s;
     animation-timing-function: linear;
@@ -118,8 +118,29 @@ section.comments {
 }
 
 @keyframes glow-fade {
-  0%   { opacity: 0; }
+  0%   { opacity: 0.9; }
+  20%  { opacity: 1; }
+  21%  { opacity: 0.85; }
+  22%  { opacity: 1; }
+  23%  { opacity: 0.9; }
+  24%  { opacity: 1; }
+  30%  { opacity: 0.9; }
+  34%  { opacity: 1; }
+  50%  { opacity: 1; }
+  51%  { opacity: 0.8; }
+  52%  { opacity: 1; }
+  53%  { opacity: 0.9; }
+  54%  { opacity: 1; }
+  70%  { opacity: 1; }
+  71%  { opacity: 0.9; }
+  72%  { opacity: 1; }
+  73%  { opacity: 0.9; }
+  74%  { opacity: 1; }
   90%  { opacity: 1; }
+  91%  { opacity: 0.9; }
+  92%  { opacity: 1; }
+  93%  { opacity: 0.9; }
+  94%  { opacity: 1; }
   100% { opacity: 1; }
 }
 /*.book .loader.cover:hover {
@@ -134,7 +155,7 @@ section.comments {
     position: absolute;
     bottom: 6%;
     right: 8%;
-    color: #CE9046;
+    color: #E5B249;
     font-size: 40px;
     font-weight: normal;
     font-family: Tangerine;
@@ -411,12 +432,12 @@ h2.fancy-heading.no-bottom-margin {
     margin-bottom: 1.4em;
 }
 
-a { color: #CE9046; text-decoration: none; }
+a { color: #E5B249; text-decoration: none; }
 
 a:hover { text-decoration: underline; }
 
 section.comments span.highlight-color {
-    color: #CE9046;
+    color: #E5B249;
 }
 
 /* ======== FOOTER ======== */
@@ -458,6 +479,7 @@ footer li {
 footer li a {
     font-family: 'Open Sans Condensed', sans-serif;
     text-transform: uppercase;
+    font-size: 18px;
 }
 
 footer img[src="/static/assets/img/ello-icon.jpg"] {
@@ -671,7 +693,7 @@ footer .share-btn {
 .share-dialog .share-section-title {
     font-size: 15px;
     font-style: italic;
-    color: #CE9046;
+    color: #E5B249;
 }
 
 .share-dialog .social-media-buttons {
@@ -776,8 +798,8 @@ footer .share-btn {
 }
 
 .end-credits-btn:hover {
-    color: #CE9046;
-    border-color: #CE9046;
+    color: #E5B249;
+    border-color: #E5B249;
 }
 
 /* ======== MISC ======== */
