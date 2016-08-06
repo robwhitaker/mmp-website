@@ -14,21 +14,21 @@ view model =
             [ ("credits-overlay", True)
             , ("no-display", not model.visible)
             , ("fading", model.fading)
-            ]
-        , onClick FadeCredits    
+            ]    
         ] 
         viewContent
 
 viewContent : List (Html Msg)
 viewContent =
-    [   div [ class "full-spacer" ] []
-    ,   div [ class "banner movie" ] [ a [ href "/" ] [ div [ class "banner-logo" ] [] ] ]
+    [ div [ class "end-credits-btn", onClick FadeCredits ] [ text "Exit Credits" ]  
+    , div [ class "full-spacer" ] []
+    , div [ class "banner movie" ] [ div [ class "banner-logo" ] [] ]
     ] 
     ++ (List.concatMap mkCreditGroup creditGroups) ++
     [ div 
         [ class "end-block" ] 
         [
-            div [ class "banner movie" ] [ a [ href "/" ] [ div [ class "banner-logo" ] [] ] ]    
+            div [ class "banner movie" ] [ div [ class "banner-logo" ] [] ]    
         ]
     ]    
 mkCreditGroup : (String, List String) -> List (Html Msg)

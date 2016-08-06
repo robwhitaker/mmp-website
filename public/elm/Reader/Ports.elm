@@ -57,3 +57,5 @@ port jumpToEntry         : RenderElementID -> Cmd msg
 port openSharePopup      : ShareButtons.Msg -> Cmd msg
 
 port rollCredits         : Int -> Cmd msg
+
+port setScrollEnabled    : Bool -> Cmd msg

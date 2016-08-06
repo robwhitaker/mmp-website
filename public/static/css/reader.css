@@ -718,7 +718,7 @@ footer .share-btn {
 }
 
 .credits-overlay.fading {
-    animation: fadeout 2s forwards;
+    animation: fadeout 0.4s forwards;
 }
 
 .full-spacer {
@@ -749,8 +749,29 @@ footer .share-btn {
   font-size: 25px;
 }
 
+.end-credits-btn {
+    position: fixed;
+    z-index: 10000000000000001;
+    top: 5px; right: 5px;
+    border: 1px solid white;
+    border-radius: 0.2em;
+    color: white;
+    font-size: 25px;
+    padding: 0.5em;
+    cursor: pointer;
+}
+
+.end-credits-btn:hover {
+    color: #CE9046;
+    border-color: #CE9046;
+}
+
 /* ======== MISC ======== */
 
 .hidden { visibility: hidden; }
 
 .no-display { display: none!important; }
+
+.no-scroll {
+    overflow: hidden!important;
+}

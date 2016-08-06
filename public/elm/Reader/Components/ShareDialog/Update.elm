@@ -2,7 +2,7 @@ module Reader.Components.ShareDialog.Update exposing (update)
 
 import Reader.Components.ShareDialog.Model exposing (Model)
 import Reader.Components.ShareDialog.Messages exposing (Msg(..))
-import Reader.Ports exposing (openSharePopup)
+import Reader.Ports exposing (openSharePopup, setScrollEnabled)
 
 import Task
 import Process
@@ -12,7 +12,7 @@ update msg model =
     case msg of
         ShowWith id sectionTitle ->
             { model | shareId = id, sectionTitle = sectionTitle, visible = True, shareFromHeading = True, fading = False }
-                ! []
+                ! [ setScrollEnabled False ]
 
         ToggleShareFromHeading val ->
             { model | shareFromHeading = val }
@@ -28,7 +28,7 @@ update msg model =
 
         Hide ->
             { model | visible = False, fading = False }
-                ! []
+                ! [ setScrollEnabled True ]
 
         NoOp ->
             model ! []

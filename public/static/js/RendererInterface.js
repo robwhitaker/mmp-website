@@ -205,6 +205,13 @@ var RendererInterface = (function() {
         }
     });
 
+    Reader.ports.setScrollEnabled.subscribe(function(isEnabled) {
+        if(isEnabled)
+            document.body.classList.remove("no-scroll");
+        else
+            document.body.classList.add("no-scroll");
+    });
+
     setInterval(function() {
         if(!Renderer) return;
         Renderer.refreshCommentCount();
