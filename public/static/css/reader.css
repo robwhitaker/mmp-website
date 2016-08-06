@@ -1,5 +1,6 @@
 @import url(https://fonts.googleapis.com/css?family=Tangerine);
-@import url('https://fonts.googleapis.com/css?family=Mirza');
+@import url(https://fonts.googleapis.com/css?family=Mirza);
+@import url(http://fonts.googleapis.com/css?family=Open+Sans+Condensed:300);
 
 /* ======== GENERAL ======== */
 
@@ -699,6 +700,53 @@ footer .share-btn {
 @keyframes fadeout {
     from { opacity: 1; }
     to   { opacity: 0; }
+}
+
+/* ======= CREDITS ====== */
+
+.credits-overlay {
+    background-color: rgba(0,0,0,1);
+    position: fixed;
+    top: 0; bottom: 0; left: 0; right: 0;
+    z-index: 10000000000000000;
+    overflow: hidden;
+    font: 300 30px/1 'Open Sans Condensed', sans-serif;
+    text-align: center;
+    color: #fff;
+    opacity: 0;
+    animation: fadein 2s forwards;
+}
+
+.credits-overlay.fading {
+    animation: fadeout 2s forwards;
+}
+
+.full-spacer {
+    height: 100%;
+}
+
+.end-block {
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.movie {    
+  margin-bottom: 50px;
+  font-size: 50px;
+}
+
+.job {
+  margin-top: 50px;
+  font-family: 'Tangerine', cursive;
+  margin-bottom: 5px;
+  font-size: 48px;
+}
+
+.name {
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  font-size: 25px;
 }
 
 /* ======== MISC ======== */

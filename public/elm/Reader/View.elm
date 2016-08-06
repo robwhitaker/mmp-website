@@ -9,6 +9,8 @@ import Reader.Views.Dropdown as Dropdown
 import Reader.Views.ShareButtons as ShareButtons
 
 import Reader.Components.ShareDialog.View as ShareDialog
+import Reader.Components.CreditsRoll.View as CreditsRoll
+import Reader.Components.CreditsRoll.Messages as CreditsRollM
 
 import Html.App as Html
 import Html exposing (..)
@@ -82,6 +84,37 @@ view model =
             [ div [ class "footer-link-block" ] <| List.map2 mkFooterSection footerHeadings footerContent
             , div [ class "copy" ] [ text "© Midnight Murder Party 2015-2016" ]
             ]
+        , Html.map CreditsRollMsg <| CreditsRoll.view model.creditsRoll    
+        --, div 
+        --    [ classList 
+        --        [ ("credits-overlay", True)
+        --        , ("no-display", not model.rollCredits)
+        --        ]
+        --    , onClick (RollCredits False)  
+        --    ]
+        --    [ div [ class "banner movie" ] [ a [ href "/" ] [ div [ class "banner-logo" ] [] ] ] 
+        --    , div [ class "job" ] [ text "Story / Writing" ]
+        --    , div [ class "name" ] [ text "Rob Whitaker" ]
+        --    , div [ class "job" ] [ text "Beta Reading" ]
+        --    , div [ class "name" ] [ text "JP Welsh" ]
+        --    , div [ class "name" ] [ text "Katie Craven" ]
+        --    , div [ class "name" ] [ text "Nicholas La Roux" ]
+        --    , div [ class "job" ] [ text "Editing" ]
+        --    , div [ class "name" ] [ text "JP Welsh" ]
+        --    , div [ class "name" ] [ text "Katie Craven" ]
+        --    , div [ class "name" ] [ text "Rob Whitaker" ]
+        --    , div [ class "job" ] [ text "Website Design" ]
+        --    , div [ class "name" ] [ text "Christina Ramos" ]
+        --    , div [ class "name" ] [ text "Rob Whitaker" ]
+        --    , div [ class "job" ] [ text "Art" ]
+        --    , div [ class "name" ] [ text "Christina Ramos" ]
+        --    , div [ class "job" ] [ text "Front-end Programming" ]
+        --    , div [ class "name" ] [ text "Rob Whitaker" ]
+        --    , div [ class "job" ] [ text "Back-end Programming" ]
+        --    , div [ class "name" ] [ text "Nicholas La Roux" ]
+        --    , div [ class "job" ] [ text "Marketing" ]
+        --    , div [ class "name" ] [ text "What's that?" ]
+        --    ]
         ]
 
 mkFooterSection : String -> Html Msg -> Html Msg
@@ -93,7 +126,7 @@ mkFooterSection heading content =
 
 footerHeadings = [ "Follow", "Share", "Extras", "Thanks to..." ]
 
-footerContent = [ follow, share, extras, thanksTo ]
+footerContent = [ follow, share, extras ]
 
 follow =
     let mkIcon (iconUrl, dest) =
@@ -145,8 +178,10 @@ share =
         , ShareButtons.reddit
         ]
 
-extras = mkLinks
-    [ ("MMP Halloween - 2015", "/interactive/HalloweenSpecial2015/") ]
+extras = 
+    div []
+        [ a [ onClick (CreditsRollMsg CreditsRollM.ShowCredits) ] [ text "Credits" ]
+        ]
 
 thanksTo = mkLinks
     [ ("Christina Ramos - Art", "")

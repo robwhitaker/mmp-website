@@ -6,6 +6,7 @@ import Core.Models.Chapter exposing (Chapter)
 import Reader.Views.Dropdown as Dropdown
 import Reader.Views.ShareButtons as ShareButtons
 import Reader.Components.ShareDialog.Messages as ShareDialog
+import Reader.Components.CreditsRoll.Messages as CreditsRoll
 
 import Debug
 
@@ -17,6 +18,7 @@ type Msg
     | OpenSharePopup ShareButtons.Msg
     | ShowShareDialog RenderElementID
     | ShareDialogMsg ShareDialog.Msg
+    | CreditsRollMsg CreditsRoll.Msg
     | Load (List Chapter) (List (RenderElementID, Bool)) LocationHash
     | ChapterHasRendered CurrentPage NumPages HeadingIDsOnPage
     | ChapterHasReflowed CurrentPage NumPages (Maybe FocusedElementID) HeadingIDsOnPage

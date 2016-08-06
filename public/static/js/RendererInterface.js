@@ -177,6 +177,34 @@ var RendererInterface = (function() {
         window.open(data.endpoint, "Share", "height="+data.height+",width="+data.width+",top="+top+",left="+left);
     });
 
+    Reader.ports.rollCredits.subscribe(function() {
+        var credits = null; 
+        var errCounter = 0;
+        var scrollPos = 0;
+
+        (function creditsRetry() {
+            console.log("Waiting for credits...");
+            credits = document.getElementsByClassName('credits-overlay')[0];
+            if(!credits || credits.offsetHeight === 0) {
+                setTimeout(creditsRetry,100);
+                return;
+            }
+
+        credits.scrollTop = 0; //scrollPos;
+        roll();    
+        })();
+
+        function roll() {
+            if(!credits || credits.style.display === "none") return;
+            console.log(scrollPos, credits.scrollHeight);
+            scrollPos += 2;
+            credits.scrollTop = scrollPos;
+            if(!(credits.scrollHeight - credits.scrollTop === credits.clientHeight))
+                window.requestAnimationFrame(roll);
+
+        }
+    });
+
     setInterval(function() {
         if(!Renderer) return;
         Renderer.refreshCommentCount();

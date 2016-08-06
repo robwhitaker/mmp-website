@@ -19,6 +19,7 @@ import Reader.Utils.Disqus as Disqus
 
 import Reader.Components.ShareDialog.Messages as ShareDialog
 import Reader.Components.ShareDialog.Update as ShareDialog
+import Reader.Components.CreditsRoll.Update as CreditsRoll
 
 import String
 import Task
@@ -49,6 +50,12 @@ update msg model =
             in
                 { model | shareDialog = newDialog }
                     ! [ Cmd.map ShareDialogMsg cmds ]
+
+        CreditsRollMsg crmsg ->
+            let (newCredits, cmds) = CreditsRoll.update crmsg model.creditsRoll
+            in
+                { model | creditsRoll = newCredits }
+                    ! [ Cmd.map CreditsRollMsg cmds ]            
 
         ChangeSelectedHeading hId ->
             let newModel =
