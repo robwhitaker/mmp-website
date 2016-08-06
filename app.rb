@@ -26,8 +26,16 @@ get '/' do
   send_file File.join(settings.public_folder, 'reader.html')
 end
 
+get '/read.html' do
+  redirect '/'
+end
+
 get '/editor' do
   send_file File.join(settings.public_folder, 'editor.html')
+end
+
+get '/extras/halloween2015/play' do
+  send_file File.join(settings.public_folder, '/extras/halloween2015/index.html')
 end
 
 get '/api/chapters/:id' do |id|

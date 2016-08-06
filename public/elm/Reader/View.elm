@@ -93,36 +93,6 @@ view model =
             , div [ class "copy" ] [ text "© Midnight Murder Party 2015-2016" ]
             ]
         , Html.map CreditsRollMsg <| CreditsRoll.view model.creditsRoll    
-        --, div 
-        --    [ classList 
-        --        [ ("credits-overlay", True)
-        --        , ("no-display", not model.rollCredits)
-        --        ]
-        --    , onClick (RollCredits False)  
-        --    ]
-        --    [ div [ class "banner movie" ] [ a [ href "/" ] [ div [ class "banner-logo" ] [] ] ] 
-        --    , div [ class "job" ] [ text "Story / Writing" ]
-        --    , div [ class "name" ] [ text "Rob Whitaker" ]
-        --    , div [ class "job" ] [ text "Beta Reading" ]
-        --    , div [ class "name" ] [ text "JP Welsh" ]
-        --    , div [ class "name" ] [ text "Katie Craven" ]
-        --    , div [ class "name" ] [ text "Nicholas La Roux" ]
-        --    , div [ class "job" ] [ text "Editing" ]
-        --    , div [ class "name" ] [ text "JP Welsh" ]
-        --    , div [ class "name" ] [ text "Katie Craven" ]
-        --    , div [ class "name" ] [ text "Rob Whitaker" ]
-        --    , div [ class "job" ] [ text "Website Design" ]
-        --    , div [ class "name" ] [ text "Christina Ramos" ]
-        --    , div [ class "name" ] [ text "Rob Whitaker" ]
-        --    , div [ class "job" ] [ text "Art" ]
-        --    , div [ class "name" ] [ text "Christina Ramos" ]
-        --    , div [ class "job" ] [ text "Front-end Programming" ]
-        --    , div [ class "name" ] [ text "Rob Whitaker" ]
-        --    , div [ class "job" ] [ text "Back-end Programming" ]
-        --    , div [ class "name" ] [ text "Nicholas La Roux" ]
-        --    , div [ class "job" ] [ text "Marketing" ]
-        --    , div [ class "name" ] [ text "What's that?" ]
-        --    ]
         ]
 
 mkFooterSection : String -> Html Msg -> Html Msg
@@ -187,8 +157,9 @@ share =
         ]
 
 extras = 
-    div []
-        [ a [ onClick (CreditsRollMsg CreditsRollM.ShowCredits) ] [ text "Credits" ]
+    ul  [] <| List.map (li [] << flip (::) [])
+        [ a [ href "/extras/halloween2015/play", target "_BLANK" ] [ text "Halloween Special 2015" ]
+        , a [ onClick (CreditsRollMsg CreditsRollM.ShowCredits) ] [ text "Credits" ]
         ]
 
 thanksTo = mkLinks

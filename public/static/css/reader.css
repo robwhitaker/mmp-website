@@ -446,6 +446,20 @@ footer img {
     margin: 0px 0.2em;
 }
 
+footer li:first-child {
+    margin-top: 0px;
+}
+
+footer li {
+    cursor: pointer;
+    margin: 0.5em 0;
+}
+
+footer li a {
+    font-family: 'Open Sans Condensed', sans-serif;
+    text-transform: uppercase;
+}
+
 footer img[src="/static/assets/img/ello-icon.jpg"] {
     box-sizing: border-box;
     padding: 2px;
