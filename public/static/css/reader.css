@@ -145,21 +145,21 @@ section.comments {
 }
 
 @keyframes fadeInFrom {
-    0%   { opacity: 0.65; }
+    0%   { opacity: 0.7; }
     100% { opacity: 1; }
 }
 
 .book .loader.cover .glow:hover {
-    opacity: 0.6;
-    animation: fadeInFrom 0.3s linear forwards;
-    background-image: radial-gradient(circle, rgba(203,128,14,0.35), rgba(203,128,14,0.45) 23%, rgba(0,0,0,0.5) 58%);
+    opacity: 0.7;
+    animation: fadeInFrom 0.2s linear forwards;
+    background-image: radial-gradient(circle, rgba(203,128,14,0.35), rgba(203,128,14,0.45) 23%, rgba(0,0,0,0.55) 58%);
 }
 
-.book .loader.cover:hover div {
+/*.book .loader.cover:hover div {
     color: #EAC694;
-}
+}*/
 
-.book .loader.cover div {
+/*.book .loader.cover div {
     position: absolute;
     bottom: 6%;
     right: 8%;
@@ -167,6 +167,25 @@ section.comments {
     font-size: 40px;
     font-weight: normal;
     font-family: Tangerine;
+}*/
+
+
+
+
+.book .loader.cover .glow .cover-txt {
+    color: #DCA234;
+    font-size: 8vh;
+    font-family: 'Tangerine', cursive;
+    font-weight: normal;
+    margin: 0 1em;
+    position: absolute;
+    bottom: 70%; left: 0; right: 6%;
+    text-align: center;
+    white-space: nowrap;
+    text-shadow: 2px 2px #000;
+}
+
+.book .loader.cover .glow:hover .cover-txt {
 }
 
 .book .loader.isDisplayed {

@@ -35,7 +35,11 @@ view model =
                         , ("isDisplayed", model.showCover)
                         ]
                     , onClick CoverClick
-                    ] [ div [ class "glow" ] [] ]
+                    ] 
+                    [ div 
+                        [ class "glow" ] 
+                        [ div [ class "cover-txt cover-btn" ] [ text "Start Reading" ] ]
+                    ]
                 , div --LOADER LAYER
                     [ classList
                         [ ("loader", True)
