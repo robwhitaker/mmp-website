@@ -180,28 +180,38 @@ var RendererInterface = (function() {
     Reader.ports.rollCredits.subscribe(function() {
         var credits = null; 
         var errCounter = 0;
-        var scrollPos = 0;
+        var duration = 25000;
+        var elapsed = 0;
+        var lastTime = -1;
 
         (function creditsRetry() {
-            console.log("Waiting for credits...");
             credits = document.getElementsByClassName('credits-overlay')[0];
             if(!credits || credits.offsetHeight === 0) {
-                setTimeout(creditsRetry,100);
+                console.log("Waiting for credits...", errCounter);
+                if(errCounter < 15) {
+                    errCounter++;
+                    setTimeout(creditsRetry,100);
+                }
                 return;
             }
 
-        credits.scrollTop = 0; //scrollPos;
-        roll();    
+            credits.scrollTop = 0;
+            window.requestAnimationFrame(roll);    
         })();
 
-        function roll() {
+        function roll(cTime) {
+            var dt;
             if(!credits || credits.style.display === "none") return;
-            console.log(scrollPos, credits.scrollHeight);
-            scrollPos += 2;
-            credits.scrollTop = scrollPos;
-            if(!(credits.scrollHeight - credits.scrollTop === credits.clientHeight))
+            if(lastTime < 0) {
+                lastTime = cTime;
+            }
+            dt = cTime - lastTime;
+            lastTime = cTime;
+            elapsed += dt;
+            credits.scrollTop = (elapsed / duration) * (credits.scrollHeight - credits.clientHeight);
+            // console.log(credits.scrollTop, (credits.scrollHeight - credits.clientHeight), elapsed);
+            if(elapsed < duration)
                 window.requestAnimationFrame(roll);
-
         }
     });
 
