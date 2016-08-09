@@ -52,10 +52,10 @@ get '/api/chapters' do # public chapters
   json all_chapters_with_entries("restricted")
 end
 
-get '/api/test-rss' do # rss (public chapters)
+get '/rss' do # rss (public chapters)
   content_type :json
   success_response
-  json content_by_date
+  json rss_feed
 end
 
 post '/api/chapters' do # all chapters
@@ -178,30 +178,31 @@ def all_chapters_with_entries(type = "unrestricted")
   chapters_with_entries
 end
 
-def content_by_date
-  @current_date_key = ""
-  content_by_date = {}
+def rss_feed
+  feed = []
   chapters = Chapter.order(release_date: :asc).where('release_date <= ?', DateTime.now)
 
   chapters.each do |chapter|
-    if chapter.release_date != @current_date_key
-      @current_date_key = chapter.release_date.to_s
-      content_by_date[@current_date_key] = [chapter]
+    release = []
+
+    if chapter.has_content?
+      feed.push([chapter])
+    else
+      release.push(chapter)
 
       chapter.entries.each do |entry|
-        if entry.release_date != @current_date_key
-          @current_date_key = entry.release_date.to_s
-          content_by_date[@current_date_key] = [entry]
+        if entry.has_content?
+          release.push(entry)
+          feed.push(release)
+          release = []
         else
-          content_by_date[@current_date_key].push(entry)
+          release.push(entry)
         end
       end
-    else
-      content_by_date[@current_date_key].push(chapter)
     end
   end
 
-  content_by_date
+  feed
 end
 
 def diff_entry_ids(chapter_id, entries)
