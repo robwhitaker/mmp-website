@@ -2,6 +2,7 @@ require 'bundler'
 Bundler.require
 
 require 'sinatra'
+require 'rss'
 require 'logger'
 require 'time'
 require './config/environments'
@@ -53,9 +54,9 @@ get '/api/chapters' do # public chapters
 end
 
 get '/rss' do # rss (public chapters)
-  content_type :json
+  @releases = rss_feed
   success_response
-  json rss_feed
+  builder :rss
 end
 
 post '/api/chapters' do # all chapters
