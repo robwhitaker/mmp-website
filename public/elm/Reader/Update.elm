@@ -80,21 +80,22 @@ update msg model =
                                         |> Maybe.withDefault model.toc
                             newModel =
                                 if nToc == model.toc then
-                                    { model
-                                        | toc = SL.goto 0 model.toc
-                                        , lastNavAction = PageTurn Forward
-                                        , state = Rendering
-                                        , showCover = True
-                                    }
+                                    model
                                 else
                                     { model
                                         | toc = nToc
                                         , lastNavAction = PageTurn Forward
                                         , state = Rendering
                                     }
+
+                            newCmd = 
+                                if newModel == model then 
+                                    Cmd.none
+                                else
+                                    renderCmd False newModel
                         in
                             newModel
-                                ! [ renderCmd False newModel ]
+                                ! [ newCmd ]
                     else
                         let
                             newModel =
