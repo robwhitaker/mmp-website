@@ -60,7 +60,7 @@ setTitleCmd model =
 
 setDisqusThread : Model -> Cmd msg
 setDisqusThread model =
-    switchDisqusThread <| Disqus.disqusDataFromTOC model.toc
+    switchDisqusThread <| Disqus.disqusDataFromTOC model.locationHost model.toc
 
 ---- HELPERS ----
 

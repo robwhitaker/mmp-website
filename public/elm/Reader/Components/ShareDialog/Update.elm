@@ -10,8 +10,8 @@ import Process
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
-        ShowWith id sectionTitle ->
-            { model | shareId = id, sectionTitle = sectionTitle, visible = True, shareFromHeading = True, fading = False }
+        ShowWith id locationHost sectionTitle ->
+            { model | shareId = id, locationHost = locationHost, sectionTitle = sectionTitle, visible = True, shareFromHeading = True, fading = False }
                 ! [ setScrollEnabled False ]
 
         ToggleShareFromHeading val ->

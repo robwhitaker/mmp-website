@@ -22,7 +22,7 @@ view model =
             , h2 [ class "fancy-heading" ] [ text "Share" ]
             , div
                 [ class "url-container" ]
-                [ input [ value <| "localhost:4567" ++ if model.shareFromHeading then "/#!/" ++ model.shareId else "" ] [] ]
+                [ input [ value <| model.locationHost ++ if model.shareFromHeading then "/#!/" ++ model.shareId else "" ] [] ]
             , input
                 [ type' "checkbox"
                 , checked model.shareFromHeading

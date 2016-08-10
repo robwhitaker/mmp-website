@@ -19,7 +19,7 @@ type Msg
     | ShowShareDialog RenderElementID
     | ShareDialogMsg ShareDialog.Msg
     | CreditsRollMsg CreditsRoll.Msg
-    | Load (List Chapter) (List (RenderElementID, Bool)) LocationHash
+    | Load (List Chapter) (List (RenderElementID, Bool)) LocationHash LocationHost
     | ChapterHasRendered CurrentPage NumPages HeadingIDsOnPage
     | ChapterHasReflowed CurrentPage NumPages (Maybe FocusedElementID) HeadingIDsOnPage
     | UpdateHeadingsOnPage HeadingUpdate
@@ -34,7 +34,7 @@ type alias HeadingUpdate = { headingsOnPage : List RenderElementID, headingAtTop
 debugLog : String -> Msg -> Msg
 debugLog label msg =
     let log = Debug.log label <| case msg of
-        Load _ _ _ -> "Load"
+        Load _ _ _ _ -> "Load"
         _ -> toString msg
     in
         msg

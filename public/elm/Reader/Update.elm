@@ -43,7 +43,7 @@ update msg model =
                 ! [ openSharePopup sharePopupSettings ]
 
         ShowShareDialog id ->
-            update (ShareDialogMsg <| ShareDialog.ShowWith id <| selectedTitleFromSL <| gotoHeading id model.toc) model
+            update (ShareDialogMsg <| ShareDialog.ShowWith id model.locationHost <| selectedTitleFromSL <| gotoHeading id model.toc) model
 
         ShareDialogMsg sdmsg ->
             let (newDialog, cmds) = ShareDialog.update sdmsg model.shareDialog
@@ -208,11 +208,17 @@ update msg model =
                 newModel
                     ! [ nextCmd ]
 
-        Load chapters readEntries locationHash ->
+        Load chapters readEntries locationHash locationHost ->
             let targetID = String.dropLeft 3 locationHash
                 loadedModel = Reader.Model.Helpers.fromChapterList chapters (Dict.fromList readEntries)
                 newToc = gotoHeading targetID loadedModel.toc
-                newModel = { loadedModel | state = Rendering, toc = newToc, showCover = loadedModel.toc.selected.id == newToc.selected.id }
+                newModel = 
+                    { loadedModel 
+                        | state = Rendering
+                        , toc = newToc
+                        , showCover = loadedModel.toc.selected.id == newToc.selected.id 
+                        , locationHost = locationHost
+                    }
             in
                 newModel
                     ! [ renderCmd False newModel ]

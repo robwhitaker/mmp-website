@@ -37,6 +37,7 @@ type alias Model =
     , lastNavAction     : LastNavAction
     , state             : State
     , tocExpanded       : Bool
+    , locationHost      : LocationHost
     }
 
 type alias RenderElement =
@@ -70,6 +71,7 @@ empty =
     , lastNavAction     = PageTurn (PageNum 0)
     , state             = Loading
     , tocExpanded       = False
+    , locationHost      = ""
     }
 
 emptyRenderElement : RenderElement

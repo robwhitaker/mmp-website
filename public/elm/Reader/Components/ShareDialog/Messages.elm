@@ -6,7 +6,7 @@ import Reader.Views.ShareButtons as ShareButtons
 import Time exposing (Time)
 
 type Msg
-    = ShowWith RenderElementID String
+    = ShowWith RenderElementID LocationHost String
     | ToggleShareFromHeading Bool
     | OpenSharePopup ShareButtons.Msg
     | FadeOutFor Time

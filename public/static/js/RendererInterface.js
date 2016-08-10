@@ -3,7 +3,8 @@ var RendererInterface = (function() {
     var rendererFrame;
     var Renderer;
     var Reader = window.Reader = Elm.Reader.Main.fullscreen(
-        { location : window.location.hash
+        { hash : window.location.hash
+        , host : window.location.protocol + "//" + window.location.host    
         , readEntries : getLocalStorage()
         }
     );

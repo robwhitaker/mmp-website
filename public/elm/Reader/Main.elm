@@ -35,17 +35,18 @@ import Debug
 
 type alias Flags =
     { readEntries : List (RenderElementID, Bool)
-    , location : String
+    , hash : LocationHash
+    , host : LocationHost
     }
 
 init : Flags -> (Model, Cmd Msg)
-init { readEntries, location }=
+init { readEntries, hash, host }=
     (,)
         Reader.Model.empty
         (Requests.send Nothing Requests.Get (Json.list Chapter.decoder) "/chapters"
             |> Task.perform
                 (\_ -> NoOp)
-                (\chapters -> Load chapters readEntries location)
+                (\chapters -> Load chapters readEntries hash host)
         )
 
 ---- WIRING ----
