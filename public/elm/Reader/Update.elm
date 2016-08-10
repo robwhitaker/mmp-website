@@ -200,7 +200,7 @@ update msg model =
                     if triggersRender then
                         renderCmd False newModel
                     else
-                        if model.toc.selected.id == newModel.toc.selected.id then
+                        if maybeRenderElemID == Nothing then 
                             Cmd.none
                         else
                             jumpToEntry newModel.toc.selected.id
