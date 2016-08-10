@@ -217,7 +217,7 @@ update msg model =
                     { loadedModel 
                         | state = Rendering
                         , toc = newToc
-                        , showCover = loadedModel.toc.selected.id == newToc.selected.id 
+                        , showCover = targetID /= newToc.selected.id 
                         , locationHost = locationHost
                     }
             in
