@@ -18,7 +18,7 @@ xml.rss :version => "2.0" do
 
     def prepare_title(release)
       if release.length > 1
-        "Placeholder title - merge needed"
+        release.inject(""){|base, sub_release| base + sub_release.title}
       else
         release.first.title
       end
