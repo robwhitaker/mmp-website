@@ -38,16 +38,16 @@ switchSelectedIdCmd forceChange oldModel newModel =
             else
                 setTitleCmd newModel
 
-        storageUpdate =
-            if oldModel.toc.selected.id == newModel.toc.selected.id && not forceChange then
-                Cmd.none
-            else
-                setReadInStorage newModel.toc.selected.id
+        --storageUpdate =
+        --    if oldModel.toc.selected.id == newModel.toc.selected.id && not forceChange then
+        --        Cmd.none
+        --    else
+        --        setReadInStorage newModel.toc.selected.id
     in
         Cmd.batch
             [ disqusUpdate
             , titleUpdate
-            , storageUpdate
+            --, storageUpdate
             ]
 
 setTitleCmd : Model -> Cmd msg
