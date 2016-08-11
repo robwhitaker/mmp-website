@@ -16,12 +16,16 @@ xml.rss :version => "2.0" do
       prepared_release
     end
 
+    def strip_html(string)
+      doc = Nokogiri::HTML(string)
+      doc.xpath("//text()").to_s
+    end
+
     def prepare_title(release)
-      if release.length > 1
-        release.inject(""){|base, sub_release| base + sub_release.title}
-      else
-        release.first.title
-      end
+      chapter_title_base = strip_html(Chapter.find(release.last.chapter_id).title).gsub(/\..*/, '')
+      prepared_release_title = strip_html(release.last.title).gsub(/\./, '')
+
+      "#{chapter_title_base}-#{prepared_release_title}"
     end
 
     def deep_link(release)
