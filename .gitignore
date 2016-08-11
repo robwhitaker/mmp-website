@@ -1,0 +1,42 @@
+### Elm ###
+## elm-package generated files
+elm-stuff/
+
+## elm-repl generated files
+repl-temp-*
+
+## Static artifacts
+/node_modules
+public/static/build
+/elm/elm-stuff
+repl-temp-*
+Gemfile.lock
+
+log
+var
+
+
+*.xcf
+
+### Ruby ###
+## Assorted
+*.gem
+/db/*.sqlite3
+/db/*.sqlite3-journal
+/shared
+.ruby-version
+
+## Documentation cache and generated files:
+/.yardoc/
+/_yardoc/
+/doc/
+/rdoc/
+
+## Environment normalization:
+/.bundle/
+/vendor/bundle
+/lib/bundler/man/
+
+### OS X and RVM ###
+.rvmrc
+.DS_Store

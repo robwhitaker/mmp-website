@@ -1,0 +1,29 @@
+{
+  "name": "mmpwebsite",
+  "version": "1.0.0",
+  "description": "Elm, Sinatra, SQLite3 (dev), PostgreSQL (prod)",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "elm": "^0.17.1",
+    "gulp": "^3.9.1",
+    "gulp-autoprefixer": "^3.1.0",
+    "gulp-clean-css": "^2.0.12",
+    "gulp-concat": "^2.6.0",
+    "gulp-elm": "^0.5.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^1.5.4",
+    "rimraf": "^2.5.4"
+  },
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/robwhitaker/MMPWebsiteV2.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/robwhitaker/MMPWebsiteV2/issues"
+  },
+  "homepage": "https://github.com/robwhitaker/MMPWebsiteV2#readme"
+}

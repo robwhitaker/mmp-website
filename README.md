@@ -1,22 +1,24 @@
-# Midnight Murder Party
-Elm + Phoenix
+# Midnight Murder Party v2
+Elm, Sinatra, SQLite3 (dev), PostgreSQL (prod)
 
 Requires
-- [Elm](http://elm-lang.org/install) v0.16.0
-- [Elixir](http://elixir-lang.org/install.html) v1.1.1
-- [Phoenix](http://www.phoenixframework.org/docs/installation) v1.0.4
-- [Postgres](http://www.postgresql.org/download/) v9.4.5
-- [Node.js/NPM](https://nodejs.org/en/) v5.1.0
+- [Ruby](https://www.ruby-lang.org/en/) v2.3.1
+- [NodeJS/NPM](https://nodejs.org/en/)
+- Gulp (`npm install -g gulp`)
 
-Setup
-- Install above requirements
+Dev Setup
+- Install above prerequistites
 - Clone repository
-- cd into repository
+- `cd` into repository
+- Create necessary files/folders (`mkdir -p var/{pids,run,log} && touch var/log/app.log`)
+- `bundle install`
+- `bundle exec rake db:setup`
 - `npm install`
-- `mix deps.get`
-- Make sure you have Postgress running
-- `mix ecto.create`
-- `mix ecto.migrate`
-- `mix run priv/repo/seeds.exs`
-- `cd web/elm && elm package install -y && cd ../../`
-- `mix phoenix.server`
+
+Building the Front End
+- Reader: `gulp build:reader`
+- Editor: `gulp build:editor-js`
+
+Running the Server
+- `ruby app.rb`
+- Visit localhost:4567 in your browser
