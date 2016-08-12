@@ -1,5 +1,7 @@
 module Reader.View exposing (..)
 
+import Core.Utils.SelectionList as SL
+
 import Reader.Model exposing (..)
 import Reader.Messages exposing (..)
 import Reader.Ports exposing (..)
@@ -22,7 +24,14 @@ import String
 
 view : Model -> Html Msg
 view model =
-    div []
+    let isLastPage = 
+            --NOTE: Logic copied from Update.elm. Maybe make a helper function?
+            model.pages.current + 1 >= model.pages.total &&
+                SL.traverseFromSelectedUntil
+                                    SL.next
+                                    (\entry -> entry.body /= "" && entry.chapter /= model.toc.selected.chapter)
+                                    model.toc == Nothing
+    in div []
         [ section
             [ class "reader" ]
             [ div [ class "banner" ] [ a [ href "/" ] [ div [ class "banner-logo" ] [] ] ]
@@ -68,9 +77,9 @@ view model =
                                 ]
                             , div [ class "page-num" ] [ text <| toString (model.pages.current + 1) ] --++ " / " ++ toString model.pages.total ]
                             , div 
-                                [ class "book-arrow forward-btn", onClick (TurnPage Forward) ] 
-                                [
-                                    i [ class "fa fa-angle-right" ] []
+                                [ classList [("book-arrow forward-btn", True),("btn-disabled", isLastPage)], onClick (TurnPage Forward) ] 
+                                [ div [ class "last-page-txt" ] [ text "Check back on Sunday!" ]
+                                , i [ class "fa fa-angle-right" ] []
                                 ]
                             ]
                         ]

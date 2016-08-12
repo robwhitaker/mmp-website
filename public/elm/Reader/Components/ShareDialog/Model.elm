@@ -4,6 +4,7 @@ import Reader.Aliases exposing (..)
 
 type alias Model =
     { shareId          : RenderElementID
+    , locationHost     : LocationHost
     , sectionTitle     : String
     , visible          : Bool
     , fading           : Bool
@@ -13,6 +14,7 @@ type alias Model =
 empty : Model
 empty =
     { shareId = ""
+    , locationHost = ""
     , sectionTitle = ""
     , visible = False
     , fading = False
