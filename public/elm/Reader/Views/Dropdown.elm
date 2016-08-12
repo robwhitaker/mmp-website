@@ -63,13 +63,13 @@ renderDropdownList list =
         List.indexedMap (\index item ->
             li [ classList
                     [ ("selected", index == selectedIndex)
-                    , ("latest", parseReleaseDate item.releaseDate == maxReleaseDate)
+                    , ("latest", parseReleaseDate item.releaseDate == maxReleaseDate && not item.isRead)
                     , ("unread", not item.isRead)
                     ]
                 , onClick (Just item.id, Just False)
                 ]
                 [ div [ class "li-label" ] [ Markdown.toHtml [] <| String.repeat item.level "<div class=\"drop-down-spacer\"></div>" ++ stripTags item.heading ]
-                , div [ class "alert" ] [ text "(new!)" ]
+                , div [ class "alert" ] [ text "new!" ]
                 ]
         ) (SL.toList list)
 

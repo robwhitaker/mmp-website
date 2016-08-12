@@ -306,6 +306,10 @@ section.comments {
     position: relative;
 }
 
+.drop-down-container.expanded {
+    min-width: 70%;
+}
+
 .drop-down-container .selected-label {
     text-align: center;
     overflow: hidden;
@@ -314,8 +318,14 @@ section.comments {
     border: 1px solid rgba(0,0,0,0);
     border-top-left-radius: 0.2em;
     border-top-right-radius: 0.2em;
-    padding: 0.5em 1em;
-    font-size: 14px;
+    padding: 0.5em 1em 0 1em;
+    font-size: 18px;
+    font-family: Mirza;
+    color: #444;
+}
+
+.drop-down-container.expanded .selected-label {
+    color: black;
 }
 
 .drop-down-container.expanded .selected-label {
@@ -326,14 +336,13 @@ section.comments {
 
 .drop-down-container .selected-label:hover {
     box-shadow: 0px 0px 2px #999;
+    color: black;
 }
 
 .drop-down-container .selected-label .label-text {
-    display: inline-block;
-    margin: 0 auto;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-right: 0.5em;
+    width: 100%;
 }
 
 .drop-down-container .arrow-down {
@@ -344,8 +353,12 @@ section.comments {
     display: inline-block;
     margin-top: 5px;
     margin-left: 0.3em;
-    border-top: 5px solid #000;
+    border-top: 5px solid #444;
     vertical-align: bottom;
+}
+
+.drop-down-container:hover .arrow-down {
+    border-top: 5px solid #000;
 }
 
 .drop-down-container.expanded .arrow-down {
@@ -375,6 +388,9 @@ section.comments {
     max-height: 60vh;
     overflow-y: auto;
     box-sizing: border-box;
+    font-family: 'Open Sans Condensed';
+    font-size: 17px;
+    color: #000;
 }
 
 .drop-down-container.expanded ul {
@@ -400,24 +416,30 @@ section.comments {
 }
 
 .drop-down-container ul li:hover {
-    background-color: #E9E3DD;
+    background-color: #E5B249;
+    /*color: #E5B249;*/
 }
 
 .drop-down-container ul li .alert {
     display: none;
+    background-color: #E5B249;
+    /*color: #E5B249;*/
+    border-radius: 0.4em;
+    padding: 0.12em 0.4em;
 }
 
 .drop-down-container.expanded ul li.latest .alert {
     display: inline-block;
 }
 
-.drop-down-container ul li.latest {
-    color: goldenrod;
-    font-style: italic;
+.drop-down-container ul li.latest .li-label {
+    /*font-style: italic;*/
+    padding: 0.12em 0;
 }
 
 .drop-down-container ul li.selected {
-    background-color: #E9E3DD;
+    background-color: #e0bd76;
+    /*color: #E5B249;*/
 }
 
 .drop-down-container ul li.unread {
