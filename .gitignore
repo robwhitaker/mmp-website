@@ -13,7 +13,6 @@ repl-temp-*
 Gemfile.lock
 
 ### Assorted ###
-config/database.yml
 log
 var
 *.xcf
@@ -46,4 +45,3 @@ rvm1scripts
 ### OS X and RVM ###
 .rvmrc
 .DS_Store
-
