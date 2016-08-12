@@ -1,37 +1,34 @@
 namespace :deploy do
   desc "Makes sure local git is in sync with remote."
   task :check_revision do
-    unless `git rev-parse HEAD` == `git rev-parse origin/staging-deploy-test`
-      puts "WARNING: HEAD is not the same as origin/staging-deploy-test"
+    # need to make fetch(:branch) staging/production
+    unless `git rev-parse HEAD` == `git rev-parse origin/capistrano_deploys`
+      puts "WARNING: HEAD is not the same as origin/capistrano_deploys"
       puts "Run `git push` to sync changes."
       exit
     end
   end
 
-  desc "Ensure .bashrc and Ruby are loaded"
-  task :check_ruby_version do
+  desc "Make sure Gulp is installed"
+  task :install_gulp do
     on roles(:app) do
       within "~/mmp" do
-        unless execute "ruby -v" == "2.3.1p112"
-          puts "Ruby version is incorrect, exiting."
-          exit
+        execute "npm install gulp"
       end
     end
   end
 
-  %w[start stop restart].each do |command|
-    desc "#{command} Puma server."
-    task command do
-      on roles(:app) do
-        within "~/mmp" do
-          execute "pumactl #{command}"
-        end
+  desc "Compile reader and editor assets"
+  task :build_assets do
+    on roles(:app) do
+      within "~/mmp" do
+        execute "gulp build:reader"
+        execute "gulp build:editor-js"
       end
     end
   end
 
-  before :deploy, "deploy:check_revision"
-  before :deploy, "deploy:check_ruby_version"
-  before :deploy, "deploy:stop"
-  after :deploy, "deploy:start"
+  before :deploy, 'deploy:check_revision'
+  # after :deploy,  'deploy:install_gulp'
+  # after :deploy,  'deploy:build_assets'
 end
