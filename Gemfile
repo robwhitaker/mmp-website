@@ -11,8 +11,8 @@ gem 'nokogiri'
 group :development do
   gem 'sqlite3'
   gem 'capistrano', '~> 3.6'
-  gem 'capistrano-rvm'
-  gem 'capistrano-bundler'
+  gem 'rvm1-capistrano3', require: false
+  gem 'capistrano3-puma', github: "seuros/capistrano-puma"
 end
 
 group :production do
