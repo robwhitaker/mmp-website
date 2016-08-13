@@ -299,7 +299,12 @@ update msg model =
                                             )
                                         , (List.head model.headingIDsOnPage) `Maybe.andThen` (\firstIDOnPrevPage ->
                                                 SL.indexOf (.id >> (==) firstIDOnPrevPage) model.toc `Maybe.andThen` (\index ->
-                                                    Just (SL.goto index model.toc |> untilContent SL.previous |> .selected |> .id)
+                                                    let newToc = SL.goto index model.toc |> untilContent SL.previous
+                                                    in
+                                                        if newToc.selected.chapter /= model.toc.selected.chapter then
+                                                            Nothing
+                                                        else
+                                                            Just newToc.selected.id
                                                 )
                                             )
                                         ] ? model.toc.selected.id
