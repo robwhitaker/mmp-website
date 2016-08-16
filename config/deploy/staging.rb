@@ -1,10 +1,9 @@
 role :app,                     %w{deploy@192.168.2.100}
 set :branch,                   'staging'
 set :stage,                    'staging'
-set :rails_env,                :production
 set :linked_files,             %w{config/database.yml}
 set :linked_dirs,              %w{var/log var/pids var/run}
-set :rvm1_ruby_version,        "2.3.1"
+set :rvm1_ruby_version,        '2.3.1'
 set :rvm1_map_bins,            %w{rake gem bundle ruby}
 
 shared_path = "/var/www/mmp/var"
