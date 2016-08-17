@@ -4,8 +4,8 @@ var RendererInterface = (function() {
     var Renderer;
     var Reader = window.Reader = Elm.Reader.Main.fullscreen(
         { hash : window.location.hash
-        , host : window.location.protocol + "//" + window.location.host    
-        , readEntries : getLocalStorage()
+        , host : window.location.protocol + "//" + window.location.host
+        , localStorage : getLocalStorage()
         }
     );
 
@@ -14,11 +14,18 @@ var RendererInterface = (function() {
 
     function getLocalStorage() {
         var items = [];
+        var bookmark = null;
         var data = JSON.parse(localStorage.getItem("MMP_ReaderData") || "{}");
         for(key in data)
-            items.push([key,data[key]]);
+            if(key != "bookmark")
+                items.push([key,data[key]]);
+            else
+                bookmark = data[key];
 
-        return items;
+        return {
+            readEntries : items,
+            bookmark  : bookmark
+        };
     }
 
     function init(rendererFrameId) {
@@ -144,6 +151,14 @@ var RendererInterface = (function() {
         localStorage.setItem("MMP_ReaderData", JSON.stringify(data));
     });
 
+    Reader.ports.setBookmarkInStorage.subscribe(function(eId) {
+        if(!localStorage) return;
+
+        var data = JSON.parse(localStorage.getItem("MMP_ReaderData") || "{}");
+        data["bookmark"] = eId;
+        localStorage.setItem("MMP_ReaderData", JSON.stringify(data));
+    });
+
     Reader.ports.jumpToEntry.subscribe(function(eId) {
         Renderer.goToHeading(eId);
     });
@@ -179,7 +194,7 @@ var RendererInterface = (function() {
     });
 
     Reader.ports.rollCredits.subscribe(function() {
-        var credits = null; 
+        var credits = null;
         var errCounter = 0;
         var duration = 25000;
         var elapsed = 0;
@@ -197,7 +212,7 @@ var RendererInterface = (function() {
             }
 
             credits.scrollTop = 0;
-            window.requestAnimationFrame(roll);    
+            window.requestAnimationFrame(roll);
         })();
 
         function roll(cTime) {

@@ -33,20 +33,14 @@ import Core.Models.Chapter as Chapter
 --TODO: remove these when done
 import Debug
 
-type alias Flags =
-    { readEntries : List (RenderElementID, Bool)
-    , hash : LocationHash
-    , host : LocationHost
-    }
-
 init : Flags -> (Model, Cmd Msg)
-init { readEntries, hash, host }=
+init { localStorage, hash, host }=
     (,)
         Reader.Model.empty
         (Requests.send Nothing Requests.Get (Json.list Chapter.decoder) "/chapters"
             |> Task.perform
                 (\_ -> NoOp)
-                (\chapters -> Load chapters readEntries hash host)
+                (\chapters -> Load chapters localStorage hash host)
         )
 
 ---- WIRING ----

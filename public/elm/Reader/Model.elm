@@ -24,6 +24,11 @@ type State
     | Rendering
     | TurningPage
 
+type BookmarkState
+    = HasBookmark
+    | NoBookmark
+    | LoadingBookmark
+
 type alias TOC = SelectionList RenderElement
 
 type alias Model =
@@ -38,6 +43,7 @@ type alias Model =
     , state             : State
     , tocExpanded       : Bool
     , locationHost      : LocationHost
+    , bookmark          : BookmarkState
     }
 
 type alias RenderElement =
@@ -72,6 +78,7 @@ empty =
     , state             = Loading
     , tocExpanded       = False
     , locationHost      = ""
+    , bookmark          = LoadingBookmark
     }
 
 emptyRenderElement : RenderElement

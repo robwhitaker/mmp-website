@@ -19,7 +19,7 @@ type Msg
     | ShowShareDialog RenderElementID
     | ShareDialogMsg ShareDialog.Msg
     | CreditsRollMsg CreditsRoll.Msg
-    | Load (List Chapter) (List (RenderElementID, Bool)) LocationHash LocationHost
+    | Load (List Chapter) LocalStorageData LocationHash LocationHost
     | ChapterHasRendered CurrentPage NumPages HeadingIDsOnPage
     | ChapterHasReflowed CurrentPage NumPages (Maybe FocusedElementID) HeadingIDsOnPage
     | UpdateHeadingsOnPage HeadingUpdate

@@ -42,7 +42,7 @@ switchSelectedIdCmd forceChange oldModel newModel =
         --    if oldModel.toc.selected.id == newModel.toc.selected.id && not forceChange then
         --        Cmd.none
         --    else
-        --        setReadInStorage newModel.toc.selected.id
+        --        setBookmarkInStorage newModel.toc.selected.id
     in
         Cmd.batch
             [ disqusUpdate

@@ -56,7 +56,7 @@ update msg model =
             let (newCredits, cmds) = CreditsRoll.update crmsg model.creditsRoll
             in
                 { model | creditsRoll = newCredits }
-                    ! [ Cmd.map CreditsRollMsg cmds ]            
+                    ! [ Cmd.map CreditsRollMsg cmds ]
 
         ChangeSelectedHeading hId ->
             let (_, newToc, cmds) = gotoHeading hId model.toc
@@ -91,8 +91,8 @@ update msg model =
                                         , state = Rendering
                                     }
 
-                            newCmd = 
-                                if newModel == model then 
+                            newCmd =
+                                if newModel == model then
                                     Cmd.none
                                 else
                                     renderCmd False { newModel | toc = newTocUnchecked }
@@ -190,18 +190,18 @@ update msg model =
                     else
                         PageJump newToc.selected.id
                 newModel =
-                    { model 
+                    { model
                         | toc = newToc
                         , tocExpanded = expanded
                         , lastNavAction = lastNavAction
-                        , state = if triggersRender then Rendering else model.state 
+                        , state = if triggersRender then Rendering else model.state
                     }
 
                 nextCmd =
                     if triggersRender then
                         renderCmd False { newModel | toc = newTocUnchecked }
                     else
-                        if maybeRenderElemID == Nothing then 
+                        if maybeRenderElemID == Nothing then
                             Cmd.none
                         else
                             jumpToEntry newTocUnchecked.selected.id
@@ -209,30 +209,37 @@ update msg model =
                 newModel
                     ! [ nextCmd, cmds ]
 
-        Load chapters readEntries locationHash locationHost ->
+        Load chapters { readEntries, bookmark } locationHash locationHost ->
             let targetID = String.dropLeft 3 locationHash
                 loadedModel = Reader.Model.Helpers.fromChapterList chapters (Dict.fromList readEntries)
-                (newTocUnchecked, newToc, cmds) = gotoHeading targetID loadedModel.toc
-                newModel = 
-                    { loadedModel 
+                selectedID = Maybe.oneOf
+                    [ Maybe.map (always targetID) (SL.indexOf (.id >> (==) targetID) loadedModel.toc)
+                    , bookmark
+                    ] ? ""
+                (newTocUnchecked, newToc, cmds) = gotoHeading selectedID loadedModel.toc
+                newModel =
+                    { loadedModel
                         | state = Rendering
                         , toc = newToc
-                        , showCover = targetID /= newTocUnchecked.selected.id 
+                        , showCover = targetID /= newTocUnchecked.selected.id
                         , locationHost = locationHost
+                        , bookmark = if bookmark == Nothing then NoBookmark else HasBookmark
                     }
             in
                 newModel
                     ! [ renderCmd False { newModel | toc = newTocUnchecked } ]
 
         ChapterHasRendered currentPage numPages headingIds ->
-            let headings = headingIdFilter model.toc headingIds
-                (_, newToc, cmds) =
+            let (_, newToc, cmds) =
                     case model.lastNavAction of
                         PageJump _ ->
                             (model.toc, model.toc, Cmd.none)
                         _ ->
-                            gotoHeading (List.head headings ? model.toc.selected.id) model.toc
-                a = Debug.log "(OLD,NEWTOC)" <| (model.toc.selected.id, newToc.selected.id, model.lastNavAction, headings)
+                            if List.member model.toc.selected.id headingIds then
+                                gotoHeading model.toc.selected.id model.toc
+                            else
+                                gotoHeading (List.head headingIds ? model.toc.selected.id) model.toc
+                --a = Debug.log "(OLD,NEWTOC)" <| (model.toc.selected.id, newToc.selected.id, model.lastNavAction, headings)
                 newModel =
                     { model
                         | pages =
@@ -240,7 +247,7 @@ update msg model =
                             , total = numPages
                             }
                         , state = Ready
-                        , headingIDsOnPage = headings
+                        , headingIDsOnPage = headingIds
                         , toc = newToc
                     }
             in
@@ -248,15 +255,13 @@ update msg model =
                     ! [ switchSelectedIdCmd True model newModel, cmds ]
 
         ChapterHasReflowed currentPage numPages maybeFocusedId headingIds ->
-            let headings = headingIdFilter model.toc headingIds
-
-                newFocusedId =
-                    if List.length headings == 0 && maybeFocusedId /= Nothing then
+            let newFocusedId =
+                    if List.length headingIds == 0 && maybeFocusedId /= Nothing then
                         maybeFocusedId ? model.toc.selected.id
-                    else if List.member model.toc.selected.id headings then
+                    else if List.member model.toc.selected.id headingIds then
                         model.toc.selected.id
                     else
-                        List.head headings ? model.toc.selected.id
+                        List.head headingIds ? model.toc.selected.id
 
                 (_, newToc, cmds) = gotoHeading newFocusedId model.toc
 
@@ -268,41 +273,36 @@ update msg model =
                             }
                         , state = Ready
                         , toc = newToc
-                        , headingIDsOnPage = headings
+                        , headingIDsOnPage = headingIds
                     }
             in
                 newModel
                     ! [ switchSelectedIdCmd False model newModel, cmds ]
 
         UpdateHeadingsOnPage { headingsOnPage, headingAtTop } ->
-            let headings = headingIdFilter model.toc headingsOnPage
-                newSelectedId =
+            let newSelectedId =
                     case model.lastNavAction of
                         PageTurn dir ->
                             case dir of
                                 Forward ->
-                                    if List.length headings > 0 && model.toc.selected.id /= "" && not headingAtTop then
+                                    if List.length headingsOnPage > 0 && model.toc.selected.id /= "" && not headingAtTop then
                                         (List.reverse >> List.head) model.headingIDsOnPage ? model.toc.selected.id
                                     else
                                         Maybe.oneOf
-                                            [ List.head headings
+                                            [ List.head headingsOnPage
                                             , (List.reverse >> List.head) model.headingIDsOnPage
                                             ] ? model.toc.selected.id
 
                                 Backward ->
                                     Maybe.oneOf
-                                        [ (List.reverse >> List.head) headings
-                                        , (List.reverse >> List.head) headingsOnPage `Maybe.andThen` (\lastIDOnPage ->
-                                                let (_, newToc, _) = gotoHeading lastIDOnPage model.toc
-                                                in 
-                                                    Just newToc.selected.id
-                                            )
+                                        [ (List.reverse >> List.head) headingsOnPage
                                         , (List.head model.headingIDsOnPage) `Maybe.andThen` (\firstIDOnPrevPage ->
                                                 SL.indexOf (.id >> (==) firstIDOnPrevPage) model.toc `Maybe.andThen` (\index ->
-                                                    let newToc = SL.goto index model.toc |> untilContent SL.previous
+                                                    let tocAtIndex = SL.goto index model.toc
+                                                        newToc = tocAtIndex |> untilContent SL.previous
                                                     in
                                                         if newToc.selected.chapter /= model.toc.selected.chapter then
-                                                            Nothing
+                                                            Just tocAtIndex.selected.id
                                                         else
                                                             Just newToc.selected.id
                                                 )
@@ -318,7 +318,7 @@ update msg model =
 
                 newModel =
                     { model
-                        | headingIDsOnPage = headings
+                        | headingIDsOnPage = headingsOnPage
                         , toc = newToc
                         , state = Ready
                     }
@@ -345,25 +345,14 @@ untilContent traverse toc =
     SL.traverseFromSelectedUntil traverse (.body >> (/=) "") toc
     |> Maybe.withDefault toc
 
-headingIdFilter : TOC -> HeadingIDsOnPage -> HeadingIDsOnPage
-headingIdFilter toc headingIds =
-    let
-        elemsWithContent =
-            SL.toList toc
-            |> List.foldl (\renderElem elemDict ->
-                    Dict.insert renderElem.id (renderElem.body /= "") elemDict
-                ) Dict.empty
-    in
-        List.filter (flip Dict.get elemsWithContent >> Maybe.withDefault False) headingIds
-
 gotoHeading : RenderElementID -> TOC -> (TOC, TOC, Cmd Msg) --(@headingID,@contentAfterHeadingID,setStorageCmds)
 gotoHeading headingID toc =
     SL.indexOf (.id >> (==) headingID) toc `Maybe.andThen` (\index ->
         let tocAtHeadingId = SL.goto index toc
-            tocWithContent = 
+            tocWithContent =
                 if tocAtHeadingId.selected.body == "" then
                     untilContent SL.next tocAtHeadingId
-                else 
+                else
                     tocAtHeadingId
 
         in
@@ -371,7 +360,7 @@ gotoHeading headingID toc =
                 Nothing
             else
                 let (tocWithContentMarked, cmds) = markSelectedRead tocWithContent
-                in Just (tocAtHeadingId, tocWithContentMarked, cmds )            
+                in Just (tocAtHeadingId, tocWithContentMarked, Cmd.batch [ cmds, setBookmarkInStorage tocAtHeadingId.selected.id ] )
     ) |> Maybe.withDefault (toc, toc, Cmd.none)
 
 markSelectedRead : TOC -> (TOC, Cmd Msg)
@@ -379,26 +368,26 @@ markSelectedRead toc =
     let selectedIndex = SL.selectedIndex toc
         markTocRead t last cmd =
             if t.selected.level < last.selected.level && t.selected.body == "" then
-                markTocRead 
-                    (SL.previous 
-                        (SL.mapSelected 
-                            (\selected -> 
+                markTocRead
+                    (SL.previous
+                        (SL.mapSelected
+                            (\selected ->
                                 { selected | isRead = True }
                             ) t
                         )
-                    ) 
+                    )
                     t
-                    (Cmd.batch [ cmd, setReadInStorage t.selected.id ]) 
+                    (Cmd.batch [ cmd, setReadInStorage t.selected.id ])
             else
                 (SL.goto selectedIndex t, cmd)
-    in 
-        markTocRead 
-            (SL.previous 
-                (SL.mapSelected 
-                    (\selected -> 
+    in
+        markTocRead
+            (SL.previous
+                (SL.mapSelected
+                    (\selected ->
                         { selected | isRead = True }
                     ) toc
                 )
-            ) 
-            toc 
+            )
+            toc
             (setReadInStorage toc.selected.id)

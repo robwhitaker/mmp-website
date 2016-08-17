@@ -24,7 +24,7 @@ import String
 
 view : Model -> Html Msg
 view model =
-    let isLastPage = 
+    let isLastPage =
             --NOTE: Logic copied from Update.elm. Maybe make a helper function?
             model.pages.current + 1 >= model.pages.total &&
                 SL.traverseFromSelectedUntil
@@ -44,10 +44,18 @@ view model =
                         , ("isDisplayed", model.showCover)
                         ]
                     , onClick CoverClick
-                    ] 
-                    [ div 
-                        [ class "glow" ] 
-                        [ div [ class "cover-txt cover-btn" ] [ text "Start Reading" ] ]
+                    ]
+                    [ div
+                        [ class "glow" ]
+                        [ div
+                            [ class "cover-txt cover-btn" ]
+                            [ text <|
+                                case model.bookmark of
+                                    HasBookmark     -> "Resume Reading"
+                                    NoBookmark      -> "Start Reading"
+                                    LoadingBookmark -> "..."
+                            ]
+                        ]
                     ]
                 , div --LOADER LAYER
                     [ classList
@@ -70,14 +78,14 @@ view model =
                         , iframe [ id "book-text-frame", src "/renderer.html", seamless True ] []
                         , div
                             [ class "bottom-bar" ]
-                            [ div 
-                                [ class "book-arrow back-btn", onClick (TurnPage Backward) ] 
+                            [ div
+                                [ class "book-arrow back-btn", onClick (TurnPage Backward) ]
                                 [
                                     i [ class "fa fa-angle-left" ] []
                                 ]
                             , div [ class "page-num" ] [ text <| toString (model.pages.current + 1) ] --++ " / " ++ toString model.pages.total ]
-                            , div 
-                                [ classList [("book-arrow forward-btn", True),("btn-disabled", isLastPage)], onClick (TurnPage Forward) ] 
+                            , div
+                                [ classList [("book-arrow forward-btn", True),("btn-disabled", isLastPage)], onClick (TurnPage Forward) ]
                                 [ div [ class "last-page-txt" ] [ text "Check back on Sunday!" ]
                                 , i [ class "fa fa-angle-right" ] []
                                 ]
@@ -105,7 +113,7 @@ view model =
             [ div [ class "footer-link-block" ] <| List.map2 mkFooterSection footerHeadings footerContent
             , div [ class "copy" ] [ text "© Midnight Murder Party 2015-2016" ]
             ]
-        , Html.map CreditsRollMsg <| CreditsRoll.view model.creditsRoll    
+        , Html.map CreditsRollMsg <| CreditsRoll.view model.creditsRoll
         ]
 
 mkFooterSection : String -> Html Msg -> Html Msg
@@ -169,7 +177,7 @@ share =
         , ShareButtons.reddit
         ]
 
-extras = 
+extras =
     ul  [] <| List.map (li [] << flip (::) [])
         [ a [ href "/extras/halloween2015/play", target "_BLANK" ] [ text "Halloween Special 2015" ]
         , a [ onClick (CreditsRollMsg CreditsRollM.ShowCredits) ] [ text "Credits" ]
