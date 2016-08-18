@@ -20,6 +20,8 @@ import Reader.Utils.Disqus as Disqus
 import Reader.Components.ShareDialog.Messages as ShareDialog
 import Reader.Components.ShareDialog.Update as ShareDialog
 import Reader.Components.CreditsRoll.Update as CreditsRoll
+import Reader.Components.ContactModal as ContactModal
+import Reader.Components.Modal.Update as Modal
 
 import String
 import Task
@@ -57,6 +59,12 @@ update msg model =
             in
                 { model | creditsRoll = newCredits }
                     ! [ Cmd.map CreditsRollMsg cmds ]
+
+        ContactModalMsg modalMsg ->
+            let (newContact, cmds) = Modal.update modalMsg model.contactModal
+            in
+                { model | contactModal = newContact }
+                    ! [ Cmd.map ContactModalMsg cmds ]
 
         ChangeSelectedHeading hId ->
             let (_, newToc, cmds) = gotoHeading hId model.toc

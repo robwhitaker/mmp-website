@@ -7,6 +7,8 @@ import Reader.Views.Dropdown as Dropdown
 import Reader.Views.ShareButtons as ShareButtons
 import Reader.Components.ShareDialog.Messages as ShareDialog
 import Reader.Components.CreditsRoll.Messages as CreditsRoll
+import Reader.Components.Modal.Messages as Modal
+import Reader.Components.ContactModal as ContactModal
 
 import Debug
 
@@ -19,6 +21,7 @@ type Msg
     | ShowShareDialog RenderElementID
     | ShareDialogMsg ShareDialog.Msg
     | CreditsRollMsg CreditsRoll.Msg
+    | ContactModalMsg (Modal.Msg ContactModal.Msg)
     | Load (List Chapter) LocalStorageData LocationHash LocationHost
     | ChapterHasRendered CurrentPage NumPages HeadingIDsOnPage
     | ChapterHasReflowed CurrentPage NumPages (Maybe FocusedElementID) HeadingIDsOnPage

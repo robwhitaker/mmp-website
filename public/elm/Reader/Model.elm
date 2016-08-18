@@ -4,6 +4,7 @@ import Dict exposing (Dict)
 
 import Reader.Components.ShareDialog.Model as ShareDialog
 import Reader.Components.CreditsRoll.Model as CreditsRoll
+import Reader.Components.ContactModal as ContactModal
 import Reader.Aliases exposing (..)
 import Core.Utils.SelectionList as SL exposing (SelectionList)
 
@@ -38,6 +39,7 @@ type alias Model =
     , showCover         : Bool
     , shareDialog       : ShareDialog.Model
     , creditsRoll       : CreditsRoll.Model
+    , contactModal      : ContactModal.Model
     , headingIDsOnPage  : List RenderElementID
     , lastNavAction     : LastNavAction
     , state             : State
@@ -73,6 +75,7 @@ empty =
     , showCover         = True
     , shareDialog       = ShareDialog.empty
     , creditsRoll       = CreditsRoll.empty
+    , contactModal      = ContactModal.empty
     , headingIDsOnPage  = []
     , lastNavAction     = PageTurn (PageNum 0)
     , state             = Loading

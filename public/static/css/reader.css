@@ -834,7 +834,7 @@ footer .share-btn {
     align-items: center;
 }
 
-.movie {    
+.movie {
   margin-bottom: 50px;
   font-size: 50px;
 }
@@ -867,6 +867,26 @@ footer .share-btn {
 .end-credits-btn:hover {
     color: #E5B249;
     border-color: #E5B249;
+}
+
+/* ===== CONTACT ME ===== */
+
+/*.contact-modal*/
+
+/* ======== MODAL ======= */
+
+.modal {
+    background-color: rgba(0,0,0,0.9);
+    position: fixed;
+    top: 0; bottom: 0; left: 0; right: 0;
+    z-index: 10000000000000000;
+    overflow: hidden;
+    opacity: 0;
+    animation: fadein 0.4s forwards;
+}
+
+.modal.fading {
+    animation: fadeout 0.4s forwards;
 }
 
 /* ======== MISC ======== */

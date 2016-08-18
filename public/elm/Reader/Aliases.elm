@@ -21,3 +21,11 @@ type alias Flags =
     , hash : LocationHash
     , host : LocationHost
     }
+
+type alias ErrorMsg =
+    { message : String
+    , url     : String
+    , line    : Int
+    , column  : Int
+    , errObj  : String
+    }
