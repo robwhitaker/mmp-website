@@ -5,6 +5,8 @@ gem 'sinatra-contrib'
 gem 'sinatra-activerecord'
 gem 'puma'
 gem 'rake'
+gem 'builder'
+gem 'nokogiri'
 
 group :development do
   gem 'sqlite3'

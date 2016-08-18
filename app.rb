@@ -2,6 +2,7 @@ require 'bundler'
 Bundler.require
 
 require 'sinatra'
+require 'rss'
 require 'logger'
 require 'time'
 require './config/environments'
@@ -42,14 +43,20 @@ get '/api/chapters/:id' do |id|
   content_type :json
 
   chapter = Chapter.includes(:entries).find(id)
-  success_response()
+  success_response
   json with_entries(chapter)
 end
 
 get '/api/chapters' do # public chapters
   content_type :json
-  success_response()
+  success_response
   json all_chapters_with_entries("restricted")
+end
+
+get '/rss' do # rss (public chapters)
+  @releases = rss_feed
+  success_response
+  builder :rss
 end
 
 post '/api/chapters' do # all chapters
@@ -59,10 +66,10 @@ post '/api/chapters' do # all chapters
   log(payload)
 
   if authorized? payload["secretKey"]
-    success_response()
-    json all_chapters_with_entries()
+    success_response
+    json all_chapters_with_entries
   else
-    failure_response()
+    failure_response
   end
 end
 
@@ -77,17 +84,17 @@ post '/api/chapters/crupdate' do
     if data["id"].nil? # Create chapter
       chapter = Chapter.new(data)
       chapter.save
-      success_response()
+      success_response
     else # Update chapter
       entries_to_be_deleted = diff_entry_ids(data["id"], data["entries_attributes"])
       Entry.destroy(entries_to_be_deleted)
 
       chapter = Chapter.update(data["id"], data)
       chapter.save
-      success_response()
+      success_response
     end
   else
-    failure_response()
+    failure_response
   end
 end
 
@@ -99,18 +106,18 @@ post '/api/chapters/delete' do
 
   if authorized? payload["secretKey"]
     Chapter.destroy(payload["data"])
-    success_response()
+    success_response
   else
-    failure_response()
+    failure_response
   end
 end
 
-def success_response()
+def success_response
   status 200
   body '{"data": 1}'
 end
 
-def failure_response()
+def failure_response
   status 418
   body '{"data": 0}'
 end
@@ -170,6 +177,33 @@ def all_chapters_with_entries(type = "unrestricted")
   end
 
   chapters_with_entries
+end
+
+def rss_feed
+  feed = []
+  chapters = Chapter.order(release_date: :asc).where('release_date <= ?', DateTime.now)
+
+  chapters.each do |chapter|
+    release = []
+
+    if chapter.has_content?
+      feed.push([chapter])
+    else
+      release.push(chapter)
+
+      chapter.entries.each do |entry|
+        if entry.has_content?
+          release.push(entry)
+          feed.push(release)
+          release = []
+        else
+          release.push(entry)
+        end
+      end
+    end
+  end
+
+  feed
 end
 
 def diff_entry_ids(chapter_id, entries)
