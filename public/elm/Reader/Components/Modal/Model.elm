@@ -2,6 +2,7 @@ module Reader.Components.Modal.Model exposing (Model,modal)
 
 import Html exposing (Html)
 import Reader.Components.Modal.Messages exposing (Msg)
+import Reader.Components.Modal.ExportMessages exposing (ExpMsg)
 
 type alias Model model msg =
     { isFading          : Bool
@@ -13,7 +14,7 @@ type alias Model model msg =
 
 type alias NestedComponent model msg =
     { model   : model
-    , update  : msg -> model -> (model, Cmd msg)
+    , update  : msg -> model -> (model, Cmd msg, ExpMsg)
     , view    : model -> Html msg
     , onShow  : ModalEventHandler model msg
     , onFade  : ModalEventHandler model msg

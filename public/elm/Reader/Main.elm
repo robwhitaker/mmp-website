@@ -26,10 +26,6 @@ import Reader.Ports exposing (..)
 
 import Reader.Utils.Disqus exposing (..)
 
-import Reader.Components.Modal.Update
-import Reader.Components.Modal.View
-import Reader.Components.ContactModal
-
 import Core.HTTP.Requests as Requests
 import Json.Decode as Json
 import Core.Models.Chapter as Chapter

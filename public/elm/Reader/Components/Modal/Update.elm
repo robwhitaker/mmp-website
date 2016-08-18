@@ -2,6 +2,7 @@ module Reader.Components.Modal.Update exposing (update)
 
 import Reader.Components.Modal.Model exposing (..)
 import Reader.Components.Modal.Messages exposing (..)
+import Reader.Components.Modal.ExportMessages exposing (..)
 
 import Reader.Ports exposing (setScrollEnabled)
 
@@ -51,10 +52,19 @@ update  msg model =
 
         PassMsgToComponent msg ->
             let innerComponent = model.innerComponent
-                (newComponentModel, cmds) = innerComponent.update msg innerComponent.model
+                (newComponentModel, cmds, exports) = innerComponent.update msg innerComponent.model
+                newModel = { model | innerComponent = { innerComponent | model = newComponentModel } }
+                newCmds = Cmd.map PassMsgToComponent cmds
+                action =
+                    case exports of
+                        TriggerFade -> FadeModal
+                        TriggerHide -> HideModal
+                        None        -> NoOp
+                (newModel', newCmds') = update action newModel
             in
-                { model | innerComponent = { innerComponent | model = newComponentModel } }
-                    ! [ Cmd.map PassMsgToComponent cmds ]
+                newModel'
+                    ! [ newCmds, newCmds']
+
 
         NoOp ->
             model
