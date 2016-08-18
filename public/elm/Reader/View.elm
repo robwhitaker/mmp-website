@@ -138,7 +138,7 @@ follow =
             [ ("facebook-icon.png", "https://www.facebook.com/MMPWebSeries/")
             , ("twitter-icon.png", "https://twitter.com/MMPWebSeries")
             , ("ello-icon.jpg", "https://ello.co/midnightmurderparty")
-            , ("rss-icon.png", "#")
+            , ("rss-icon.png", "/rss")
             ]
 
         prependIcons =
