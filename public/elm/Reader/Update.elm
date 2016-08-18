@@ -13,7 +13,7 @@ import Reader.Aliases exposing (..)
 import Reader.Model.Helpers
 import Reader.Messages exposing (..)
 import Reader.Ports exposing (..)
-import Reader.Utils exposing (selectedTitleFromSL)
+import Reader.Utils exposing (..)
 import Reader.Utils.Cmd exposing (renderCmd, switchSelectedIdCmd, setTitleCmd, setDisqusThread)
 import Reader.Utils.Disqus as Disqus
 
@@ -218,8 +218,15 @@ update msg model =
                     ! [ nextCmd, cmds ]
 
         Load chapters { readEntries, bookmark } locationHash locationHost ->
-            let targetID = String.dropLeft 3 locationHash
-                loadedModel = Reader.Model.Helpers.fromChapterList chapters (Dict.fromList readEntries)
+            let loadedModel = Reader.Model.Helpers.fromChapterList chapters (Dict.fromList readEntries)
+                paramID = String.toLower <| String.dropLeft 3 locationHash
+                maxReleaseDate = maxReleaseDateAsTime loadedModel.toc
+                targetID =
+                    if paramID == "latest" then
+                        Maybe.map .id (List.head (List.filter (.releaseDate >> dateStringToTime >> (==) maxReleaseDate) (SL.toList loadedModel.toc))) ? paramID
+                    else
+                        paramID
+
                 selectedID = Maybe.oneOf
                     [ Maybe.map (always targetID) (SL.indexOf (.id >> (==) targetID) loadedModel.toc)
                     , bookmark

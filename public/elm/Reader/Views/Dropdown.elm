@@ -1,7 +1,7 @@
 module Reader.Views.Dropdown exposing (..)
 
 import Reader.Aliases exposing (RenderElementID)
-import Reader.Utils exposing (selectedTitleFromSL)
+import Reader.Utils exposing (..)
 
 import Core.Utils.String exposing (stripTags)
 import Core.Utils.SelectionList as SL exposing (SelectionList)
@@ -47,23 +47,13 @@ view dropdownList expanded =
 
 renderDropdownList : DropdownList a -> List (Html Msg)
 renderDropdownList list =
-    let
-        parseReleaseDate dateStr =
-            case Date.fromString dateStr of
-                Ok date -> Date.toTime date
-                Err _   -> 0
-
-        maxReleaseDate =
-            List.foldl (\{ releaseDate } maxRD ->
-                Basics.max maxRD (parseReleaseDate releaseDate)
-            ) 0 (SL.toList list)
-
-        selectedIndex = SL.selectedIndex list
+    let selectedIndex = SL.selectedIndex list
+        maxReleaseDate = maxReleaseDateAsTime list
     in
         List.indexedMap (\index item ->
             li [ classList
                     [ ("selected", index == selectedIndex)
-                    , ("latest", parseReleaseDate item.releaseDate == maxReleaseDate && not item.isRead)
+                    , ("latest", dateStringToTime item.releaseDate == maxReleaseDate && not item.isRead)
                     , ("unread", not item.isRead)
                     ]
                 , onClick (Just item.id, Just False)
