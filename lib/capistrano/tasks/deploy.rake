@@ -27,7 +27,8 @@ namespace :deploy do
     end
   end
 
-  before :deploy, 'deploy:check_revision'
+  # before :deploy, 'deploy:check_revision'
+  before 'deploy',         'rvm1:install:gems'
   before 'deploy:updated', 'deploy:npm_install'
   before 'deploy:updated', 'deploy:build_assets'
 end
