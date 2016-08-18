@@ -8,9 +8,10 @@ xml.rss :version => "2.0" do
     def prepare_release(release)
       prepared_release = {
         title: prepare_title(release),
-        content: release.last.content,
         link: deep_link(release.first),
-        pub_date: pub_date(release.first)
+        pub_date: pub_date(release.first),
+        content: release.last.content,
+        stylesheet: prepare_stylesheet(release)
       }
 
       prepared_release
@@ -23,16 +24,20 @@ xml.rss :version => "2.0" do
 
     def prepare_title(release)
       chapter_title_base = strip_html(Chapter.find(release.last.chapter_id).title).gsub(/\..*/, '')
-      prepared_release_title = strip_html(release.last.title).gsub(/\./, '')
+      prepared_release_title = strip_html(release.last.title).gsub(/\./, '').sub(/\s/, ' - ')
 
       "#{chapter_title_base}-#{prepared_release_title}"
     end
 
+    def prepare_stylesheet(release)
+      Chapter.find(release.last.chapter_id).stylesheet
+    end
+
     def deep_link(release)
       ref = if release.has_attribute?(:level)
-              ref = "/e/#{release.id}"
+              ref = "/#!/e#{release.id}"
             else
-              ref = "/c/#{release.id}"
+              ref = "/#!/c#{release.id}"
             end
       request.base_url + ref
     end
@@ -46,9 +51,10 @@ xml.rss :version => "2.0" do
 
       xml.item do
         xml.title release[:title]
-        xml.content release[:content]
         xml.link release[:link]
         xml.pubDate release[:pub_date]
+        xml.content release[:content]
+        xml.stylesheet release[:stylesheet]
       end
     end
   end
