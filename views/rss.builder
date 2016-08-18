@@ -7,11 +7,11 @@ xml.rss :version => "2.0" do
 
     def prepare_release(release)
       prepared_release = {
-        title: prepare_title(release),
-        link: deep_link(release.first),
-        pub_date: pub_date(release.first),
-        content: release.last.content,
-        stylesheet: prepare_stylesheet(release)
+        title:      prepare_title(release),
+        link:       prepare_link(release.first),
+        pub_date:   prepare_pub_date(release.first),
+        stylesheet: prepare_stylesheet(release.first),
+        content:    release.last.content,
       }
 
       prepared_release
@@ -23,27 +23,31 @@ xml.rss :version => "2.0" do
     end
 
     def prepare_title(release)
-      chapter_title_base = strip_html(Chapter.find(release.last.chapter_id).title).gsub(/\..*/, '')
-      prepared_release_title = strip_html(release.last.title).gsub(/\./, '').sub(/\s/, ' - ')
+      if is_entry?(release.last)
+        chapter_title_base = strip_html(Chapter.find(release.last.chapter_id).title).gsub(/\..*/, '')
+        prepared_release_title = strip_html(release.last.title).gsub(/\./, '').sub(/\s/, ' - ')
 
-      "#{chapter_title_base}-#{prepared_release_title}"
+        "#{chapter_title_base}-#{prepared_release_title}"
+      else
+        strip_html(release.last.title)
+      end
     end
 
-    def prepare_stylesheet(release)
-      Chapter.find(release.last.chapter_id).stylesheet
-    end
-
-    def deep_link(release)
-      ref = if release.has_attribute?(:level)
-              ref = "/#!/e#{release.id}"
-            else
-              ref = "/#!/c#{release.id}"
-            end
+    def prepare_link(release)
+      ref = is_entry?(release) ? "/#!/e#{release.id}" : "/#!/c#{release.id}"
       request.base_url + ref
     end
 
-    def pub_date(release)
+    def prepare_pub_date(release)
       DateTime.parse(release.release_date.to_s).rfc822()
+    end
+
+    def prepare_stylesheet(release)
+      is_entry?(release) ? Chapter.find(release.chapter_id).stylesheet : release.stylesheet
+    end
+
+    def is_entry?(sub_release)
+      sub_release.has_attribute?(:level)
     end
 
     @releases.each do |release|
@@ -52,7 +56,7 @@ xml.rss :version => "2.0" do
       xml.item do
         xml.title release[:title]
         xml.link release[:link]
-        xml.pubDate release[:pub_date]
+        xml.pub_date release[:pub_date]
         xml.content release[:content]
         xml.stylesheet release[:stylesheet]
       end
