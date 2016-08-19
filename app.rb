@@ -63,7 +63,6 @@ post '/api/chapters' do # all chapters
   content_type :json
 
   payload = JSON.parse(request.body.read)
-  log(payload)
 
   if authorized? payload["secretKey"]
     success_response
@@ -129,7 +128,7 @@ def log(payload)
 end
 
 def authorized?(string)
-  if ENV["RACK_ENV"] == ("production" || "dev-auth")
+  if ENV["RACK_ENV"] == "dev-auth" || ENV["RACK_ENV"] == "production"
     string == ENV["ADMIN_SECRET"]
   else
     true
