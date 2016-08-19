@@ -8,6 +8,18 @@ namespace :deploy do
     end
   end
 
+  desc "Upload pre-built staging assets"
+  task :staging_assets do
+    on roles(:app) do
+      if fetch(:stage) == 'staging'
+        %w[ editor.min.js reader.min.css reader.min.js ].each do |f|
+          upload! 'public/static/build/' + f ,
+                  '/home/deploy/mmp/public/static/build/' + f
+        end
+      end
+    end
+  end
+
   desc "Make sure npm packages are installed"
   task :npm_install do
     on roles(:app) do
@@ -28,7 +40,8 @@ namespace :deploy do
   end
 
   # before :deploy, 'deploy:check_revision'
-  before 'deploy',         'rvm1:install:gems'
-  before 'deploy:updated', 'deploy:npm_install'
-  before 'deploy:updated', 'deploy:build_assets'
+  before 'deploy',                'rvm1:install:gems'
+  before 'deploy:updated',        'deploy:staging_assets'
+  before 'deploy:staging_assets', 'deploy:npm_install'
+  before 'deploy:npm_install',    'deploy:build_assets'
 end
