@@ -8,6 +8,7 @@ import Json.Decode as Json
 
 import Reader.Components.Modal.Model as Modal exposing (modal)
 import Reader.Components.Modal.ExportMessages as Modal
+import Reader.Components.Modal.Utils as Modal
 import Reader.Ports exposing (rollCredits)
 
 type alias Model =
@@ -42,7 +43,7 @@ update msg _ =
 view : InnerModel -> Html Msg
 view _ =
     div [ class "credits-container"
-        , onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.succeed NoOp)
+        , Modal.preventCloseOnClickWith NoOp
         ] <|
         [ div [ class "end-credits-btn", onClick Close ] [ text "Exit Credits" ]
         , div [ class "full-spacer" ] []

@@ -696,20 +696,10 @@ footer .share-btn {
 
 /* ======== SHARE DIALOG ======== */
 
-.share-dialog-container {
-    position: fixed;
-    top: 0; bottom: 0; left: 0; right: 0;
+.modal.share-dialog-container {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1500;
-    animation: fadein 0.4s;
-    animation-fill-mode: forwards;
-}
-
-.share-dialog-container.fade-out {
-    animation: fadeout 0.4s;
-    animation-fill-mode: forwards;
 }
 
 .share-dialog {

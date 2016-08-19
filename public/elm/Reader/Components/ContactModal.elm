@@ -8,6 +8,7 @@ import Markdown
 
 import Reader.Components.Modal.Model as Modal exposing (modal)
 import Reader.Components.Modal.ExportMessages as Modal
+import Reader.Components.Modal.Utils as Modal
 
 type alias Model =
     Modal.Model InnerModel Msg
@@ -43,7 +44,7 @@ view _ =
     div [ class "contact-modal-container" ]
         [ div
             [ class "contact-modal-text"
-            , onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.succeed NoOp)
+            , Modal.preventCloseOnClickWith NoOp
             ]
             [ i [ class "fa fa-times fa-6 close-x", attribute "aria-hidden" "true", onClick Close ] []
             , h2 [ class "fancy-heading" ] [ text "Contact Me" ]

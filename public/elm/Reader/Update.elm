@@ -17,9 +17,9 @@ import Reader.Utils exposing (..)
 import Reader.Utils.Cmd exposing (renderCmd, switchSelectedIdCmd, setTitleCmd, setDisqusThread)
 import Reader.Utils.Disqus as Disqus
 
+import Reader.Components.Modal.Messages as Modal
 import Reader.Components.Modal.Update as Modal
-import Reader.Components.ShareDialog.Messages as ShareDialog
-import Reader.Components.ShareDialog.Update as ShareDialog
+import Reader.Components.ShareDialog as ShareDialog
 import Reader.Components.CreditsRoll as CreditsRoll
 import Reader.Components.ContactModal as ContactModal
 
@@ -46,10 +46,16 @@ update msg model =
 
         ShowShareDialog id ->
             let (_, newToc, _) = gotoHeading id model.toc
-            in update (ShareDialogMsg <| ShareDialog.ShowWith id model.locationHost <| selectedTitleFromSL <| newToc) model
+                newShareDialog =
+                    ShareDialog.initInnerModel
+                        id
+                        model.locationHost
+                        (selectedTitleFromSL newToc)
+                        model.shareDialog
+            in update (ShareDialogMsg Modal.ShowModal) { model | shareDialog = newShareDialog }
 
-        ShareDialogMsg sdmsg ->
-            let (newDialog, cmds) = ShareDialog.update sdmsg model.shareDialog
+        ShareDialogMsg modalMsg ->
+            let (newDialog, cmds) = Modal.update modalMsg model.shareDialog
             in
                 { model | shareDialog = newDialog }
                     ! [ Cmd.map ShareDialogMsg cmds ]

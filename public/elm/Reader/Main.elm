@@ -70,7 +70,12 @@ main =
 
 keyToMsg : Model -> KeyCode -> Msg
 keyToMsg model key =
-    if model.showCover || model.shareDialog.visible || model.state == Rendering || model.state == TurningPage then
+    if  model.showCover ||
+        model.shareDialog.isVisible ||
+        model.creditsRoll.isVisible ||
+        model.contactModal.isVisible ||
+        model.state == Rendering ||
+        model.state == TurningPage then
         NoOp
     else
         case key of

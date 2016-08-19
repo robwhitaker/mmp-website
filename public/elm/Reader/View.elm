@@ -10,8 +10,6 @@ import Reader.Utils as Utils
 import Reader.Views.Dropdown as Dropdown
 import Reader.Views.ShareButtons as ShareButtons
 
-import Reader.Components.ShareDialog.View as ShareDialog
-import Reader.Components.CreditsRoll as CreditsRoll
 import Reader.Components.Modal.View as Modal
 import Reader.Components.Modal.Messages as Modal
 
@@ -94,7 +92,7 @@ view model =
                         ]
                     ]
                 ]
-            , Html.map ShareDialogMsg <| ShareDialog.view model.shareDialog
+            , Html.map ShareDialogMsg <| Modal.view model.shareDialog
             ]
         , section
             [ classList [("comments", True), ("no-display", model.showCover)] ]

@@ -2,7 +2,7 @@ module Reader.Model exposing (..)
 
 import Dict exposing (Dict)
 
-import Reader.Components.ShareDialog.Model as ShareDialog
+import Reader.Components.ShareDialog as ShareDialog
 import Reader.Components.CreditsRoll as CreditsRoll
 import Reader.Components.ContactModal as ContactModal
 import Reader.Aliases exposing (..)

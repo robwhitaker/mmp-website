@@ -69,14 +69,3 @@ update  msg model =
         NoOp ->
             model
                 ! []
-
-mapInner : (model -> model) -> Model model msg -> Model model msg
-mapInner f model =
-    let innerComponent = model.innerComponent
-    in
-        { model
-            | innerComponent =
-                { innerComponent
-                    | model = f innerComponent.model
-                }
-        }
