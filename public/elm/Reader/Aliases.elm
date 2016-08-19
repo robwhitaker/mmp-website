@@ -1,5 +1,7 @@
 module Reader.Aliases exposing (..)
 
+import Core.Utils.SelectionList exposing (SelectionList)
+
 type alias ChapterID        = Int
 type alias CurrentPage      = PageNum
 type alias FocusedElementID = RenderElementID
@@ -10,6 +12,13 @@ type alias NumPages         = Int
 type alias PageNum          = Int
 type alias RenderElementID  = String
 type alias Stylesheet       = String
+type alias TOC              = SelectionList RenderElement
+
+type alias DisqusData =
+    { identifier : String
+    , url        : String
+    , title      : String
+    }
 
 type alias LocalStorageData =
     { readEntries : List (RenderElementID, Bool)
@@ -20,4 +29,23 @@ type alias Flags =
     { localStorage : LocalStorageData
     , hash : LocationHash
     , host : LocationHost
+    }
+
+type alias HeadingUpdate = { headingsOnPage : List RenderElementID, headingAtTop : Bool }
+
+type alias RenderElement =
+    { id          : RenderElementID
+    , disqusId    : String
+    , heading     : String
+    , body        : String
+    , authorsNote : String
+    , chapter     : ChapterID
+    , level       : Int
+    , isRead      : Bool
+    , releaseDate : String
+    }
+
+type alias RenderBlob =
+    { stylesheet     : Stylesheet
+    , renderElements : List RenderElement
     }

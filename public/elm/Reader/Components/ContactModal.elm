@@ -1,4 +1,4 @@
-module Reader.Components.ContactModal exposing (..)
+module Reader.Components.ContactModal exposing (Model,empty,Msg(..))
 
 import Html exposing (..)
 import Html.Attributes exposing (..)

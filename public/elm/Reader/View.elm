@@ -11,8 +11,7 @@ import Reader.Views.Dropdown as Dropdown
 import Reader.Views.ShareButtons as ShareButtons
 
 import Reader.Components.ShareDialog.View as ShareDialog
-import Reader.Components.CreditsRoll.View as CreditsRoll
-import Reader.Components.CreditsRoll.Messages as CreditsRollM
+import Reader.Components.CreditsRoll as CreditsRoll
 import Reader.Components.Modal.View as Modal
 import Reader.Components.Modal.Messages as Modal
 
@@ -115,7 +114,7 @@ view model =
             [ div [ class "footer-link-block" ] <| List.map2 mkFooterSection footerHeadings footerContent
             , div [ class "copy" ] [ text "© Midnight Murder Party 2015-2016" ]
             ]
-        , Html.map CreditsRollMsg <| CreditsRoll.view model.creditsRoll
+        , Html.map CreditsRollMsg <| Modal.view model.creditsRoll
         , Html.map ContactModalMsg <| Modal.view model.contactModal
         ]
 
@@ -184,5 +183,5 @@ extras =
     ul  [] <| List.map (li [] << flip (::) [])
         [ a [ href "/extras/halloween2015/play", target "_BLANK" ] [ text "Halloween Special 2015" ]
         , a [ onClick (ContactModalMsg Modal.ShowModal) ] [ text "Contact Me" ]
-        , a [ onClick (CreditsRollMsg CreditsRollM.ShowCredits) ] [ text "Credits" ]
+        , a [ onClick (CreditsRollMsg Modal.ShowModal) ] [ text "Credits" ]
         ]

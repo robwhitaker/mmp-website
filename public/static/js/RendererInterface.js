@@ -201,7 +201,7 @@ var RendererInterface = (function() {
         var lastTime = -1;
 
         (function creditsRetry() {
-            credits = document.getElementsByClassName('credits-overlay')[0];
+            credits = document.getElementsByClassName('credits-container')[0];
             if(!credits || credits.offsetHeight === 0) {
                 console.log("Waiting for credits...", errCounter);
                 if(errCounter < 15) {

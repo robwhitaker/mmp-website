@@ -17,11 +17,11 @@ import Reader.Utils exposing (..)
 import Reader.Utils.Cmd exposing (renderCmd, switchSelectedIdCmd, setTitleCmd, setDisqusThread)
 import Reader.Utils.Disqus as Disqus
 
+import Reader.Components.Modal.Update as Modal
 import Reader.Components.ShareDialog.Messages as ShareDialog
 import Reader.Components.ShareDialog.Update as ShareDialog
-import Reader.Components.CreditsRoll.Update as CreditsRoll
+import Reader.Components.CreditsRoll as CreditsRoll
 import Reader.Components.ContactModal as ContactModal
-import Reader.Components.Modal.Update as Modal
 
 import String
 import Task
@@ -54,8 +54,8 @@ update msg model =
                 { model | shareDialog = newDialog }
                     ! [ Cmd.map ShareDialogMsg cmds ]
 
-        CreditsRollMsg crmsg ->
-            let (newCredits, cmds) = CreditsRoll.update crmsg model.creditsRoll
+        CreditsRollMsg modalMsg ->
+            let (newCredits, cmds) = Modal.update modalMsg model.creditsRoll
             in
                 { model | creditsRoll = newCredits }
                     ! [ Cmd.map CreditsRollMsg cmds ]

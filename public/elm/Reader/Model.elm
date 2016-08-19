@@ -3,7 +3,7 @@ module Reader.Model exposing (..)
 import Dict exposing (Dict)
 
 import Reader.Components.ShareDialog.Model as ShareDialog
-import Reader.Components.CreditsRoll.Model as CreditsRoll
+import Reader.Components.CreditsRoll as CreditsRoll
 import Reader.Components.ContactModal as ContactModal
 import Reader.Aliases exposing (..)
 import Core.Utils.SelectionList as SL exposing (SelectionList)
@@ -30,8 +30,6 @@ type BookmarkState
     | NoBookmark
     | LoadingBookmark
 
-type alias TOC = SelectionList RenderElement
-
 type alias Model =
     { toc               : TOC
     , stylesheets       : Dict ChapterID Stylesheet
@@ -46,23 +44,6 @@ type alias Model =
     , tocExpanded       : Bool
     , locationHost      : LocationHost
     , bookmark          : BookmarkState
-    }
-
-type alias RenderElement =
-    { id          : RenderElementID
-    , disqusId    : String
-    , heading     : String
-    , body        : String
-    , authorsNote : String
-    , chapter     : ChapterID
-    , level       : Int
-    , isRead      : Bool
-    , releaseDate : String
-    }
-
-type alias RenderBlob =
-    { stylesheet     : Stylesheet
-    , renderElements : List RenderElement
     }
 
 ---- EMPTY MODELS ----

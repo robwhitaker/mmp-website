@@ -1,6 +1,7 @@
 module Reader.Utils.Cmd exposing (..)
 
 import Reader.Model exposing (..)
+import Reader.Aliases exposing (..)
 import Reader.Ports exposing (..)
 import Reader.Utils exposing (selectedTitleFromSL)
 
