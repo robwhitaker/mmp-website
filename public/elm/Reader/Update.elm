@@ -337,6 +337,16 @@ update msg model =
 
                 (_, newToc, cmds) = gotoHeading newSelectedId model.toc
 
+                arrivedAtHeadingCmds =
+                    if model.lastNavAction == PageTurn Forward && not (List.member newSelectedId headingsOnPage) then
+                        case List.head headingsOnPage of
+                            Just id ->
+                                setBookmarkInStorage id
+                            Nothing ->
+                                Cmd.none
+                    else
+                        Cmd.none
+
                 newModel =
                     { model
                         | headingIDsOnPage = headingsOnPage
@@ -351,7 +361,7 @@ update msg model =
 
             in
                 newModel
-                    ! [ switchSelectedIdCmd forceUpdate model newModel, cmds ]
+                    ! [ switchSelectedIdCmd forceUpdate model newModel, arrivedAtHeadingCmds, cmds ]
 
         Dump msg ->
             let dump = Debug.log "Dump: " msg
