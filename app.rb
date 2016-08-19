@@ -5,6 +5,7 @@ require 'sinatra'
 require 'rss'
 require 'logger'
 require 'time'
+require 'yaml'
 require './config/environments'
 require './models/chapter'
 require './models/entry'
@@ -129,7 +130,7 @@ end
 
 def authorized?(string)
   if ENV["RACK_ENV"] == "dev-auth" || ENV["RACK_ENV"] == "production"
-    string == ENV["ADMIN_SECRET"]
+    string == YAML.load_file('config/secret.yml')["admin_secret"]
   else
     true
   end

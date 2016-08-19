@@ -1,7 +1,7 @@
 role :app,                     %w{deploy@staging.nicklaroux.com}
 set :branch,                   'staging'
 set :stage,                    'staging'
-set :linked_files,             %w{config/database.yml}
+set :linked_files,             %w{config/database.yml config/secret.yml}
 set :linked_dirs,              %w{var/log var/pids var/run public/static/build}
 set :rvm1_ruby_version,        '2.3.1'
 set :rvm1_map_bins,            %w{rake gem bundle ruby}
