@@ -4,46 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <base target="_blank" />
-    <style>
-        html,body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-        }
-
-        #text-container {
-            overflow: hidden;
-            -webkit-column-gap: 0px;
-            -moz-column-gap: 0px; /* Firefox */
-            column-gap: 0px;
-        }
-
-        p.link-line {
-            text-align: right;
-            font-family: "Times New Roman";
-            font-size: 13px;
-            color: #a59590;
-        }
-
-        p.link-line span {
-            cursor: pointer;
-            text-decoration: underline;
-        }
-
-        p.link-line span.divider {
-            content: " | ";
-            padding: 0 3px;
-            cursor: default;
-            text-decoration: none;
-        }
-
-        h1,h2,h3,h4,h5,h6 {
-            box-sizing: border-box;
-        }
-
-    </style>
-
+    <link rel="stylesheet" href="/static/build/renderer.min.css">
     <style id="dynamic-style">
         #text-container {
             width: 0px;

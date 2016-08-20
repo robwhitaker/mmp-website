@@ -238,6 +238,10 @@ var RendererInterface = (function() {
             document.body.classList.add("no-scroll");
     });
 
+    Reader.ports.setSelectedId.subscribe(function(sId) {
+        Renderer.setSelectedId(sId);
+    });
+
     setInterval(function() {
         if(!Renderer) return;
         Renderer.refreshCommentCount();

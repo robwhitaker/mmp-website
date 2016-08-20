@@ -15,9 +15,11 @@ var Renderer = window.Renderer = (function() {
 
     var watcher = null;
 
+    var selectedId = null;
+
     var currentPositionPercentage = 0;
 
-    var lastHeadingId = null;
+    var reflowCheckpointId = null;
 
     //---- PPREARE FOR RENDER ----
 
@@ -32,16 +34,22 @@ var Renderer = window.Renderer = (function() {
             listeners[event] = fn;
     }
 
+    function setSelectedId(sId) {
+        selectedId = sId;
+    }
+
     function goToPage(pageNum) {
         var storyTextArea = document.getElementById("text-container");
         storyTextArea.scrollLeft = getViewport().width * pageNum;
         currentPositionPercentage = storyTextArea.scrollLeft / storyTextArea.scrollWidth;
         var headings = getHeadingsOnPage();
-        lastHeadingId = headings[0];
+        updateReflowCheckpointId();
         var headingAtTop = false;
         if(headings.length > 0) {
             headingAtTop = (document.getElementById(headings[0]) || {}).offsetTop == 0;
         }
+
+        console.log("reflow checkpoint: ", reflowCheckpointId);
 
         listeners.pageTurned(headings, headingAtTop);
     }
@@ -163,6 +171,12 @@ var Renderer = window.Renderer = (function() {
             document.body.innerHTML = "";
             document.body.appendChild(storyTextArea);
 
+            //Assign a unique ID to every paragraph without an ID in the body
+            Array.prototype.map.call(document.body.querySelectorAll("p"), function(elem,i) {
+                if(elem.id == "" || elem.id == null)
+                    elem.id = "genId-"+i;
+            });
+
         }
 
         storyTextArea = storyTextArea || document.getElementById('text-container');
@@ -236,10 +250,16 @@ var Renderer = window.Renderer = (function() {
                 var numPages = Math.round(storyTextArea.scrollWidth/getViewport().width)
                 var currentPage = 0;
 
+
                 if(!renderObj) {
-                    if(lastHeadingId != null)
-                        currentPage = getPageOfId(lastHeadingId) || 0;
-                    else
+                    currentPage = getPageOfId(reflowCheckpointId) || 0;
+                    var reflowElem = document.getElementById(reflowCheckpointId);
+                    if(!!reflowElem && reflowElem.classList.contains("reflowed")) {
+                        var clone = reflowElem.cloneNode(true);
+                        reflowElem.parentNode.replaceChild(clone, reflowElem);
+                    } else if(!!reflowElem) {
+                        reflowElem.classList.add("reflowed");
+                    } else
                         currentPage = Math.round(numPages * currentPositionPercentage);
                 } else
                     currentPage = isPageTurnBack ? (numPages - 1) : (getPageOfId(eId) || 0);
@@ -248,7 +268,10 @@ var Renderer = window.Renderer = (function() {
 
                 currentPositionPercentage = storyTextArea.scrollLeft / storyTextArea.scrollWidth;
 
-                lastHeadingId = getHeadingsOnPage()[0];
+                //if not reflow, reassign reflow checkpoint. If it is a reflow, we want to stick to the current point for further reflows
+                if(!!renderObj) updateReflowCheckpointId();
+                console.log("reflow checkpoint: ", reflowCheckpointId);
+
 
                 refreshCommentCount();
 
@@ -346,6 +369,23 @@ var Renderer = window.Renderer = (function() {
             .filter(function(hId) { return hId != null });
     }
 
+    var getReflowCheckpointsOnPage = function() {
+        var storyTextArea = document.getElementById("text-container");
+        if(storyTextArea == null) return [];
+        var elems = storyTextArea.querySelectorAll("h1,h2,h3,h4,h5,h6,p");
+        return Array.prototype.filter.call(elems, collidesWithBook)
+            .map(function(e) { return e.id; })
+            .filter(function(eId) { return eId != null });
+    }
+
+    function updateReflowCheckpointId() {
+        var checkpoints = getReflowCheckpointsOnPage();
+        if(checkpoints.indexOf(selectedId) != -1)
+            reflowCheckpointId = selectedId;
+        else
+            reflowCheckpointId = checkpoints[0];
+    }
+
     var collidesWithBook = function(item) {
         var storyTextArea = document.getElementById("text-container");
         if(storyTextArea == null) return false;
@@ -433,6 +473,7 @@ var Renderer = window.Renderer = (function() {
         render              : render,
         refreshCommentCount : refreshCommentCount,
         goToPage            : goToPage,
-        goToHeading         : goToHeading
+        goToHeading         : goToHeading,
+        setSelectedId       : setSelectedId
     };
 })();

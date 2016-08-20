@@ -8,7 +8,14 @@ var concat = require('gulp-concat');
 var rimraf = require('rimraf');
 
 gulp.task('build:reader-css', function() {
-    return gulp.src('public/static/css/reader.css')
+    gulp.src('public/static/css/reader.css')
+        .pipe(autoprefixer())
+        .pipe(minifyCSS())
+        .pipe(rename({
+            suffix: '.min'
+         }))
+        .pipe(gulp.dest('public/static/build/'));
+    gulp.src('public/static/css/renderer.css')
         .pipe(autoprefixer())
         .pipe(minifyCSS())
         .pipe(rename({

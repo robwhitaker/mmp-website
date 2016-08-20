@@ -281,6 +281,8 @@ update msg model =
                         maybeFocusedId ? model.toc.selected.id
                     else if List.member model.toc.selected.id headingIds then
                         model.toc.selected.id
+                    else if Just ((SL.next model.toc).selected.id) == List.head headingIds then
+                        model.toc.selected.id
                     else
                         List.head headingIds ? model.toc.selected.id
 
