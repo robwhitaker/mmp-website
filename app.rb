@@ -5,6 +5,7 @@ require 'sinatra'
 require 'rss'
 require 'logger'
 require 'time'
+require 'yaml'
 require './config/environments'
 require './models/chapter'
 require './models/entry'
@@ -63,7 +64,6 @@ post '/api/chapters' do # all chapters
   content_type :json
 
   payload = JSON.parse(request.body.read)
-  log(payload)
 
   if authorized? payload["secretKey"]
     success_response
@@ -129,8 +129,8 @@ def log(payload)
 end
 
 def authorized?(string)
-  if ENV["RACK_ENV"] == ("production" || "dev-auth")
-    string == ENV["ADMIN_SECRET"]
+  if ENV["RACK_ENV"] == "dev-auth" || ENV["RACK_ENV"] == "production"
+    string == YAML.load_file('config/secret.yml')["admin_secret"]
   else
     true
   end
