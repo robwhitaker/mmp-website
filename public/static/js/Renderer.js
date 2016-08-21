@@ -36,6 +36,7 @@ var Renderer = window.Renderer = (function() {
 
     function setSelectedId(sId) {
         selectedId = sId;
+        reflowCheckpointId = sId;
     }
 
     function goToPage(pageNum) {
