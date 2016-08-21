@@ -36,7 +36,8 @@ var Renderer = window.Renderer = (function() {
 
     function setSelectedId(sId) {
         selectedId = sId;
-        reflowCheckpointId = sId;
+        updateReflowCheckpointId();
+        console.log("set (selected,reflow): (", selectedId,",",reflowCheckpointId,")");
     }
 
     function goToPage(pageNum) {
