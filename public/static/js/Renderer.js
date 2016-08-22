@@ -375,6 +375,7 @@ var Renderer = window.Renderer = (function() {
         var storyTextArea = document.getElementById("text-container");
         if(storyTextArea == null) return [];
         var elems = storyTextArea.querySelectorAll("h1,h2,h3,h4,h5,h6,p");
+        // debugger;
         return Array.prototype.filter.call(elems, collidesWithBook)
             .map(function(e) { return e.id; })
             .filter(function(eId) { return eId != null });
@@ -393,8 +394,18 @@ var Renderer = window.Renderer = (function() {
         if(storyTextArea == null) return false;
         var bookRect = storyTextArea.getBoundingClientRect();
         var itemRect = item.getBoundingClientRect();
+        var top = (itemRect.top < 0) ? bookRect.height - (Math.abs(itemRect.top) % bookRect.height) : itemRect.top % bookRect.height;
+        if(top == bookRect.height) top = 0;
+        var itemLeft = (itemRect.top < 0) ? itemRect.left-(bookRect.width*Math.ceil(Math.abs(itemRect.top) / bookRect.height)) : itemRect.left;
+        var itemRight = itemLeft + Math.ceil((top + itemRect.height) / bookRect.height) * bookRect.width;
 
-        return !(bookRect.right - 10 <= itemRect.left || bookRect.left + 10 >= itemRect.right);
+        var result = !(bookRect.right * 0.75 <= itemLeft || bookRect.left * 0.75 >= itemRight);
+
+        if(result) {
+            console.log(item.id,itemLeft,itemRight,itemRect.top,top,itemRect.height,bookRect.height);
+        }
+
+        return result;
     };
 
     var isDangling = function(heading) {
