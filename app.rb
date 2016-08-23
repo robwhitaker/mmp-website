@@ -25,7 +25,7 @@ configure do
 end
 
 get '/' do
-  send_file File.join(settings.public_folder, 'reader.html')
+  send_file File.join(settings.public_folder, '/static/build/html/reader.html')
 end
 
 get '/read.html' do

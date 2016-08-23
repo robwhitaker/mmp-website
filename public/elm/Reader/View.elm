@@ -74,7 +74,7 @@ view model =
                         [ div
                             [ class "top-bar" ]
                             [ Html.map Dropdown <| Dropdown.view model.toc model.tocExpanded ]
-                        , iframe [ id "book-text-frame", src "/renderer.html", seamless True ] []
+                        , iframe [ id "book-text-frame", src "/static/build/html/renderer.html", seamless True ] []
                         , div
                             [ class "bottom-bar" ]
                             [ div
@@ -145,7 +145,7 @@ follow =
             [ div
                 [ id "mc_embed_signup" ]
                 [ Html.form
-                    [ action "//midnightmurderparty.us11.list-manage.com/subscribe/post?u=7d09d2d3e4c3251078a03ce5d&amp;id=747f75b19c"
+                    [ action "//{{% mailchimp.subdomain %}}.us11.list-manage.com/subscribe/post?u={{% mailchimp.u %}}&amp;id={{% mailchimp.id %}}"
                     , class "validate"
                     , id "mc-embedded-subscribe-form"
                     , method "post"
@@ -157,7 +157,7 @@ follow =
                         [ input [ class "email", id "mce-EMAIL", name "EMAIL", placeholder "email address", required True, type' "email", value "" ] []
                         , div
                             [ attribute "aria-hidden" "true", attribute "style" "position: absolute; left: -5000px;" ]
-                            [ input [ name "b_7d09d2d3e4c3251078a03ce5d_747f75b19c", tabindex -1, type' "text", value "" ] [] ]
+                            [ input [ name "b_{{% mailchimp.u %}}_{{% mailchimp.id %}}", tabindex -1, type' "text", value "" ] [] ]
                         , div
                             [ class "clear" ]
                             [ input [ class "button", id "mc-embedded-subscribe", name "subscribe", type' "submit", value "Subscribe" ] [] ]

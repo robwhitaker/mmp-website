@@ -1,0 +1,18 @@
+dev:
+  disqus:
+    siteName    : "mmptest"
+
+  mailchimp:
+    subdomain   : "midnightmurderparty"
+    u           : "7d09d2d3e4c3251078a03ce5d"
+    id          : "67dd83fcd2"
+
+# This is a copy of the dev settings until prod accounts are made
+prod:
+  disqus:
+    siteName    : "mmptest"
+
+  mailchimp:
+    subdomain   : "midnightmurderparty"
+    u           : "7d09d2d3e4c3251078a03ce5d"
+    id          : "67dd83fcd2"

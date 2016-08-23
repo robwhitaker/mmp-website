@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <base target="_blank" />
-    <link rel="stylesheet" href="/static/build/renderer.min.css">
+    <link rel="stylesheet" href="/static/build/css/renderer.min.css?nocache={{% gen.buildNum %}}">
     <style id="dynamic-style">
         #text-container {
             width: 0px;
@@ -14,22 +14,9 @@
             column-width: 0px;
         }
     </style>
-    <script src="/static/js/Config.js"></script>
 </head>
 <body>
-<script>
-//dynamically fill in Disqus URL, but keep imports in the right order
-[ ["//" + MMPConfig.disqus.siteName + ".disqus.com/count.js","dsq-count-scr"]
-, ["/static/build/renderer.min.js",""]
-].forEach(function(scriptInfo) {
-    var script = document.createElement("script");
-    script.id = scriptInfo[1];
-    script.src = scriptInfo[0];
-    script.setAttribute("async","false");
-
-    document.head.appendChild(script);
-});
-</script>
-
+<script src="//{{% disqus.siteName %}}.disqus.com/count.js" id="dsq-count-scr"></script>
+<script src="/static/build/js/renderer.min.js?nocache={{% gen.buildNum %}}"></script>
 </body>
 </html>
