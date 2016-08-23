@@ -26,8 +26,16 @@ gulp.task('build:reader-css', function() {
 
 gulp.task('build:reader-js', ['build:reader-elm'], function() {
 
-    gulp.src(['tmp-elm/Main.js','public/static/js/RendererInterface.js','public/static/js/disqus-include.js'])
+    gulp.src(['tmp-elm/Main.js','public/static/js/Config.js','public/static/js/RendererInterface.js','public/static/js/disqus-include.js'])
         .pipe(concat('reader.js'))
+        .pipe(uglifyJS({ mangle: false }))
+        .pipe(rename({
+            suffix: '.min'
+         }))
+        .pipe(gulp.dest('public/static/build'));
+
+    gulp.src(['public/static/js/Config.js','public/static/js/Renderer.js'])
+        .pipe(concat('renderer.js'))
         .pipe(uglifyJS({ mangle: false }))
         .pipe(rename({
             suffix: '.min'

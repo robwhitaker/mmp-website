@@ -1,5 +1,4 @@
 var DISQUS;
-RendererInterface.init("book-text-frame");
 
 /**
 * RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
@@ -14,7 +13,7 @@ this.page.identifier = "mmp-reader"; // Replace PAGE_IDENTIFIER with your page's
 (function() { // DON'T EDIT BELOW THIS LINE
 var d = document, s = d.createElement('script');
 
-s.src = '//mmptest.disqus.com/embed.js';
+s.src = '//' + MMPConfig.disqus.siteName + '.disqus.com/embed.js';
 
 s.setAttribute('data-timestamp', +new Date());
 (d.head || d.body).appendChild(s);

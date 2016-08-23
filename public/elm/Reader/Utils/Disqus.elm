@@ -18,4 +18,4 @@ renderElemToDisqusId =
     .id >> toDisqusId
 
 toDisqusId : String -> String
-toDisqusId = (++) "disqus-"
+toDisqusId = identity

@@ -14,9 +14,22 @@
             column-width: 0px;
         }
     </style>
+    <script src="/static/js/Config.js"></script>
 </head>
 <body>
-<script id="dsq-count-scr" src="//mmptest.disqus.com/count.js" async></script>
-<script src="/static/js/Renderer.js"></script>
+<script>
+//dynamically fill in Disqus URL, but keep imports in the right order
+[ ["//" + MMPConfig.disqus.siteName + ".disqus.com/count.js","dsq-count-scr"]
+, ["/static/build/renderer.min.js",""]
+].forEach(function(scriptInfo) {
+    var script = document.createElement("script");
+    script.id = scriptInfo[1];
+    script.src = scriptInfo[0];
+    script.setAttribute("async","false");
+
+    document.head.appendChild(script);
+});
+</script>
+
 </body>
 </html>

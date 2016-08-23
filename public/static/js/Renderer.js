@@ -294,9 +294,9 @@ var Renderer = window.Renderer = (function() {
 
     function refreshCommentCount(forceFF) {
         if(isFirefox() && !forceFF) return; //hack because Firefox is broken
-        if(!(DISQUSWIDGETS && DISQUSWIDGETS.getCount))
-            throw "Unable to refresh comment count: Cannot find DISQUSWIDGETS or DISQUSWIDGETS.getCount.";
-        else {
+        if(!(DISQUSWIDGETS && DISQUSWIDGETS.getCount)) {
+            console.log("Error: DISQUSWIDGETS not defined.");
+        } else {
             console.log("Refreshing comment counts.");
             DISQUSWIDGETS.getCount({reset: true});
         }

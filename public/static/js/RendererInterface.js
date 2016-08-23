@@ -242,11 +242,6 @@ var RendererInterface = (function() {
         Renderer.setSelectedId(sId);
     });
 
-    setInterval(function() {
-        if(!Renderer) return;
-        Renderer.refreshCommentCount();
-    }, 1000*60*5);
-
     return { init : init };
 
 })();
