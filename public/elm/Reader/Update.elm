@@ -225,7 +225,18 @@ update msg model =
 
         Load chapters { readEntries, bookmark } locationHash locationHost ->
             let loadedModel = Reader.Model.Helpers.fromChapterList chapters (Dict.fromList readEntries)
-                paramID = String.toLower <| String.dropLeft 3 locationHash
+                paramID =
+                    locationHash
+                        |> String.toLower
+                        |> Regex.find (Regex.AtMost 1) (Regex.regex "#!/?([ec][0-9]+)|(latest)")
+                        |> List.head
+                        |> Maybe.map (.submatches >> Maybe.oneOf)
+                        |>  (\megaMaybe ->
+                                case megaMaybe of
+                                    (Just (Just id)) -> id
+                                    _                       -> ""
+                            )
+
                 maxReleaseDate = maxReleaseDateAsTime loadedModel.toc
                 targetID =
                     if paramID == "latest" then
