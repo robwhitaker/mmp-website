@@ -204,9 +204,10 @@ var Renderer = window.Renderer = (function() {
 
             function prependPlaceholder(h) {
                 var heading = document.getElementById(h.id);
-                if(heading == null) return;
+                var headingRect = getBoundingClientRect(heading);
+                if(heading == null || headingRect == null) return;
                 var placeholder = document.createElement("div");
-                placeholder.style.height = (document.getElementById("text-container").getBoundingClientRect().height - heading.getBoundingClientRect().top) + "px"; //TODO: (maybe) make sure hRect.height exists
+                placeholder.style.height = (document.getElementById("text-container").getBoundingClientRect().height - headingRect.top) + "px"; //TODO: (maybe) make sure hRect.height exists
                 placeholder.className = "placeholder";
                 (heading.parentElement || heading.parentNode).insertBefore(placeholder,heading); //TODO: double check on Element vs Node stuff
             }
@@ -239,13 +240,7 @@ var Renderer = window.Renderer = (function() {
                 console.log("No more dangling headings: Continuing...");
 
                 //Force Firefox to draw as columns like every other browser
-                if(isFirefox()) {
-                    console.log("Firefox detected: Checking for columns...");
-                    if(storyTextArea.scrollHeight > storyTextArea.getBoundingClientRect().height) {
-                        console.log("No columns found: Forcing Firefox to redraw...");
-                        storyTextArea.appendChild(document.createElement("div"));
-                    }
-                }
+                firefoxReset();
 
                 //---- TRY TO PLACE READER BACK NEAR PROPER PAGE ----
                 //---- GET IMPORTANT VALUES FROM RENDER AND PASS TO CALLBACK ----
@@ -265,6 +260,9 @@ var Renderer = window.Renderer = (function() {
                         currentPage = Math.round(numPages * currentPositionPercentage);
                 } else
                     currentPage = isPageTurnBack ? (numPages - 1) : (getPageOfId(eId) || 0);
+
+                //reset columns for FireFox again because we might have changed something
+                firefoxReset();
 
                 storyTextArea.scrollLeft = currentPage * getViewport().width;
 
@@ -304,13 +302,27 @@ var Renderer = window.Renderer = (function() {
         }
     }
 
-    function getPageOfId(eId) {
-        if(!document.getElementById(eId)) return;
+    function firefoxReset() {
+        //Force Firefox to draw as columns like every other browser
+        var storyTextArea = document.getElementById("text-container");
+        if(isFirefox() && !!storyTextArea) {
+            console.log("Firefox detected: Checking for columns...");
+            if(storyTextArea.scrollHeight > storyTextArea.getBoundingClientRect().height) {
+                console.log("No columns found: Forcing Firefox to redraw...");
+                storyTextArea.appendChild(document.createElement("div"));
+            }
+        }
+    }
 
-        var headingPos = document.getElementById(eId).getBoundingClientRect().left;
+    function getPageOfId(eId) {
+        var item = document.getElementById(eId);
+        var itemRect = getBoundingClientRect(item);
+        if(!item || !itemRect) return;
+
+        var itemPos = itemRect.left;
         var scrollLeft = document.getElementById("text-container").scrollLeft;
 
-        var page = Math.round((scrollLeft + headingPos)/getViewport().width);
+        var page = Math.round((scrollLeft + itemPos)/getViewport().width);
 
         return page;
     }
@@ -390,12 +402,46 @@ var Renderer = window.Renderer = (function() {
 
     var collidesWithBook = function(item) {
         var storyTextArea = document.getElementById("text-container");
-        if(storyTextArea == null) return false;
+        var itemRect = getBoundingClientRect(item);
+        if(storyTextArea == null || itemRect == null) return false;
+        var bookRect = storyTextArea.getBoundingClientRect();
+
+        var result = !(bookRect.right * 0.75 <= itemRect.left || bookRect.left * 1.25 >= itemRect.right);
+
+        if(result) { console.log(item.id,itemRect.left,itemRect.right); }
+
+        return result;
+    };
+
+    var getBoundingClientRect = function(item) {
+        var storyTextArea = document.getElementById("text-container");
+        if(storyTextArea == null || item == null || !item.getBoundingClientRect) return null;
+
         var bookRect = storyTextArea.getBoundingClientRect();
         var itemRect = item.getBoundingClientRect();
 
-        return !(bookRect.right - 10 <= itemRect.left || bookRect.left + 10 >= itemRect.right);
-    };
+        var top = itemRect.top;
+        var itemLeft = itemRect.left;
+        var itemRight = itemRect.right;
+
+        if(  itemRect.top < 0
+          || itemRect.top >= bookRect.height
+          || (itemRect.height > bookRect.height && itemRect.width <= bookRect.width)
+          || (itemRect.top + itemRect.height > bookRect.height && itemRect.width <= bookRect.width)
+          ) {
+            top = (itemRect.top < 0) ? bookRect.height - (Math.abs(itemRect.top) % bookRect.height) : itemRect.top % bookRect.height;
+            if(top == bookRect.height) top = 0;
+            itemLeft = (itemRect.top < 0) ? itemRect.left-(bookRect.width*Math.ceil(Math.abs(itemRect.top) / bookRect.height)) : itemRect.left;
+            itemRight = itemLeft + Math.ceil((top + itemRect.height) / bookRect.height) * bookRect.width;
+        }
+
+        return {
+            top    : top,
+            left   : itemLeft,
+            right  : itemRight,
+            height : bookRect.height
+        };
+    }
 
     var isDangling = function(heading) {
         var storyTextArea = document.getElementById("text-container");
