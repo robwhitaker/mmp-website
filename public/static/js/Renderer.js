@@ -438,8 +438,7 @@ var Renderer = window.Renderer = (function() {
         return {
             top    : top,
             left   : itemLeft,
-            right  : itemRight,
-            height : bookRect.height
+            right  : itemRight
         };
     }
 
