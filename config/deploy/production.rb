@@ -2,7 +2,7 @@ role :app,                     %w{deploy@mmp.nicklaroux.com}
 set :branch,                   'master'
 set :stage,                    'production'
 set :linked_files,             %w{config/database.yml config/secret.yml}
-set :linked_dirs,              %w{var/log var/pids var/run public/static/build}
+set :linked_dirs,              %w{var/log var/pids var/run public}
 set :rvm1_ruby_version,        '2.3.1'
 set :rvm1_map_bins,            %w{rake gem bundle ruby}
 
