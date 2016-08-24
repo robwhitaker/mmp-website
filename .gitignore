@@ -8,6 +8,8 @@ repl-temp-*
 ## Static artifacts
 /node_modules
 public/static/build
+public/reader.html
+public/renderer.html
 /elm/elm-stuff
 repl-temp-*
 Gemfile.lock

@@ -76,9 +76,9 @@ gulp.task('build:reader-js', ['build:reader-elm'], function() {
 });
 
 gulp.task('build:reader-html', function() {
-    return gulp.src(['public/reader.html','public/renderer.html'])
+    return gulp.src(['public/static/html/reader.html','public/static/html/renderer.html'])
         .pipe(injectConfig())
-        .pipe(gulp.dest('public/static/build/html'));
+        .pipe(gulp.dest('public'));
 });
 
 gulp.task('build:reader-elm', function() {

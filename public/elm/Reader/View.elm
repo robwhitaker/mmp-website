@@ -66,7 +66,7 @@ view model =
                         Loading -> div [ class "loading-label" ] [ text "Loading..." ]
                         Rendering -> div [ class "loading-label" ] [ text "Rendering..." ]
                         _ -> text ""
-                    , div [ class "loading-label" ] [ img [ src "static/assets/img/ajax-loader-2.gif" ] [] ]
+                    , div [ class "loading-label" ] [ img [ src "/static/assets/img/ajax-loader-2.gif" ] [] ]
                     ]
                 , div [ class "book-back" ]
                     [ div
@@ -74,7 +74,7 @@ view model =
                         [ div
                             [ class "top-bar" ]
                             [ Html.map Dropdown <| Dropdown.view model.toc model.tocExpanded ]
-                        , iframe [ id "book-text-frame", src "/static/build/html/renderer.html", seamless True ] []
+                        , iframe [ id "book-text-frame", src "/renderer.html", seamless True ] []
                         , div
                             [ class "bottom-bar" ]
                             [ div
