@@ -20,6 +20,15 @@ namespace :deploy do
     end
   end
 
+  desc "Update base repo folder"
+  task :git_pull do
+    on roles(:app) do
+      if fetch(:stage) == 'production'
+        execute "cd ~/mmp && git pull"
+      end
+    end
+  end
+
   desc "Make sure npm packages are installed"
   task :npm_install do
     on roles(:app) do
@@ -42,6 +51,7 @@ namespace :deploy do
   # before  :deploy,                 'deploy:check_revision'
   before  :deploy,                 'rvm1:install:gems'
   before  :deploy,                 'deploy:staging_assets'
-  after   'deploy:staging_assets', 'deploy:npm_install'
+  after   'deploy:staging_assets', 'deploy:git_pull'
+  after   'deploy:git_pull',       'deploy:npm_install'
   after   'deploy:npm_install',    'deploy:build_assets'
 end
