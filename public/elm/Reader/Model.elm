@@ -2,8 +2,9 @@ module Reader.Model exposing (..)
 
 import Dict exposing (Dict)
 
-import Reader.Components.ShareDialog.Model as ShareDialog
-import Reader.Components.CreditsRoll.Model as CreditsRoll
+import Reader.Components.ShareDialog as ShareDialog
+import Reader.Components.CreditsRoll as CreditsRoll
+import Reader.Components.ContactModal as ContactModal
 import Reader.Aliases exposing (..)
 import Core.Utils.SelectionList as SL exposing (SelectionList)
 
@@ -24,7 +25,10 @@ type State
     | Rendering
     | TurningPage
 
-type alias TOC = SelectionList RenderElement
+type BookmarkState
+    = HasBookmark
+    | NoBookmark
+    | LoadingBookmark
 
 type alias Model =
     { toc               : TOC
@@ -33,28 +37,13 @@ type alias Model =
     , showCover         : Bool
     , shareDialog       : ShareDialog.Model
     , creditsRoll       : CreditsRoll.Model
+    , contactModal      : ContactModal.Model
     , headingIDsOnPage  : List RenderElementID
     , lastNavAction     : LastNavAction
     , state             : State
     , tocExpanded       : Bool
     , locationHost      : LocationHost
-    }
-
-type alias RenderElement =
-    { id          : RenderElementID
-    , disqusId    : String
-    , heading     : String
-    , body        : String
-    , authorsNote : String
-    , chapter     : ChapterID
-    , level       : Int
-    , isRead      : Bool
-    , releaseDate : String
-    }
-
-type alias RenderBlob =
-    { stylesheet     : Stylesheet
-    , renderElements : List RenderElement
+    , bookmark          : BookmarkState
     }
 
 ---- EMPTY MODELS ----
@@ -67,11 +56,13 @@ empty =
     , showCover         = True
     , shareDialog       = ShareDialog.empty
     , creditsRoll       = CreditsRoll.empty
+    , contactModal      = ContactModal.empty
     , headingIDsOnPage  = []
     , lastNavAction     = PageTurn (PageNum 0)
     , state             = Loading
     , tocExpanded       = False
     , locationHost      = ""
+    , bookmark          = LoadingBookmark
     }
 
 emptyRenderElement : RenderElement

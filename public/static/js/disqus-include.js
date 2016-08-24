@@ -1,5 +1,4 @@
 var DISQUS;
-RendererInterface.init("book-text-frame");
 
 /**
 * RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
@@ -7,14 +6,14 @@ RendererInterface.init("book-text-frame");
 */
 
 var disqus_config = function () {
-this.page.url = "mmp-test-wtvr"; // Replace PAGE_URL with your page's canonical URL variable
-this.page.identifier = "mmp-reader"; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+this.page.url = ""; // Replace PAGE_URL with your page's canonical URL variable
+this.page.identifier = ""; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
 };
 
 (function() { // DON'T EDIT BELOW THIS LINE
 var d = document, s = d.createElement('script');
 
-s.src = '//mmptest.disqus.com/embed.js';
+s.src = '//{{% disqus.siteName %}}.disqus.com/embed.js';
 
 s.setAttribute('data-timestamp', +new Date());
 (d.head || d.body).appendChild(s);

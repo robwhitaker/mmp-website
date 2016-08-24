@@ -1,6 +1,8 @@
 module Reader.Utils exposing (..)
 
 import String
+import Date
+import Time exposing (Time)
 import Regex
 
 import Core.Utils.MaybeExtra exposing (..)
@@ -38,3 +40,15 @@ selectedTitleFromSL sl =
         else
             section ++ " - " ++ title
     )
+
+dateStringToTime : String -> Time
+dateStringToTime dateStr =
+    case Date.fromString dateStr of
+        Ok date -> Date.toTime date
+        Err _   -> 0
+
+maxReleaseDateAsTime : SelectionList { a | releaseDate : String } -> Time
+maxReleaseDateAsTime list =
+    List.foldl (\{ releaseDate } maxRD ->
+        Basics.max maxRD (dateStringToTime releaseDate)
+    ) 0 (SL.toList list)

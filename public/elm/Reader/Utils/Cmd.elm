@@ -1,6 +1,7 @@
 module Reader.Utils.Cmd exposing (..)
 
 import Reader.Model exposing (..)
+import Reader.Aliases exposing (..)
 import Reader.Ports exposing (..)
 import Reader.Utils exposing (selectedTitleFromSL)
 
@@ -38,16 +39,16 @@ switchSelectedIdCmd forceChange oldModel newModel =
             else
                 setTitleCmd newModel
 
-        storageUpdate =
+        selectedUpdate =
             if oldModel.toc.selected.id == newModel.toc.selected.id && not forceChange then
                 Cmd.none
             else
-                setReadInStorage newModel.toc.selected.id
+                setSelectedId newModel.toc.selected.id
     in
         Cmd.batch
             [ disqusUpdate
             , titleUpdate
-            , storageUpdate
+            , selectedUpdate
             ]
 
 setTitleCmd : Model -> Cmd msg

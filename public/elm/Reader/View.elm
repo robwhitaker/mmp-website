@@ -1,5 +1,7 @@
 module Reader.View exposing (..)
 
+import Core.Utils.SelectionList as SL
+
 import Reader.Model exposing (..)
 import Reader.Messages exposing (..)
 import Reader.Ports exposing (..)
@@ -8,9 +10,8 @@ import Reader.Utils as Utils
 import Reader.Views.Dropdown as Dropdown
 import Reader.Views.ShareButtons as ShareButtons
 
-import Reader.Components.ShareDialog.View as ShareDialog
-import Reader.Components.CreditsRoll.View as CreditsRoll
-import Reader.Components.CreditsRoll.Messages as CreditsRollM
+import Reader.Components.Modal.View as Modal
+import Reader.Components.Modal.Messages as Modal
 
 import Html.App as Html
 import Html exposing (..)
@@ -22,7 +23,14 @@ import String
 
 view : Model -> Html Msg
 view model =
-    div []
+    let isLastPage =
+            --NOTE: Logic copied from Update.elm. Maybe make a helper function?
+            model.pages.current + 1 >= model.pages.total &&
+                SL.traverseFromSelectedUntil
+                                    SL.next
+                                    (\entry -> entry.body /= "" && entry.chapter /= model.toc.selected.chapter)
+                                    model.toc == Nothing
+    in div []
         [ section
             [ class "reader" ]
             [ div [ class "banner" ] [ a [ href "/" ] [ div [ class "banner-logo" ] [] ] ]
@@ -35,10 +43,18 @@ view model =
                         , ("isDisplayed", model.showCover)
                         ]
                     , onClick CoverClick
-                    ] 
-                    [ div 
-                        [ class "glow" ] 
-                        [ div [ class "cover-txt cover-btn" ] [ text "Start Reading" ] ]
+                    ]
+                    [ div
+                        [ class "glow" ]
+                        [ div
+                            [ class "cover-txt cover-btn" ]
+                            [ text <|
+                                case model.bookmark of
+                                    HasBookmark     -> "Resume Reading"
+                                    NoBookmark      -> "Start Reading"
+                                    LoadingBookmark -> "..."
+                            ]
+                        ]
                     ]
                 , div --LOADER LAYER
                     [ classList
@@ -50,7 +66,7 @@ view model =
                         Loading -> div [ class "loading-label" ] [ text "Loading..." ]
                         Rendering -> div [ class "loading-label" ] [ text "Rendering..." ]
                         _ -> text ""
-                    , div [ class "loading-label" ] [ img [ src "static/assets/img/ajax-loader-2.gif" ] [] ]
+                    , div [ class "loading-label" ] [ img [ src "/static/assets/img/ajax-loader-2.gif" ] [] ]
                     ]
                 , div [ class "book-back" ]
                     [ div
@@ -61,22 +77,22 @@ view model =
                         , iframe [ id "book-text-frame", src "/renderer.html", seamless True ] []
                         , div
                             [ class "bottom-bar" ]
-                            [ div 
-                                [ class "book-arrow back-btn", onClick (TurnPage Backward) ] 
+                            [ div
+                                [ class "book-arrow back-btn", onClick (TurnPage Backward) ]
                                 [
                                     i [ class "fa fa-angle-left" ] []
                                 ]
                             , div [ class "page-num" ] [ text <| toString (model.pages.current + 1) ] --++ " / " ++ toString model.pages.total ]
-                            , div 
-                                [ class "book-arrow forward-btn", onClick (TurnPage Forward) ] 
-                                [
-                                    i [ class "fa fa-angle-right" ] []
+                            , div
+                                [ classList [("book-arrow forward-btn", True),("btn-disabled", isLastPage)], onClick (TurnPage Forward) ]
+                                [ div [ class "last-page-txt" ] [ text "Check back on Sunday!" ]
+                                , i [ class "fa fa-angle-right" ] []
                                 ]
                             ]
                         ]
                     ]
                 ]
-            , Html.map ShareDialogMsg <| ShareDialog.view model.shareDialog
+            , Html.map ShareDialogMsg <| Modal.view model.shareDialog
             ]
         , section
             [ classList [("comments", True), ("no-display", model.showCover)] ]
@@ -96,7 +112,8 @@ view model =
             [ div [ class "footer-link-block" ] <| List.map2 mkFooterSection footerHeadings footerContent
             , div [ class "copy" ] [ text "© Midnight Murder Party 2015-2016" ]
             ]
-        , Html.map CreditsRollMsg <| CreditsRoll.view model.creditsRoll    
+        , Html.map CreditsRollMsg <| Modal.view model.creditsRoll
+        , Html.map ContactModalMsg <| Modal.view model.contactModal
         ]
 
 mkFooterSection : String -> Html Msg -> Html Msg
@@ -118,7 +135,7 @@ follow =
             [ ("facebook-icon.png", "https://www.facebook.com/MMPWebSeries/")
             , ("twitter-icon.png", "https://twitter.com/MMPWebSeries")
             , ("ello-icon.jpg", "https://ello.co/midnightmurderparty")
-            , ("rss-icon.png", "#")
+            , ("rss-icon.png", "/rss")
             ]
 
         prependIcons =
@@ -128,7 +145,7 @@ follow =
             [ div
                 [ id "mc_embed_signup" ]
                 [ Html.form
-                    [ action "//midnightmurderparty.us11.list-manage.com/subscribe/post?u=7d09d2d3e4c3251078a03ce5d&amp;id=747f75b19c"
+                    [ action "//{{% mailchimp.subdomain %}}.us11.list-manage.com/subscribe/post?u={{% mailchimp.u %}}&amp;id={{% mailchimp.id %}}"
                     , class "validate"
                     , id "mc-embedded-subscribe-form"
                     , method "post"
@@ -140,7 +157,7 @@ follow =
                         [ input [ class "email", id "mce-EMAIL", name "EMAIL", placeholder "email address", required True, type' "email", value "" ] []
                         , div
                             [ attribute "aria-hidden" "true", attribute "style" "position: absolute; left: -5000px;" ]
-                            [ input [ name "b_7d09d2d3e4c3251078a03ce5d_747f75b19c", tabindex -1, type' "text", value "" ] [] ]
+                            [ input [ name "b_{{% mailchimp.u %}}_{{% mailchimp.id %}}", tabindex -1, type' "text", value "" ] [] ]
                         , div
                             [ class "clear" ]
                             [ input [ class "button", id "mc-embedded-subscribe", name "subscribe", type' "submit", value "Subscribe" ] [] ]
@@ -160,8 +177,9 @@ share =
         , ShareButtons.reddit
         ]
 
-extras = 
+extras =
     ul  [] <| List.map (li [] << flip (::) [])
         [ a [ href "/extras/halloween2015/play", target "_BLANK" ] [ text "Halloween Special 2015" ]
-        , a [ onClick (CreditsRollMsg CreditsRollM.ShowCredits) ] [ text "Credits" ]
+        , a [ onClick (ContactModalMsg Modal.ShowModal) ] [ text "Contact Me" ]
+        , a [ onClick (CreditsRollMsg Modal.ShowModal) ] [ text "Credits" ]
         ]

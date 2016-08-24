@@ -1,15 +1,10 @@
 module Reader.Utils.Disqus exposing (..)
 
-import Reader.Model exposing (RenderElement, TOC)
 import Reader.Utils exposing (selectedTitleFromSL)
-import Reader.Aliases exposing (LocationHost)
+import Reader.Aliases exposing (DisqusData, LocationHost, RenderElement, TOC)
 import Core.Utils.SelectionList as SL
 
-type alias DisqusData =
-    { identifier : String
-    , url        : String
-    , title      : String
-    }
+
 
 disqusDataFromTOC : LocationHost -> TOC -> DisqusData
 disqusDataFromTOC host toc =
@@ -23,4 +18,4 @@ renderElemToDisqusId =
     .id >> toDisqusId
 
 toDisqusId : String -> String
-toDisqusId = (++) "disqus-"
+toDisqusId = identity

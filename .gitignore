@@ -8,14 +8,17 @@ repl-temp-*
 ## Static artifacts
 /node_modules
 public/static/build
+public/reader.html
+public/renderer.html
 /elm/elm-stuff
 repl-temp-*
 Gemfile.lock
 
+### Assorted ###
+config/database.yml
+config/secret.yml
 log
 var
-
-
 *.xcf
 
 ### Ruby ###
@@ -25,6 +28,12 @@ var
 /db/*.sqlite3-journal
 /shared
 .ruby-version
+## Capistrano deploys
+releases
+current
+repo
+revisions.log
+rvm1scripts
 
 ## Documentation cache and generated files:
 /.yardoc/
