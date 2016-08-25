@@ -8,7 +8,7 @@ else
   threads 1,16
   workers 4
 
-  if ENV["RACK_ENV"] == 'production'
+  if YAML.load_file('secrets.yml')["rack_env"] == 'production'
     bind 'unix://var/run/puma.sock'
     pidfile 'var/run/puma.pid'
   else
