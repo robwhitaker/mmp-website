@@ -8,9 +8,10 @@ else
   threads 1,16
   workers 4
 
-  if YAML.load_file('config/secrets.yml')["rack_env"] == 'production'
-    bind 'unix://var/run/puma.sock'
-    pidfile 'var/run/puma.pid'
+
+  if File.file?('config/secrets.yml') && YAML.load_file('config/secrets.yml')["rack_env"] == 'production'
+      bind 'unix://var/run/puma.sock'
+      pidfile 'var/run/puma.pid'
   else
     app_dir = File.expand_path("../../", __FILE__)
     shared_dir = "#{app_dir}/var"
