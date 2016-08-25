@@ -1,5 +1,5 @@
 role :app,                     %w{deploy@mmp.nicklaroux.com}
-set :branch,                   'master'
+set :branch,                   'staging'
 set :stage,                    'production'
 set :linked_files,             %w{config/database.yml config/secret.yml public/reader.html}
 set :linked_dirs,              %w{var/log var/pids var/run public/static/build}

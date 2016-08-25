@@ -16,6 +16,8 @@ namespace :deploy do
           upload! 'public/static/build/' + f ,
                   '/home/deploy/mmp/public/static/build/' + f
         end
+
+        upload! 'public/reader.html', '/home/deploy/mmp/public/reader.html'
       end
     end
   end
@@ -43,7 +45,6 @@ namespace :deploy do
     on roles(:app) do
       if fetch(:stage) == 'production'
         execute "cd ~/mmp && gulp build:reader"
-        execute "cd ~/mmp && gulp build:editor-js"
       end
     end
   end
