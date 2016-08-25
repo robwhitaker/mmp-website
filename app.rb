@@ -138,6 +138,8 @@ def authorized?(string)
     secrets = YAML.load_file('config/secrets.yml')
     if secrets["rack_env"] == 'dev-auth' || secrets["rack_env"] == 'production'
       string == secrets["admin_secret"]
+    else
+      true
     end
   else
     true
