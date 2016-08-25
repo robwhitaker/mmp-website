@@ -12,7 +12,7 @@ namespace :deploy do
   task :staging_assets do
     on roles(:app) do
       if fetch(:stage) == 'staging'
-        %w[ reader.min.js editor.min.js ].each do |f|
+        %w[ reader.min.js editor.min.js renderer.min.js ].each do |f|
           upload! 'public/static/build/js/' + f ,
                   '/home/deploy/mmp/public/static/build/js/' + f
         end
