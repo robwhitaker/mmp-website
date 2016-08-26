@@ -167,8 +167,23 @@ var Renderer = window.Renderer = (function() {
                     ].filter(function(item) { return item != null; })
                 ));
 
+
                 return acc;
             }, document.createElement("div"));
+
+            var measurementContainer = document.createElement("div");
+            measurementContainer.classList.add("measurement-container");
+
+            ["p","h1","h2","h3","h4","h5","h6"].forEach(function(tag) {
+                var elem = document.createElement(tag);
+                var span = document.createElement("span");
+                span.innerHTML = "T";
+                span.id = "measurement-" + tag;
+                elem.appendChild(span);
+                measurementContainer.appendChild(elem);
+            });
+
+            storyTextArea.appendChild(measurementContainer);
 
             storyTextArea.id = "text-container";
 
@@ -373,14 +388,25 @@ var Renderer = window.Renderer = (function() {
     var getHeadings = function() {
         var storyTextArea = document.getElementById('text-container');
         if(storyTextArea == null) return [];
-        return Array.prototype.filter.call(storyTextArea.querySelectorAll("h1,h2,h3,h4,h5,h6"), function() { return true; });
+        return Array.prototype.filter.call(storyTextArea.querySelectorAll("h1,h2,h3,h4,h5,h6"), function(h) { return !!h.id; });
+    }
+
+    var getHeadingsAndPs = function() {
+        var storyTextArea = document.getElementById('text-container');
+        if(storyTextArea == null) return [];
+        return Array.prototype.filter.call(storyTextArea.querySelectorAll("p,h1,h2,h3,h4,h5,h6"), function(t) { return !!t.id; });
+    }
+
+    var getTextHeightIn = function(tag) {
+        var mTag = document.getElementById("measurement-" + tag);
+        return !!mTag ? mTag.offsetHeight : 0;
     }
 
     var getHeadingsOnPage = function() {
         var storyTextArea = document.getElementById("text-container");
         if(storyTextArea == null) return [];
-        var headings = storyTextArea.querySelectorAll("h1,h2,h3,h4,h5,h6");
-        return Array.prototype.filter.call(headings, collidesWithBook)
+        return getHeadings()
+            .filter(collidesWithBook)
             .map(function(h) { return h.id; })
             .filter(function(hId) { return hId != null });
     }
@@ -388,8 +414,8 @@ var Renderer = window.Renderer = (function() {
     var getReflowCheckpointsOnPage = function() {
         var storyTextArea = document.getElementById("text-container");
         if(storyTextArea == null) return [];
-        var elems = storyTextArea.querySelectorAll("h1,h2,h3,h4,h5,h6,p");
-        return Array.prototype.filter.call(elems, collidesWithBook)
+        return getHeadingsAndPs()
+            .filter(collidesWithBook)
             .map(function(e) { return e.id; })
             .filter(function(eId) { return eId != null });
     }
@@ -463,7 +489,7 @@ var Renderer = window.Renderer = (function() {
     };
 
     var isAtTop = function(heading) {
-        var topElem = Array.prototype.filter.call(document.querySelectorAll('h1,h2,h3,h4,h5,h6,p'), collidesWithBook).filter(function(elem) {
+        var topElem = getHeadingsAndPs().filter(collidesWithBook).filter(function(elem) {
             return (elem.innerText || elem.textContent || "").trim() != "";
         })[0];
         var topElemId = !!topElem ? topElem.id : null;
