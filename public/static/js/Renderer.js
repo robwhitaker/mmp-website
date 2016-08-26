@@ -48,7 +48,9 @@ var Renderer = window.Renderer = (function() {
         updateReflowCheckpointId();
         var headingAtTop = false;
         if(headings.length > 0) {
-            headingAtTop = (document.getElementById(headings[0]) || {}).offsetTop == 0;
+            var h = document.getElementById(headings[0]);
+            headingAtTop = !!h ? isAtTop(h) : false;
+            console.log(h.id, h.offsetTop, headingAtTop)
         }
 
         console.log("reflow checkpoint: ", reflowCheckpointId);
@@ -404,11 +406,11 @@ var Renderer = window.Renderer = (function() {
         var storyTextArea = document.getElementById("text-container");
         var itemRect = getBoundingClientRect(item);
         if(storyTextArea == null || itemRect == null) return false;
-        var bookRect = storyTextArea.getBoundingClientRect();
+        var bookRect = getViewport();
 
-        var result = !(bookRect.right * 0.75 <= itemRect.left || bookRect.left * 1.25 >= itemRect.right);
+        var result = !(bookRect.width * 0.75 <= itemRect.left || bookRect.width * 0.25 >= itemRect.right);
 
-        if(result) { console.log(item.id,itemRect.left,itemRect.right); }
+        // if(result) { console.log(item.id,itemRect.left,itemRect.right); }
 
         return result;
     };
@@ -436,9 +438,9 @@ var Renderer = window.Renderer = (function() {
         }
 
         return {
-            top    : top,
-            left   : itemLeft,
-            right  : itemRight
+            top    : Math.floor(top),
+            left   : Math.floor(itemLeft),
+            right  : Math.floor(itemRight)
         };
     }
 
@@ -447,16 +449,26 @@ var Renderer = window.Renderer = (function() {
         if(storyTextArea == null) return false;
 
         // multiply by 2 to lower the threshold to detect a dangling heading
-        var textSize = parseFloat((heading.nextSibling.currentStyle || window.getComputedStyle(heading.nextSibling)).fontSize) * 2;
+        var textSize = parseFloat((heading.nextSibling.currentStyle || window.getComputedStyle(heading.nextSibling)).fontSize) * 4;
 
         var nextIsP = heading.nextSibling.tagName === "P";
 
         var nextOnPageButNoRoom = heading.offsetLeft == heading.nextSibling.offsetLeft && storyTextArea.offsetHeight - heading.nextSibling.offsetTop <= textSize;
 
-        var nextNotOnPage = heading.nextSibling.offsetLeft >= heading.offsetLeft + heading.offsetWidth;
+        var nextNotOnPage = heading.nextSibling.offsetLeft >= heading.offsetLeft + (heading.offsetWidth * 0.75); //NOTE: heading.offsetWidth may be inaccurate in chromium-based browsers
 
-        return (nextOnPageButNoRoom || nextNotOnPage) && nextIsP;
+        var headingAtTop = isAtTop(heading);
+
+        return (nextOnPageButNoRoom || nextNotOnPage) && nextIsP && !headingAtTop;
     };
+
+    var isAtTop = function(heading) {
+        var topElem = Array.prototype.filter.call(document.querySelectorAll('h1,h2,h3,h4,h5,h6,p'), collidesWithBook).filter(function(elem) {
+            return (elem.innerText || elem.textContent || "").trim() != "";
+        })[0];
+        var topElemId = !!topElem ? topElem.id : null;
+        return heading.id == topElemId || heading.offsetTop == 0;
+    }
 
     var getFocusedHeading = function() {
         var storyTextArea = document.getElementById("text-container");

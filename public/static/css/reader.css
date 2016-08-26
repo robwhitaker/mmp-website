@@ -199,10 +199,10 @@ section.comments {
 /* ---- Book Display ---- */
 
 .book {
-/*    width: 650px;
-    height: 759px;*/
     height: 80vh;
     width: 68.5vh;
+    min-height: 256px;
+    min-width: 200px;
     max-width: 100%;
     margin: 1vh auto 0 auto;
     background-size: 100% 100%;
