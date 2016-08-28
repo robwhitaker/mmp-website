@@ -48,7 +48,9 @@ var Renderer = window.Renderer = (function() {
         updateReflowCheckpointId();
         var headingAtTop = false;
         if(headings.length > 0) {
-            headingAtTop = (document.getElementById(headings[0]) || {}).offsetTop == 0;
+            var h = document.getElementById(headings[0]);
+            headingAtTop = !!h ? isAtTop(h) : false;
+            console.log(h.id, h.offsetTop, headingAtTop)
         }
 
         console.log("reflow checkpoint: ", reflowCheckpointId);
@@ -164,6 +166,7 @@ var Renderer = window.Renderer = (function() {
                     , mkShareLink(entry)
                     ].filter(function(item) { return item != null; })
                 ));
+
 
                 return acc;
             }, document.createElement("div"));
@@ -371,23 +374,25 @@ var Renderer = window.Renderer = (function() {
     var getHeadings = function() {
         var storyTextArea = document.getElementById('text-container');
         if(storyTextArea == null) return [];
-        return Array.prototype.filter.call(storyTextArea.querySelectorAll("h1,h2,h3,h4,h5,h6"), function() { return true; });
+        return Array.prototype.filter.call(storyTextArea.querySelectorAll("h1,h2,h3,h4,h5,h6"), function(h) { return !!h.id; });
+    }
+
+    var getHeadingsAndPs = function() {
+        var storyTextArea = document.getElementById('text-container');
+        if(storyTextArea == null) return [];
+        return Array.prototype.filter.call(storyTextArea.querySelectorAll("p,h1,h2,h3,h4,h5,h6"), function(t) { return !!t.id; });
     }
 
     var getHeadingsOnPage = function() {
-        var storyTextArea = document.getElementById("text-container");
-        if(storyTextArea == null) return [];
-        var headings = storyTextArea.querySelectorAll("h1,h2,h3,h4,h5,h6");
-        return Array.prototype.filter.call(headings, collidesWithBook)
+        return getHeadings()
+            .filter(collidesWithBook)
             .map(function(h) { return h.id; })
             .filter(function(hId) { return hId != null });
     }
 
     var getReflowCheckpointsOnPage = function() {
-        var storyTextArea = document.getElementById("text-container");
-        if(storyTextArea == null) return [];
-        var elems = storyTextArea.querySelectorAll("h1,h2,h3,h4,h5,h6,p");
-        return Array.prototype.filter.call(elems, collidesWithBook)
+        return getHeadingsAndPs()
+            .filter(collidesWithBook)
             .map(function(e) { return e.id; })
             .filter(function(eId) { return eId != null });
     }
@@ -404,11 +409,11 @@ var Renderer = window.Renderer = (function() {
         var storyTextArea = document.getElementById("text-container");
         var itemRect = getBoundingClientRect(item);
         if(storyTextArea == null || itemRect == null) return false;
-        var bookRect = storyTextArea.getBoundingClientRect();
+        var bookRect = getViewport();
 
-        var result = !(bookRect.right * 0.75 <= itemRect.left || bookRect.left * 1.25 >= itemRect.right);
+        var result = !(bookRect.width * 0.75 <= itemRect.left || bookRect.width * 0.25 >= itemRect.right);
 
-        if(result) { console.log(item.id,itemRect.left,itemRect.right); }
+        // if(result) { console.log(item.id,itemRect.left,itemRect.right); }
 
         return result;
     };
@@ -433,30 +438,40 @@ var Renderer = window.Renderer = (function() {
             if(top == bookRect.height) top = 0;
             itemLeft = (itemRect.top < 0) ? itemRect.left-(bookRect.width*Math.ceil(Math.abs(itemRect.top) / bookRect.height)) : itemRect.left;
             itemRight = itemLeft + Math.ceil((top + itemRect.height) / bookRect.height) * bookRect.width;
+        } else if (!!item.firstChild) {
+            top = item.offsetTop;
+            itemLeft = itemRect.left + bookRect.width <= item.firstChild.getBoundingClientRect().left ? itemRect.left + bookRect.width : itemRect.left;
         }
 
         return {
-            top    : top,
-            left   : itemLeft,
-            right  : itemRight
+            top    : Math.floor(top),
+            left   : Math.floor(itemLeft),
+            right  : Math.floor(itemRight)
         };
     }
 
     var isDangling = function(heading) {
-        var storyTextArea = document.getElementById("text-container");
-        if(storyTextArea == null) return false;
+        var nextRect = getBoundingClientRect(heading && heading.nextSibling);
+        var headingRect = getBoundingClientRect(heading);
 
-        // multiply by 2 to lower the threshold to detect a dangling heading
-        var textSize = parseFloat((heading.nextSibling.currentStyle || window.getComputedStyle(heading.nextSibling)).fontSize) * 2;
+        if(!nextRect || !headingRect) return false;
 
         var nextIsP = heading.nextSibling.tagName === "P";
 
-        var nextOnPageButNoRoom = heading.offsetLeft == heading.nextSibling.offsetLeft && storyTextArea.offsetHeight - heading.nextSibling.offsetTop <= textSize;
+        var nextNotOnPage = nextRect.left > headingRect.left;
 
-        var nextNotOnPage = heading.nextSibling.offsetLeft >= heading.offsetLeft + heading.offsetWidth;
+        var headingAtTop = isAtTop(heading);
 
-        return (nextOnPageButNoRoom || nextNotOnPage) && nextIsP;
+        return nextNotOnPage && nextIsP && !headingAtTop;
     };
+
+    var isAtTop = function(heading) {
+        var topElem = getHeadingsAndPs().filter(collidesWithBook).filter(function(elem) {
+            return (elem.innerText || elem.textContent || "").trim() != "";
+        })[0];
+        var topElemId = !!topElem ? topElem.id : null;
+        return heading.id == topElemId || heading.offsetTop == 0;
+    }
 
     var getFocusedHeading = function() {
         var storyTextArea = document.getElementById("text-container");

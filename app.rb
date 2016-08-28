@@ -13,7 +13,12 @@ require './models/entry'
 set :server => :puma,
     :show_exceptions => :after_handler,
     :public_folder => 'public'
-env = ENV["RACK_ENV"] || "development"
+env = ''
+if File.file?('config/secrets.yml')
+  env = YAML.load_file('config/secrets.yml')["rack_env"]
+else
+  env = 'development'
+end
 databases = YAML.load(ERB.new(File.read('config/database.yml')).result)
 ActiveRecord::Base.establish_connection(databases[env])
 
@@ -129,8 +134,13 @@ def log(payload)
 end
 
 def authorized?(string)
-  if ENV["RACK_ENV"] == "dev-auth" || ENV["RACK_ENV"] == "production"
-    string == YAML.load_file('config/secret.yml')["admin_secret"]
+  if File.file?('config/secrets.yml')
+    secrets = YAML.load_file('config/secrets.yml')
+    if secrets["rack_env"] == 'dev-auth' || secrets["rack_env"] == 'production'
+      string == secrets["admin_secret"]
+    else
+      true
+    end
   else
     true
   end

@@ -12,9 +12,19 @@ namespace :deploy do
   task :staging_assets do
     on roles(:app) do
       if fetch(:stage) == 'staging'
-        %w[ editor.min.js reader.min.css reader.min.js ].each do |f|
-          upload! 'public/static/build/' + f ,
-                  '/home/deploy/mmp/public/static/build/' + f
+        %w[ reader.min.js editor.min.js renderer.min.js ].each do |f|
+          upload! 'public/static/build/js/' + f ,
+                  '/home/deploy/mmp/public/static/build/js/' + f
+        end
+
+        %w[ reader.html renderer.html ].each do |f|
+          upload! 'public/' + f ,
+                  '/home/deploy/mmp/public/' + f
+        end
+
+        %w[ reader.min.css renderer.min.css ].each do |f|
+          upload! 'public/static/build/css/' + f ,
+                  '/home/deploy/mmp/public/static/build/css/' + f
         end
       end
     end
@@ -43,7 +53,6 @@ namespace :deploy do
     on roles(:app) do
       if fetch(:stage) == 'production'
         execute "cd ~/mmp && gulp build:reader"
-        execute "cd ~/mmp && gulp build:editor-js"
       end
     end
   end
