@@ -439,6 +439,7 @@ var Renderer = window.Renderer = (function() {
             itemLeft = (itemRect.top < 0) ? itemRect.left-(bookRect.width*Math.ceil(Math.abs(itemRect.top) / bookRect.height)) : itemRect.left;
             itemRight = itemLeft + Math.ceil((top + itemRect.height) / bookRect.height) * bookRect.width;
         } else if (!!item.firstChild) {
+            top = item.offsetTop;
             itemLeft = itemRect.left + bookRect.width <= item.firstChild.getBoundingClientRect().left ? itemRect.left + bookRect.width : itemRect.left;
         }
 
@@ -450,21 +451,18 @@ var Renderer = window.Renderer = (function() {
     }
 
     var isDangling = function(heading) {
-        var storyTextArea = document.getElementById("text-container");
-        if(storyTextArea == null) return false;
+        var nextRect = getBoundingClientRect(heading && heading.nextSibling);
+        var headingRect = getBoundingClientRect(heading);
 
-        // multiply by 2 to lower the threshold to detect a dangling heading
-        var textSize = parseFloat((heading.nextSibling.currentStyle || window.getComputedStyle(heading.nextSibling)).fontSize) * 4;
+        if(!nextRect || !headingRect) return false;
 
         var nextIsP = heading.nextSibling.tagName === "P";
 
-        var nextOnPageButNoRoom = heading.offsetLeft == heading.nextSibling.offsetLeft && storyTextArea.offsetHeight - heading.nextSibling.offsetTop <= textSize;
-
-        var nextNotOnPage = heading.nextSibling.offsetLeft >= heading.offsetLeft + (heading.offsetWidth * 0.75); //NOTE: heading.offsetWidth may be inaccurate in chromium-based browsers
+        var nextNotOnPage = nextRect.left > headingRect.left;
 
         var headingAtTop = isAtTop(heading);
 
-        return (nextOnPageButNoRoom || nextNotOnPage) && nextIsP && !headingAtTop;
+        return nextNotOnPage && nextIsP && !headingAtTop;
     };
 
     var isAtTop = function(heading) {
