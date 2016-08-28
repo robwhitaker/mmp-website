@@ -171,20 +171,6 @@ var Renderer = window.Renderer = (function() {
                 return acc;
             }, document.createElement("div"));
 
-            var measurementContainer = document.createElement("div");
-            measurementContainer.classList.add("measurement-container");
-
-            ["p","h1","h2","h3","h4","h5","h6"].forEach(function(tag) {
-                var elem = document.createElement(tag);
-                var span = document.createElement("span");
-                span.innerHTML = "T";
-                span.id = "measurement-" + tag;
-                elem.appendChild(span);
-                measurementContainer.appendChild(elem);
-            });
-
-            storyTextArea.appendChild(measurementContainer);
-
             storyTextArea.id = "text-container";
 
             document.body.innerHTML = "";
@@ -397,14 +383,7 @@ var Renderer = window.Renderer = (function() {
         return Array.prototype.filter.call(storyTextArea.querySelectorAll("p,h1,h2,h3,h4,h5,h6"), function(t) { return !!t.id; });
     }
 
-    var getTextHeightIn = function(tag) {
-        var mTag = document.getElementById("measurement-" + tag);
-        return !!mTag ? mTag.offsetHeight : 0;
-    }
-
     var getHeadingsOnPage = function() {
-        var storyTextArea = document.getElementById("text-container");
-        if(storyTextArea == null) return [];
         return getHeadings()
             .filter(collidesWithBook)
             .map(function(h) { return h.id; })
@@ -412,8 +391,6 @@ var Renderer = window.Renderer = (function() {
     }
 
     var getReflowCheckpointsOnPage = function() {
-        var storyTextArea = document.getElementById("text-container");
-        if(storyTextArea == null) return [];
         return getHeadingsAndPs()
             .filter(collidesWithBook)
             .map(function(e) { return e.id; })
@@ -461,6 +438,8 @@ var Renderer = window.Renderer = (function() {
             if(top == bookRect.height) top = 0;
             itemLeft = (itemRect.top < 0) ? itemRect.left-(bookRect.width*Math.ceil(Math.abs(itemRect.top) / bookRect.height)) : itemRect.left;
             itemRight = itemLeft + Math.ceil((top + itemRect.height) / bookRect.height) * bookRect.width;
+        } else if (!!item.firstChild) {
+            itemLeft = itemRect.left + bookRect.width <= item.firstChild.getBoundingClientRect().left ? itemRect.left + bookRect.width : itemRect.left;
         }
 
         return {
