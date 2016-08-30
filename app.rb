@@ -58,12 +58,6 @@ get '/api/chapters' do # public chapters
   json all_chapters_with_entries("restricted")
 end
 
-get '/rss-json' do #testing
-  @releases = new_rss_feed
-  success_response
-  json @releases
-end
-
 get '/rss' do # rss (public chapters)
   @releases = rss_feed
   success_response
@@ -198,56 +192,29 @@ def rss_content
   all_content = []
 
   Chapter.order(order: :asc).where('release_date <= ?', DateTime.now).each do |chapter|
-    entries = chapter.entries.as_json
-    chapter = chapter.as_json
-    chapter['level'] = 0
+    entries = chapter.entries
+    chapter = chapter.as_json.deep_symbolize_keys
+    chapter[:level] = 0
 
     all_content.push(chapter)
-    entries.each {|entry| all_content.push(entry)}
+    entries.each {|entry| all_content.push(entry.as_json.deep_symbolize_keys)}
   end
 
   all_content
 end
 
-# def rss_feed
-#   feed = []
-#   chapters = Chapter.order(release_date: :asc).where('release_date <= ?', DateTime.now)
-#
-#   chapters.each do |chapter|
-#     release = []
-#
-#     if chapter.has_content?
-#       feed.push([chapter])
-#     else
-#       release.push(chapter)
-#
-#       chapter.entries.each do |entry|
-#         if entry.has_content?
-#           release.push(entry)
-#           feed.push(release)
-#           release = []
-#         else
-#           release.push(entry)
-#         end
-#       end
-#     end
-#   end
-#
-#   feed
-# end
-
-def new_rss_feed
+def rss_feed
   feed = []
   release_stack = []
 
   rss_content.each do |sub_release|
-    if release_stack.empty? || sub_release['level'] > release_stack.last['level']
+    if release_stack.empty? || sub_release[:level] > release_stack.last[:level]
       release_stack.push(sub_release)
     else
       feed.push(release_stack.clone)
 
       release_stack.reverse.each do |element|
-        if sub_release['level'] <= element['level']
+        if sub_release[:level] <= element[:level]
           release_stack.pop
         end
       end
