@@ -206,11 +206,17 @@ end
 def rss_feed
   feed = []
   release_stack = []
+  current_chapter_id = nil
 
   rss_content.each do |sub_release|
     if release_stack.empty? || sub_release[:level] > release_stack.last[:level]
       release_stack.push(sub_release)
     else
+      if release_stack.first[:id] != current_chapter_id
+        current_chapter_id = release_stack.first[:id]
+        release_stack.last[:use_chapter_link] = true
+      end
+
       feed.push(release_stack.clone)
 
       release_stack.reverse.each do |element|
