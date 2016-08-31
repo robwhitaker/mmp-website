@@ -58,7 +58,7 @@ xml.rss :version => "2.0" do
     end
 
     def prepare_link release
-      ref = chapter?(release.last) ? "/#!/c#{release.last[:id]}" : "/#!/e#{release.last[:id]}'"
+      ref = chapter?(release.last) ? "/#!/c#{release.last[:id]}" : "/#!/e#{release.last[:id]}"
       request.base_url + ref
     end
 
