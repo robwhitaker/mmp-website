@@ -13,11 +13,13 @@ set :server => :puma,
     :show_exceptions => :after_handler,
     :public_folder => 'public'
 env = ''
+
 if File.file?('config/secrets.yml')
   env = YAML.load_file('config/secrets.yml')["rack_env"]
 else
   env = 'development'
 end
+
 databases = YAML.load(ERB.new(File.read('config/database.yml')).result)
 ActiveRecord::Base.establish_connection(databases[env])
 
@@ -62,6 +64,13 @@ get '/rss' do # rss (public chapters)
   @releases = rss_feed
   success_response
   builder :rss
+end
+
+post '/webhook' do
+  content_type :json
+
+  payload = JSON.parse(request.body.read)
+  log(payload)
 end
 
 post '/api/chapters' do # all chapters

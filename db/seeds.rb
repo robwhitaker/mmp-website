@@ -18,6 +18,9 @@
 ## Chapter deletion | POST /api/chapters/delete ##
 # curl -H "Content-Type: application/json" -X POST -d '{"data": [3, 5], "secretKey": "hello"}' http://localhost:4567/api/chapters/delete
 
+## Webhook | POST /webhook
+# curl -H "Content-Type: application/json" -X POST -d '{ "key": "value" }' http://localhost:4567/webhook
+
 @chapter1 = Chapter.create(order: 1, stylesheet: "<dingle mcringleberry>", title: "Hey!", content: "Beep boop", release_date: "2015-10-01 12:30:00 -0400", authors_note: "wao")
 @chapter1.entries.create(order: 1, title: "Entry #1", level: 1, content: "Hinkle dinkle domp", release_date: "2015-10-02 12:30:00 -0400", authors_note: "Womp")
 @chapter1.entries.create(order: 1, title: "Entry #2", level: 1, content: "Hinkle dinkle domp", release_date: "2015-10-02 12:30:00 -0400", authors_note: "Womp")
