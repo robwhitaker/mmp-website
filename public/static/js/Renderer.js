@@ -21,6 +21,8 @@ var Renderer = window.Renderer = (function() {
 
     var reflowCheckpointId = null;
 
+    var renderObjectsByPage = [];
+
     //---- PPREARE FOR RENDER ----
 
     updateDynamicStylesheet();
@@ -189,6 +191,9 @@ var Renderer = window.Renderer = (function() {
 
         refreshCommentCount(true);
 
+        //make sure Firefox is displaying columns when we do this next part
+        firefoxReset();
+
         setTimeout(function renderIfReady() {
             //remove any placeholders before rerendering anything
             Array.prototype.map.call(storyTextArea.getElementsByClassName("placeholder"), function(placeholder) {
@@ -210,7 +215,7 @@ var Renderer = window.Renderer = (function() {
                 var headingRect = getBoundingClientRect(heading);
                 if(heading == null || headingRect == null) return;
                 var placeholder = document.createElement("div");
-                placeholder.style.height = (document.getElementById("text-container").getBoundingClientRect().height - headingRect.top) + "px"; //TODO: (maybe) make sure hRect.height exists
+                placeholder.style.height = (document.getElementById("text-container").getBoundingClientRect().height - headingRect.top) + "px";
                 placeholder.className = "placeholder";
                 (heading.parentElement || heading.parentNode).insertBefore(placeholder,heading); //TODO: double check on Element vs Node stuff
             }
@@ -228,6 +233,7 @@ var Renderer = window.Renderer = (function() {
                 if(isDangling(heading) && currentId != headingIds[0]) {
                     console.log("Found dangling heading: " + headingIds[0] + "; bumping to next page...");
                     prependPlaceholder(heading);
+                    firefoxReset(); //adding a placeholder may have spooked Firefox. Ensure correctness.
                     currentId = headingIds[0];
                 } else if(!isDangling(heading)) {
                     headingIds.shift();
@@ -275,8 +281,25 @@ var Renderer = window.Renderer = (function() {
                 if(!!renderObj) updateReflowCheckpointId();
                 console.log("reflow checkpoint: ", reflowCheckpointId);
 
-
                 refreshCommentCount();
+
+                renderObjectsByPage = [];
+                var scrollPos = storyTextArea.scrollLeft;
+                var allElems = getHeadingsAndPs();
+                allElems.forEach(function(elem) {
+                    if(!hasContent(elem)) return;
+                    var rect = getBoundingClientRect(elem);
+                    var left = rect.left + scrollPos;
+                    var right = rect.right + scrollPos;
+                    var startPage = Math.round(left / getViewport().width);
+                    var endPage = Math.round(right / getViewport().width);
+                    for(var i=startPage; i < endPage; i++) {
+                        if(!renderObjectsByPage[i])
+                            renderObjectsByPage[i] = [];
+                        renderObjectsByPage[i].push(elem.id);
+                    }
+                });
+                console.log(renderObjectsByPage);
 
                 listeners[(!!renderObj ? "rendered" : "reflowed")](
                     { numPages : numPages
@@ -467,10 +490,14 @@ var Renderer = window.Renderer = (function() {
 
     var isAtTop = function(heading) {
         var topElem = getHeadingsAndPs().filter(collidesWithBook).filter(function(elem) {
-            return (elem.innerText || elem.textContent || "").trim() != "";
+            return hasContent(elem);
         })[0];
         var topElemId = !!topElem ? topElem.id : null;
         return heading.id == topElemId || heading.offsetTop == 0;
+    }
+
+    var hasContent = function(elem) {
+        return (elem.innerText || elem.textContent || "").trim() != "";
     }
 
     var getFocusedHeading = function() {
