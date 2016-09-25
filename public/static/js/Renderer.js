@@ -277,12 +277,6 @@ var Renderer = window.Renderer = (function() {
 
                 currentPositionPercentage = storyTextArea.scrollLeft / storyTextArea.scrollWidth;
 
-                //if not reflow, reassign reflow checkpoint. If it is a reflow, we want to stick to the current point for further reflows
-                if(!!renderObj) updateReflowCheckpointId();
-                console.log("reflow checkpoint: ", reflowCheckpointId);
-
-                refreshCommentCount();
-
                 renderObjectsByPage = [];
                 var scrollPos = storyTextArea.scrollLeft;
                 var allElems = getHeadingsAndPs();
@@ -299,7 +293,12 @@ var Renderer = window.Renderer = (function() {
                         renderObjectsByPage[i].push(elem.id);
                     }
                 });
-                console.log(typeof renderObjectsByPage);
+
+                //if not reflow, reassign reflow checkpoint. If it is a reflow, we want to stick to the current point for further reflows
+                if(!!renderObj) updateReflowCheckpointId();
+                console.log("reflow checkpoint: ", reflowCheckpointId);
+
+                refreshCommentCount();
 
                 listeners[(!!renderObj ? "rendered" : "reflowed")](
                     { numPages : numPages
@@ -352,6 +351,10 @@ var Renderer = window.Renderer = (function() {
         var page = Math.round((scrollLeft + itemPos)/getViewport().width);
 
         return page;
+    }
+
+    function getCurrentPage() {
+        return Math.round(document.getElementById("text-container").scrollLeft / getViewport().width);
     }
 
     function goToHeading(eId) {
@@ -408,16 +411,12 @@ var Renderer = window.Renderer = (function() {
     }
 
     var getHeadingsOnPage = function() {
-        return getHeadings()
-            .filter(collidesWithBook)
-            .map(function(h) { return h.id; })
-            .filter(function(hId) { return hId != null });
+        return renderObjectsByPage[getCurrentPage()] //grab the list of IDs on the current page
+            .filter(function(id) {return id[0] == "c" || id[0] == "e";}); //heading IDs start with c or e
     }
 
     var getReflowCheckpointsOnPage = function() {
-        return getHeadingsAndPs()
-            .filter(collidesWithBook)
-            .map(function(e) { return e.id; })
+        return renderObjectsByPage[getCurrentPage()]
             .filter(function(eId) { return eId != null });
     }
 
@@ -490,6 +489,9 @@ var Renderer = window.Renderer = (function() {
     };
 
     var isAtTop = function(heading) {
+        if(!!renderObjectsByPage[getPageOfId(heading.id)])
+            return heading.id == renderObjectsByPage[getPageOfId(heading.id)][0] || heading.offsetTop == 0;
+
         var topElem = getHeadingsAndPs().filter(collidesWithBook).filter(function(elem) {
             return hasContent(elem);
         })[0];
@@ -508,10 +510,12 @@ var Renderer = window.Renderer = (function() {
         var headingsOnPage = getHeadingsOnPage();
         if(headingsOnPage.length > 0) return null;
 
-        return Array.prototype.reduce.call(storyTextArea.querySelectorAll("h1,h2,h3,h4,h5,h6"), function(acc, h) {
-            if(h.offsetLeft < Math.round(storyTextArea.scrollLeft)) { return h.id; }
-            else { return acc; }
-        }, null);
+        for(var i=getCurrentPage(); i>=0; i--) {
+            var headings = renderObjectsByPage[i].filter(function(id) {
+                return id[0] == "c" || id[0] == "e";
+            });
+            if(headings.length > 0) return headings[headings.length-1];
+        }
 
     };
 
