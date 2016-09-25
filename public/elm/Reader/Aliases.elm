@@ -1,11 +1,13 @@
 module Reader.Aliases exposing (..)
 
+import Array exposing (Array)
 import Core.Utils.SelectionList exposing (SelectionList)
 
 type alias ChapterID        = Int
 type alias CurrentPage      = PageNum
 type alias FocusedElementID = RenderElementID
 type alias HeadingIDsOnPage = List RenderElementID
+type alias IdsByPage        = Array (List RenderElementID)
 type alias LocationHash     = String
 type alias LocationHost     = String
 type alias NumPages         = Int

@@ -63,21 +63,43 @@ var RendererInterface = (function() {
             }
 
             Renderer.on("rendered", function(renderData) {
+                //clone idsByPage because... uh... well, who knows, but Elm's ports were confused without this
+                var idsByPage = [];
+                renderData.idsByPage.forEach(function(arr) {
+                    var newArr = [];
+                    arr.forEach(function(elem) {
+                        newArr.push(elem);
+                    });
+                    idsByPage.push(newArr);
+                });
+
                 Reader.ports.chapterRendered.send(
                     { "currentPage" : renderData.currentPage
                     , "numPages" : renderData.numPages
                     , "focusedHeading" : null
                     , "headingsOnPage" : Array.prototype.filter.call(renderData.headingsOnPage, function() { return true; })
+                    , "idsByPage": idsByPage//renderData.idsByPage
                     }
                 );
             });
 
             Renderer.on("reflowed", function(renderData) {
+                //clone idsByPage because... uh... well, who knows, but Elm's ports were confused without this
+                var idsByPage = [];
+                renderData.idsByPage.forEach(function(arr) {
+                    var newArr = [];
+                    arr.forEach(function(elem) {
+                        newArr.push(elem);
+                    });
+                    idsByPage.push(newArr);
+                });
+
                 Reader.ports.chapterReflowed.send(
                     { "currentPage" : renderData.currentPage
                     , "numPages" : renderData.numPages
                     , "focusedHeading" : renderData.focusedHeading
                     , "headingsOnPage" : Array.prototype.filter.call(renderData.headingsOnPage, function() { return true; })
+                    , "idsByPage": idsByPage
                     }
                 );
             });

@@ -84,9 +84,9 @@ keyToMsg model key =
             _  -> NoOp
 
 renderResultToMsg : Bool -> RenderResult -> Msg
-renderResultToMsg isReflow { currentPage, numPages, focusedHeading, headingsOnPage } =
+renderResultToMsg isReflow { currentPage, numPages, focusedHeading, headingsOnPage, idsByPage } =
     if isReflow then
-        ChapterHasReflowed currentPage numPages focusedHeading headingsOnPage
+        ChapterHasReflowed currentPage numPages focusedHeading headingsOnPage idsByPage
     else
-        ChapterHasRendered currentPage numPages headingsOnPage
+        ChapterHasRendered currentPage numPages headingsOnPage idsByPage
 

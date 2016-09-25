@@ -1,6 +1,7 @@
 module Reader.Model exposing (..)
 
 import Dict exposing (Dict)
+import Array exposing (Array)
 
 import Reader.Components.ShareDialog as ShareDialog
 import Reader.Components.CreditsRoll as CreditsRoll
@@ -39,6 +40,7 @@ type alias Model =
     , creditsRoll       : CreditsRoll.Model
     , contactModal      : ContactModal.Model
     , headingIDsOnPage  : List RenderElementID
+    , idsByPage         : IdsByPage
     , lastNavAction     : LastNavAction
     , state             : State
     , tocExpanded       : Bool
@@ -58,6 +60,7 @@ empty =
     , creditsRoll       = CreditsRoll.empty
     , contactModal      = ContactModal.empty
     , headingIDsOnPage  = []
+    , idsByPage         = Array.empty
     , lastNavAction     = PageTurn (PageNum 0)
     , state             = Loading
     , tocExpanded       = False

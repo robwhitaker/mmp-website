@@ -1,5 +1,6 @@
 port module Reader.Ports exposing (..)
 
+import Array exposing (Array)
 --import Reader.Model exposing (..)
 import Reader.Aliases exposing (..)
 import Keyboard exposing (KeyCode)
@@ -13,6 +14,7 @@ type alias RenderResult =
     , numPages       : NumPages
     , focusedHeading : Maybe RenderElementID
     , headingsOnPage : List RenderElementID
+    , idsByPage      : IdsByPage
     }
 
 type alias RenderData =

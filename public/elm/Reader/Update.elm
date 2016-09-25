@@ -261,7 +261,7 @@ update msg model =
                 newModel
                     ! [ renderCmd False { newModel | toc = newTocUnchecked } ]
 
-        ChapterHasRendered currentPage numPages headingIds ->
+        ChapterHasRendered currentPage numPages headingIds idsByPage ->
             let (_, newToc, cmds) =
                     case model.lastNavAction of
                         PageJump _ ->
@@ -281,12 +281,13 @@ update msg model =
                         , state = Ready
                         , headingIDsOnPage = headingIds
                         , toc = newToc
+                        , idsByPage = idsByPage
                     }
             in
                 newModel
                     ! [ switchSelectedIdCmd True model newModel, cmds ]
 
-        ChapterHasReflowed currentPage numPages maybeFocusedId headingIds ->
+        ChapterHasReflowed currentPage numPages maybeFocusedId headingIds idsByPage ->
             let newFocusedId =
                     if List.length headingIds == 0 && maybeFocusedId /= Nothing then
                         maybeFocusedId ? model.toc.selected.id
@@ -308,6 +309,7 @@ update msg model =
                         , state = Ready
                         , toc = newToc
                         , headingIDsOnPage = headingIds
+                        , idsByPage = idsByPage
                     }
             in
                 newModel

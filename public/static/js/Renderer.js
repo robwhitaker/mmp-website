@@ -299,13 +299,14 @@ var Renderer = window.Renderer = (function() {
                         renderObjectsByPage[i].push(elem.id);
                     }
                 });
-                console.log(renderObjectsByPage);
+                console.log(typeof renderObjectsByPage);
 
                 listeners[(!!renderObj ? "rendered" : "reflowed")](
                     { numPages : numPages
                     , headingsOnPage : getHeadingsOnPage()
                     , focusedHeading : getFocusedHeading()
                     , currentPage : currentPage
+                    , idsByPage : renderObjectsByPage
                     }
                 );
 
