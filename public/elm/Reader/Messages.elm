@@ -23,8 +23,8 @@ type Msg
     | CreditsRollMsg (Modal.Msg CreditsRoll.Msg)
     | ContactModalMsg (Modal.Msg ContactModal.Msg)
     | Load (List Chapter) LocalStorageData LocationHash LocationHost
-    | ChapterHasRendered CurrentPage NumPages HeadingIDsOnPage IdsByPage
-    | ChapterHasReflowed CurrentPage NumPages (Maybe FocusedElementID) HeadingIDsOnPage IdsByPage
+    | ChapterHasRendered CurrentPage IdsByPage
+    | ChapterHasReflowed CurrentPage IdsByPage
     | UpdateHeadingsOnPage HeadingUpdate
     | ChangeSelectedHeading RenderElementID
     | Dropdown Dropdown.Msg

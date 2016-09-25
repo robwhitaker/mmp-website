@@ -11,9 +11,6 @@ import Reader.Views.ShareButtons as ShareButtons
 
 type alias RenderResult =
     { currentPage    : CurrentPage
-    , numPages       : NumPages
-    , focusedHeading : Maybe RenderElementID
-    , headingsOnPage : List RenderElementID
     , idsByPage      : IdsByPage
     }
 

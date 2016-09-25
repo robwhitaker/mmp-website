@@ -301,10 +301,7 @@ var Renderer = window.Renderer = (function() {
                 refreshCommentCount();
 
                 listeners[(!!renderObj ? "rendered" : "reflowed")](
-                    { numPages : numPages
-                    , headingsOnPage : getHeadingsOnPage()
-                    , focusedHeading : getFocusedHeading()
-                    , currentPage : currentPage
+                    { currentPage : currentPage
                     , idsByPage : renderObjectsByPage
                     }
                 );

@@ -26,6 +26,7 @@ import Reader.Components.ContactModal as ContactModal
 import String
 import Task
 import Process
+import Array
 
 ---- UPDATE ----
 
@@ -261,8 +262,10 @@ update msg model =
                 newModel
                     ! [ renderCmd False { newModel | toc = newTocUnchecked } ]
 
-        ChapterHasRendered currentPage numPages headingIds idsByPage ->
-            let (_, newToc, cmds) =
+        ChapterHasRendered currentPage idsByPage ->
+            let
+                headingIds = getHeadingsOnPage currentPage idsByPage
+                (_, newToc, cmds) =
                     case model.lastNavAction of
                         PageJump _ ->
                             (model.toc, model.toc, Cmd.none)
@@ -271,12 +274,11 @@ update msg model =
                                 gotoHeading model.toc.selected.id model.toc
                             else
                                 gotoHeading (List.head headingIds ? model.toc.selected.id) model.toc
-                --a = Debug.log "(OLD,NEWTOC)" <| (model.toc.selected.id, newToc.selected.id, model.lastNavAction, headings)
                 newModel =
                     { model
                         | pages =
                             { current = currentPage
-                            , total = numPages
+                            , total = Array.length idsByPage
                             }
                         , state = Ready
                         , headingIDsOnPage = headingIds
@@ -287,8 +289,28 @@ update msg model =
                 newModel
                     ! [ switchSelectedIdCmd True model newModel, cmds ]
 
-        ChapterHasReflowed currentPage numPages maybeFocusedId headingIds idsByPage ->
-            let newFocusedId =
+        ChapterHasReflowed currentPage idsByPage ->
+            let
+                headingIds = getHeadingsOnPage currentPage idsByPage
+
+                getPrevHeadingId : PageNum -> IdsByPage -> Maybe String
+                getPrevHeadingId pNum ids =
+                    if pNum < 0 then
+                        Nothing
+                    else
+                        let hs = getHeadingsOnPage pNum ids
+                            h  = List.head <| List.reverse hs
+                        in case h of
+                            Just hId -> Just hId
+                            Nothing  -> getPrevHeadingId (pNum-1) ids
+
+                maybeFocusedId =
+                    if List.length headingIds == 0 then
+                        getPrevHeadingId (currentPage-1) idsByPage
+                    else
+                        Nothing
+
+                newFocusedId =
                     if List.length headingIds == 0 && maybeFocusedId /= Nothing then
                         maybeFocusedId ? model.toc.selected.id
                     else if List.member model.toc.selected.id headingIds then
@@ -304,7 +326,7 @@ update msg model =
                     { model
                         | pages =
                             { current = currentPage
-                            , total = numPages
+                            , total = Array.length idsByPage
                             }
                         , state = Ready
                         , toc = newToc
@@ -409,6 +431,7 @@ gotoHeading headingID toc =
                 in Just (tocAtHeadingId, tocWithContentMarked, Cmd.batch [ cmds, setBookmarkInStorage tocAtHeadingId.selected.id ] )
     ) |> Maybe.withDefault (toc, toc, Cmd.none)
 
+
 markSelectedRead : TOC -> (TOC, Cmd Msg)
 markSelectedRead toc =
     let selectedIndex = SL.selectedIndex toc
@@ -437,3 +460,9 @@ markSelectedRead toc =
             )
             toc
             (setReadInStorage toc.selected.id)
+
+getHeadingsOnPage : PageNum -> IdsByPage -> List RenderElementID
+getHeadingsOnPage pageNum idsByPage =
+    Array.get pageNum idsByPage
+        |> Maybe.withDefault []
+        |> List.filter (\id -> String.startsWith "c" id || String.startsWith "e" id)
