@@ -55,8 +55,8 @@ main =
             \model -> Sub.batch
                 [ chapterRendered (renderResultToMsg False)
                 , chapterReflowed (renderResultToMsg True)
-                , headingsUpdated UpdateHeadingsOnPage
-                , pageSet (TurnPage << PageNum)
+                --, headingsUpdated UpdateHeadingsOnPage
+                --, pageSet (TurnPage << PageNum)
                 , inlineLinkClicked ChangeSelectedHeading
                 , inlineShareClicked ShowShareDialog
                 , keyPressedInReader (keyToMsg model)

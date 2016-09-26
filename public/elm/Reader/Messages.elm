@@ -25,7 +25,7 @@ type Msg
     | Load (List Chapter) LocalStorageData LocationHash LocationHost
     | ChapterHasRendered CurrentPage IdsByPage
     | ChapterHasReflowed CurrentPage IdsByPage
-    | UpdateHeadingsOnPage HeadingUpdate
+    --| UpdateHeadingsOnPage HeadingUpdate
     | ChangeSelectedHeading RenderElementID
     | Dropdown Dropdown.Msg
     | Dump String

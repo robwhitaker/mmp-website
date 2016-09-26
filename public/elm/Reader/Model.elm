@@ -14,7 +14,7 @@ import Core.Utils.SelectionList as SL exposing (SelectionList)
 type Direction
     = Forward
     | Backward
-    | PageNum Int
+    --| PageNum Int
 
 type LastNavAction
     = PageTurn Direction
@@ -61,7 +61,7 @@ empty =
     , contactModal      = ContactModal.empty
     , headingIDsOnPage  = []
     , idsByPage         = Array.empty
-    , lastNavAction     = PageTurn (PageNum 0)
+    , lastNavAction     = PageTurn Forward
     , state             = Loading
     , tocExpanded       = False
     , locationHost      = ""
