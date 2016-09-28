@@ -78,14 +78,6 @@ var RendererInterface = (function() {
                 );
             });
 
-            Renderer.on("pageTurned", function(headingsOnPage, headingAtTop) {
-                Reader.ports.headingsUpdated.send(
-                    { headingsOnPage : Array.prototype.filter.call(headingsOnPage, function() { return true; })
-                    , headingAtTop   : headingAtTop
-                    }
-                );
-            });
-
             Renderer.on("linkClick", function(link, id) {
                 switch(link) {
                     case "comments":
@@ -109,11 +101,6 @@ var RendererInterface = (function() {
 
             Renderer.on("keyPress", function(keyCode) {
                 Reader.ports.keyPressedInReader.send(keyCode);
-            });
-
-            Renderer.on("setPage", function(pageNum) {
-                console.log(pageNum)
-                Reader.ports.pageSet.send(pageNum);
             });
 
             Renderer.on("click", function() {
@@ -153,10 +140,6 @@ var RendererInterface = (function() {
         var data = JSON.parse(localStorage.getItem("MMP_ReaderData") || "{}");
         data["bookmark"] = eId;
         localStorage.setItem("MMP_ReaderData", JSON.stringify(data));
-    });
-
-    Reader.ports.jumpToEntry.subscribe(function(eId) {
-        Renderer.goToHeading(eId);
     });
 
     Reader.ports.setPage.subscribe(function(pageNum) {

@@ -82,7 +82,7 @@ update msg model =
                     ! [ switchSelectedIdCmd False model newModel, cmds ]
 
         TurnPage dir ->
-            if model.state == Rendering || model.state == TurningPage then
+            if model.state == Rendering then
                 model ! []
             else case dir of
                 Forward ->
@@ -102,7 +102,6 @@ update msg model =
                                 else
                                     { model
                                         | toc = newToc
-                                        , lastNavAction = PageTurn Forward
                                         , state = Rendering
                                     }
 
@@ -155,8 +154,6 @@ update msg model =
                                         , total = model.pages.total
                                         }
                                     , toc = newToc
-                                    , lastNavAction = PageTurn Forward
-                                    --, state = TurningPage
                                 }
                         in
                             newModel
@@ -186,7 +183,6 @@ update msg model =
                                 let newModel =
                                     { model
                                         | toc = newToc
-                                        , lastNavAction = PageTurn Backward
                                         , state = Rendering
                                     }
                                 in
@@ -225,8 +221,6 @@ update msg model =
                                         , total = model.pages.total
                                         }
                                     , toc = newToc
-                                    , lastNavAction = PageTurn Backward
-                                    --, state = TurningPage
                                 }
                         in
                             newModel
@@ -248,12 +242,6 @@ update msg model =
 
                             triggersRender = newToc.selected.chapter /= model.toc.selected.chapter
 
-                            lastNavAction =
-                                if newToc == model.toc then
-                                    model.lastNavAction
-                                else
-                                    PageJump newToc.selected.id
-
                             newPage =
                                 findPageOfId newToc.selected.id model.idsByPage 0 ? model.pages.current
 
@@ -265,7 +253,6 @@ update msg model =
                                         }
                                     , toc = newToc
                                     , tocExpanded = expanded
-                                    , lastNavAction = lastNavAction
                                     , state = if triggersRender then Rendering else model.state
                                 }
 
@@ -333,16 +320,6 @@ update msg model =
 
         ChapterHasRendered currentPage idsByPage ->
             let
-                headingIds = getHeadingsOnPage currentPage idsByPage
-                (_, newToc, cmds) =
-                    case model.lastNavAction of
-                        PageJump _ ->
-                            (model.toc, model.toc, Cmd.none)
-                        _ ->
-                            if List.member model.toc.selected.id headingIds then
-                                gotoHeading model.toc.selected.id model.toc
-                            else
-                                gotoHeading (List.head headingIds ? model.toc.selected.id) model.toc
                 newModel =
                     { model
                         | pages =
@@ -350,13 +327,11 @@ update msg model =
                             , total = Array.length idsByPage
                             }
                         , state = Ready
-                        , headingIDsOnPage = headingIds
-                        , toc = newToc
                         , idsByPage = idsByPage
                     }
             in
                 newModel
-                    ! [ switchSelectedIdCmd True model newModel, cmds ]
+                    ! [ switchSelectedIdCmd True model newModel ]
 
         ChapterHasReflowed currentPage idsByPage ->
             let
@@ -399,56 +374,11 @@ update msg model =
                             }
                         , state = Ready
                         , toc = newToc
-                        , headingIDsOnPage = headingIds
                         , idsByPage = idsByPage
                     }
             in
                 newModel
                     ! [ switchSelectedIdCmd False model newModel, cmds ]
-
-        --UpdateHeadingsOnPage { headingsOnPage, headingAtTop } ->
-        --    let newSelectedId =
-        --            case model.lastNavAction of
-        --                PageTurn dir ->
-        --                    case dir of
-        --                        Backward ->
-        --                            Maybe.oneOf
-        --                                [ (List.reverse >> List.head) headingsOnPage
-        --                                , (List.head model.headingIDsOnPage) `Maybe.andThen` (\firstIDOnPrevPage ->
-        --                                        SL.indexOf (.id >> (==) firstIDOnPrevPage) model.toc `Maybe.andThen` (\index ->
-        --                                            let tocAtIndex = SL.goto index model.toc
-        --                                                newToc = tocAtIndex |> untilContent SL.previous
-        --                                            in
-        --                                                if newToc.selected.chapter /= model.toc.selected.chapter then
-        --                                                    Just tocAtIndex.selected.id
-        --                                                else
-        --                                                    Just newToc.selected.id
-        --                                        )
-        --                                    )
-        --                                ] ? model.toc.selected.id
-
-        --                        _ -> model.toc.selected.id
-
-        --                PageJump headingID ->
-        --                    headingID
-
-        --        (_, newToc, cmds) = gotoHeading newSelectedId model.toc
-
-        --        newModel =
-        --            { model
-        --                | headingIDsOnPage = headingsOnPage
-        --                , toc = newToc
-        --                , state = Ready
-        --            }
-
-        --        forceUpdate =
-        --            case model.lastNavAction of
-        --                PageJump _ -> True
-        --                _ -> False
-
-        --    in
-        --        newModel
-        --            ! [ switchSelectedIdCmd forceUpdate model newModel, arrivedAtHeadingCmds, cmds ]
 
         Dump msg ->
             let dump = Debug.log "Dump: " msg

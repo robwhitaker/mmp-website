@@ -6,8 +6,6 @@ var Renderer = window.Renderer = (function() {
         "rendered"   : function() {},
         "reflowed"   : function() {},
         "linkClick"  : function() {},
-        "pageTurned" : function() {},
-        "setPage"    : function() {},
         "click"      : function() {}
     };
 
@@ -46,18 +44,8 @@ var Renderer = window.Renderer = (function() {
         var storyTextArea = document.getElementById("text-container");
         storyTextArea.scrollLeft = getViewport().width * pageNum;
         currentPositionPercentage = storyTextArea.scrollLeft / storyTextArea.scrollWidth;
-        var headings = getHeadingsOnPage();
         updateReflowCheckpointId();
-        var headingAtTop = false;
-        if(headings.length > 0) {
-            var h = document.getElementById(headings[0]);
-            headingAtTop = !!h ? isAtTop(h) : false;
-            console.log(h.id, h.offsetTop, headingAtTop)
-        }
-
         console.log("reflow checkpoint: ", reflowCheckpointId);
-
-        listeners.pageTurned(headings, headingAtTop);
     }
 
     function render(renderObj, eId, isPageTurnBack) {
@@ -354,11 +342,6 @@ var Renderer = window.Renderer = (function() {
         return Math.round(document.getElementById("text-container").scrollLeft / getViewport().width);
     }
 
-    function goToHeading(eId) {
-        var page = getPageOfId(eId);
-        if(page != null) listeners.setPage(page);
-    }
-
     //---- EVENT LISTENERS ----
 
     function updateDynamicStylesheet() {
@@ -564,7 +547,6 @@ var Renderer = window.Renderer = (function() {
         render              : render,
         refreshCommentCount : refreshCommentCount,
         goToPage            : goToPage,
-        goToHeading         : goToHeading,
         setSelectedId       : setSelectedId
     };
 })();

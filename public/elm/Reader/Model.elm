@@ -14,17 +14,11 @@ import Core.Utils.SelectionList as SL exposing (SelectionList)
 type Direction
     = Forward
     | Backward
-    --| PageNum Int
-
-type LastNavAction
-    = PageTurn Direction
-    | PageJump RenderElementID
 
 type State
     = Ready
     | Loading
     | Rendering
-    | TurningPage
 
 type BookmarkState
     = HasBookmark
@@ -39,9 +33,7 @@ type alias Model =
     , shareDialog       : ShareDialog.Model
     , creditsRoll       : CreditsRoll.Model
     , contactModal      : ContactModal.Model
-    , headingIDsOnPage  : List RenderElementID
     , idsByPage         : IdsByPage
-    , lastNavAction     : LastNavAction
     , state             : State
     , tocExpanded       : Bool
     , locationHost      : LocationHost
@@ -59,9 +51,7 @@ empty =
     , shareDialog       = ShareDialog.empty
     , creditsRoll       = CreditsRoll.empty
     , contactModal      = ContactModal.empty
-    , headingIDsOnPage  = []
     , idsByPage         = Array.empty
-    , lastNavAction     = PageTurn Forward
     , state             = Loading
     , tocExpanded       = False
     , locationHost      = ""

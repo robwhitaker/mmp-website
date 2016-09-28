@@ -74,8 +74,7 @@ keyToMsg model key =
         model.shareDialog.isVisible ||
         model.creditsRoll.isVisible ||
         model.contactModal.isVisible ||
-        model.state == Rendering ||
-        model.state == TurningPage then
+        model.state == Rendering then
         NoOp
     else
         case key of
