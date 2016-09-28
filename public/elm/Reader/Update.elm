@@ -235,82 +235,63 @@ update msg model =
                                   , cmds
                                   ]
 
-                --PageNum num ->
-                --    if num >= model.pages.total || num < 0 then
-                --        model ! []
-                --    else
-                --        let newModel =
-                --            { model
-                --                | pages =
-                --                    { current = num
-                --                    , total = model.pages.total
-                --                    }
-                --                , lastNavAction =
-                --                    case model.lastNavAction of
-                --                        PageJump _ -> model.lastNavAction
-                --                        _          -> PageTurn (PageNum num)
-                --            }
-                --        in
-                --            newModel
-                --                ! [ setPage newModel.pages.current ]
-
         Dropdown (maybeRenderElemID, maybeExpanded) ->
             let expanded = Maybe.withDefault model.tocExpanded maybeExpanded
-
-                nextUntilContent = untilContent SL.next
-
-                (newTocUnchecked, newToc, cmds) =
-                    gotoHeading (maybeRenderElemID ? "") model.toc
-
-                triggersRender = newToc.selected.chapter /= model.toc.selected.chapter
-
-                lastNavAction =
-                    if newToc == model.toc then
-                        model.lastNavAction
-                    else
-                        PageJump newToc.selected.id
-
-                newPage =
-                    findPageOfId newToc.selected.id model.idsByPage 0 ? model.pages.current
-
-                newModel =
-                    { model
-                        | pages =
-                            { current = newPage
-                            , total = model.pages.total
-                            }
-                        , toc = newToc
-                        , tocExpanded = expanded
-                        , lastNavAction = lastNavAction
-                        , state = if triggersRender then Rendering else model.state
-                    }
-
-                findPageOfId : RenderElementID -> IdsByPage -> Int -> Maybe Int
-                findPageOfId rId idsByPage index =
-                    case Array.get index idsByPage of
-                        Just list ->
-                            if List.member rId list then
-                                Just index
-                            else
-                                findPageOfId rId idsByPage (index+1)
-                        Nothing ->
-                            Nothing
-
-
-                nextCmd =
-                    if triggersRender then
-                        renderCmd False { newModel | toc = newTocUnchecked }
-                    else
-                        if maybeRenderElemID == Nothing then
-                            Cmd.none
-                        else
-                            setPage newModel.pages.current
             in
-                newModel
-                    ! [ switchSelectedIdCmd True model newModel
-                      , nextCmd
-                      , cmds
-                      ]
+                case maybeRenderElemID of
+                    Nothing -> { model | tocExpanded = expanded } ! []
+                    Just renderElemID ->
+                        let nextUntilContent = untilContent SL.next
+
+                            (newTocUnchecked, newToc, cmds) =
+                                gotoHeading renderElemID model.toc
+
+                            triggersRender = newToc.selected.chapter /= model.toc.selected.chapter
+
+                            lastNavAction =
+                                if newToc == model.toc then
+                                    model.lastNavAction
+                                else
+                                    PageJump newToc.selected.id
+
+                            newPage =
+                                findPageOfId newToc.selected.id model.idsByPage 0 ? model.pages.current
+
+                            newModel =
+                                { model
+                                    | pages =
+                                        { current = newPage
+                                        , total = model.pages.total
+                                        }
+                                    , toc = newToc
+                                    , tocExpanded = expanded
+                                    , lastNavAction = lastNavAction
+                                    , state = if triggersRender then Rendering else model.state
+                                }
+
+                            findPageOfId : RenderElementID -> IdsByPage -> Int -> Maybe Int
+                            findPageOfId rId idsByPage index =
+                                case Array.get index idsByPage of
+                                    Just list ->
+                                        if List.member rId list then
+                                            Just index
+                                        else
+                                            findPageOfId rId idsByPage (index+1)
+                                    Nothing ->
+                                        Nothing
+
+
+                            nextCmd =
+                                if triggersRender then
+                                    renderCmd False { newModel | toc = newTocUnchecked }
+                                else
+                                    setPage newModel.pages.current
+                        in
+                            newModel
+                                ! [ switchSelectedIdCmd True model newModel
+                                  , nextCmd
+                                  , cmds
+                                  ]
 
         Load chapters { readEntries, bookmark } locationHash locationHost ->
             let loadedModel = Reader.Model.Helpers.fromChapterList chapters (Dict.fromList readEntries)
