@@ -6,8 +6,6 @@ var Renderer = window.Renderer = (function() {
         "rendered"   : function() {},
         "reflowed"   : function() {},
         "linkClick"  : function() {},
-        "pageTurned" : function() {},
-        "setPage"    : function() {},
         "click"      : function() {}
     };
 
@@ -20,6 +18,8 @@ var Renderer = window.Renderer = (function() {
     var currentPositionPercentage = 0;
 
     var reflowCheckpointId = null;
+
+    var renderObjectsByPage = [];
 
     //---- PPREARE FOR RENDER ----
 
@@ -44,18 +44,8 @@ var Renderer = window.Renderer = (function() {
         var storyTextArea = document.getElementById("text-container");
         storyTextArea.scrollLeft = getViewport().width * pageNum;
         currentPositionPercentage = storyTextArea.scrollLeft / storyTextArea.scrollWidth;
-        var headings = getHeadingsOnPage();
         updateReflowCheckpointId();
-        var headingAtTop = false;
-        if(headings.length > 0) {
-            var h = document.getElementById(headings[0]);
-            headingAtTop = !!h ? isAtTop(h) : false;
-            console.log(h.id, h.offsetTop, headingAtTop)
-        }
-
         console.log("reflow checkpoint: ", reflowCheckpointId);
-
-        listeners.pageTurned(headings, headingAtTop);
     }
 
     function render(renderObj, eId, isPageTurnBack) {
@@ -189,6 +179,9 @@ var Renderer = window.Renderer = (function() {
 
         refreshCommentCount(true);
 
+        //make sure Firefox is displaying columns when we do this next part
+        firefoxReset();
+
         setTimeout(function renderIfReady() {
             //remove any placeholders before rerendering anything
             Array.prototype.map.call(storyTextArea.getElementsByClassName("placeholder"), function(placeholder) {
@@ -210,7 +203,7 @@ var Renderer = window.Renderer = (function() {
                 var headingRect = getBoundingClientRect(heading);
                 if(heading == null || headingRect == null) return;
                 var placeholder = document.createElement("div");
-                placeholder.style.height = (document.getElementById("text-container").getBoundingClientRect().height - headingRect.top) + "px"; //TODO: (maybe) make sure hRect.height exists
+                placeholder.style.height = (document.getElementById("text-container").getBoundingClientRect().height - headingRect.top) + "px";
                 placeholder.className = "placeholder";
                 (heading.parentElement || heading.parentNode).insertBefore(placeholder,heading); //TODO: double check on Element vs Node stuff
             }
@@ -228,6 +221,7 @@ var Renderer = window.Renderer = (function() {
                 if(isDangling(heading) && currentId != headingIds[0]) {
                     console.log("Found dangling heading: " + headingIds[0] + "; bumping to next page...");
                     prependPlaceholder(heading);
+                    firefoxReset(); //adding a placeholder may have spooked Firefox. Ensure correctness.
                     currentId = headingIds[0];
                 } else if(!isDangling(heading)) {
                     headingIds.shift();
@@ -271,18 +265,32 @@ var Renderer = window.Renderer = (function() {
 
                 currentPositionPercentage = storyTextArea.scrollLeft / storyTextArea.scrollWidth;
 
+                renderObjectsByPage = [];
+                var scrollPos = storyTextArea.scrollLeft;
+                var allElems = getHeadingsAndPs();
+                allElems.forEach(function(elem) {
+                    if(!hasContent(elem)) return;
+                    var rect = getBoundingClientRect(elem);
+                    var left = rect.left + scrollPos;
+                    var right = rect.right + scrollPos;
+                    var startPage = Math.round(left / getViewport().width);
+                    var endPage = Math.round(right / getViewport().width);
+                    for(var i=startPage; i < endPage; i++) {
+                        if(!renderObjectsByPage[i])
+                            renderObjectsByPage[i] = [];
+                        renderObjectsByPage[i].push(elem.id);
+                    }
+                });
+
                 //if not reflow, reassign reflow checkpoint. If it is a reflow, we want to stick to the current point for further reflows
                 if(!!renderObj) updateReflowCheckpointId();
                 console.log("reflow checkpoint: ", reflowCheckpointId);
 
-
                 refreshCommentCount();
 
                 listeners[(!!renderObj ? "rendered" : "reflowed")](
-                    { numPages : numPages
-                    , headingsOnPage : getHeadingsOnPage()
-                    , focusedHeading : getFocusedHeading()
-                    , currentPage : currentPage
+                    { currentPage : currentPage
+                    , idsByPage : renderObjectsByPage
                     }
                 );
 
@@ -330,9 +338,8 @@ var Renderer = window.Renderer = (function() {
         return page;
     }
 
-    function goToHeading(eId) {
-        var page = getPageOfId(eId);
-        if(page != null) listeners.setPage(page);
+    function getCurrentPage() {
+        return Math.round(document.getElementById("text-container").scrollLeft / getViewport().width);
     }
 
     //---- EVENT LISTENERS ----
@@ -383,17 +390,9 @@ var Renderer = window.Renderer = (function() {
         return Array.prototype.filter.call(storyTextArea.querySelectorAll("p,h1,h2,h3,h4,h5,h6"), function(t) { return !!t.id; });
     }
 
-    var getHeadingsOnPage = function() {
-        return getHeadings()
-            .filter(collidesWithBook)
-            .map(function(h) { return h.id; })
-            .filter(function(hId) { return hId != null });
-    }
-
     var getReflowCheckpointsOnPage = function() {
-        return getHeadingsAndPs()
-            .filter(collidesWithBook)
-            .map(function(e) { return e.id; })
+        console.log("reflowCheckpointsOnPage - page:",getCurrentPage(),renderObjectsByPage[getCurrentPage()],renderObjectsByPage);
+        return (renderObjectsByPage[getCurrentPage()] || []) //render objects on the page or empty list if there are none
             .filter(function(eId) { return eId != null });
     }
 
@@ -412,8 +411,6 @@ var Renderer = window.Renderer = (function() {
         var bookRect = getViewport();
 
         var result = !(bookRect.width * 0.75 <= itemRect.left || bookRect.width * 0.25 >= itemRect.right);
-
-        // if(result) { console.log(item.id,itemRect.left,itemRect.right); }
 
         return result;
     };
@@ -460,32 +457,20 @@ var Renderer = window.Renderer = (function() {
 
         var nextNotOnPage = nextRect.left > headingRect.left;
 
-        var headingAtTop = isAtTop(heading);
+        var topElem = getHeadingsAndPs().filter(collidesWithBook).filter(function(elem) {
+            return hasContent(elem);
+        })[0];
+
+        var topElemId = !!topElem ? topElem.id : null;
+
+        var headingAtTop = heading.id == topElemId || heading.offsetTop == 0;
 
         return nextNotOnPage && nextIsP && !headingAtTop;
     };
 
-    var isAtTop = function(heading) {
-        var topElem = getHeadingsAndPs().filter(collidesWithBook).filter(function(elem) {
-            return (elem.innerText || elem.textContent || "").trim() != "";
-        })[0];
-        var topElemId = !!topElem ? topElem.id : null;
-        return heading.id == topElemId || heading.offsetTop == 0;
+    var hasContent = function(elem) {
+        return (elem.innerText || elem.textContent || "").trim() != "";
     }
-
-    var getFocusedHeading = function() {
-        var storyTextArea = document.getElementById("text-container");
-        if(storyTextArea == null) return null;
-
-        var headingsOnPage = getHeadingsOnPage();
-        if(headingsOnPage.length > 0) return null;
-
-        return Array.prototype.reduce.call(storyTextArea.querySelectorAll("h1,h2,h3,h4,h5,h6"), function(acc, h) {
-            if(h.offsetLeft < Math.round(storyTextArea.scrollLeft)) { return h.id; }
-            else { return acc; }
-        }, null);
-
-    };
 
     var getTextContainerScrollWidth = function() {
         return document.getElementById('text-container').scrollWidth;
@@ -535,7 +520,6 @@ var Renderer = window.Renderer = (function() {
         render              : render,
         refreshCommentCount : refreshCommentCount,
         goToPage            : goToPage,
-        goToHeading         : goToHeading,
         setSelectedId       : setSelectedId
     };
 })();

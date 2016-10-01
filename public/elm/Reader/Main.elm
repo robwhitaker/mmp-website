@@ -55,8 +55,8 @@ main =
             \model -> Sub.batch
                 [ chapterRendered (renderResultToMsg False)
                 , chapterReflowed (renderResultToMsg True)
-                , headingsUpdated UpdateHeadingsOnPage
-                , pageSet (TurnPage << PageNum)
+                --, headingsUpdated UpdateHeadingsOnPage
+                --, pageSet (TurnPage << PageNum)
                 , inlineLinkClicked ChangeSelectedHeading
                 , inlineShareClicked ShowShareDialog
                 , keyPressedInReader (keyToMsg model)
@@ -74,8 +74,7 @@ keyToMsg model key =
         model.shareDialog.isVisible ||
         model.creditsRoll.isVisible ||
         model.contactModal.isVisible ||
-        model.state == Rendering ||
-        model.state == TurningPage then
+        model.state == Rendering then
         NoOp
     else
         case key of
@@ -84,9 +83,9 @@ keyToMsg model key =
             _  -> NoOp
 
 renderResultToMsg : Bool -> RenderResult -> Msg
-renderResultToMsg isReflow { currentPage, numPages, focusedHeading, headingsOnPage } =
+renderResultToMsg isReflow { currentPage, idsByPage } =
     if isReflow then
-        ChapterHasReflowed currentPage numPages focusedHeading headingsOnPage
+        ChapterHasReflowed currentPage idsByPage
     else
-        ChapterHasRendered currentPage numPages headingsOnPage
+        ChapterHasRendered currentPage idsByPage
 

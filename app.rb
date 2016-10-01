@@ -1,7 +1,6 @@
 require 'bundler'
 Bundler.require
 
-require 'sinatra'
 require 'rss'
 require 'logger'
 require 'time'
@@ -14,11 +13,13 @@ set :server => :puma,
     :show_exceptions => :after_handler,
     :public_folder => 'public'
 env = ''
+
 if File.file?('config/secrets.yml')
   env = YAML.load_file('config/secrets.yml')["rack_env"]
 else
   env = 'development'
 end
+
 databases = YAML.load(ERB.new(File.read('config/database.yml')).result)
 ActiveRecord::Base.establish_connection(databases[env])
 
@@ -63,6 +64,13 @@ get '/rss' do # rss (public chapters)
   @releases = rss_feed
   success_response
   builder :rss
+end
+
+post '/webhook' do
+  content_type :json
+
+  payload = JSON.parse(request.body.read)
+  log(payload)
 end
 
 post '/api/chapters' do # all chapters
@@ -189,30 +197,48 @@ def all_chapters_with_entries(type = "unrestricted")
   chapters_with_entries
 end
 
+def rss_content
+  all_content = []
+
+  Chapter.order(order: :asc).where('release_date <= ?', DateTime.now).each do |chapter|
+    entries = chapter.entries
+    chapter = chapter.as_json.deep_symbolize_keys
+    chapter[:level] = 0
+
+    all_content.push(chapter)
+    entries.each {|entry| all_content.push(entry.as_json.deep_symbolize_keys)}
+  end
+
+  all_content
+end
+
 def rss_feed
   feed = []
-  chapters = Chapter.order(release_date: :asc).where('release_date <= ?', DateTime.now)
+  release_stack = []
+  current_chapter_id = nil
 
-  chapters.each do |chapter|
-    release = []
-
-    if chapter.has_content?
-      feed.push([chapter])
+  rss_content.each do |sub_release|
+    if release_stack.empty? || sub_release[:level] > release_stack.last[:level]
+      release_stack.push(sub_release)
     else
-      release.push(chapter)
+      if release_stack.first[:id] != current_chapter_id
+        current_chapter_id = release_stack.first[:id]
+        release_stack.last[:use_chapter_link] = true
+      end
 
-      chapter.entries.each do |entry|
-        if entry.has_content?
-          release.push(entry)
-          feed.push(release)
-          release = []
-        else
-          release.push(entry)
+      feed.push(release_stack.clone)
+
+      release_stack.reverse.each do |element|
+        if sub_release[:level] <= element[:level]
+          release_stack.pop
         end
       end
+
+      release_stack.push(sub_release)
     end
   end
 
+  feed.push(release_stack.clone)
   feed
 end
 

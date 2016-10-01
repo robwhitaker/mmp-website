@@ -1,5 +1,6 @@
 port module Reader.Ports exposing (..)
 
+import Array exposing (Array)
 --import Reader.Model exposing (..)
 import Reader.Aliases exposing (..)
 import Keyboard exposing (KeyCode)
@@ -10,9 +11,7 @@ import Reader.Views.ShareButtons as ShareButtons
 
 type alias RenderResult =
     { currentPage    : CurrentPage
-    , numPages       : NumPages
-    , focusedHeading : Maybe RenderElementID
-    , headingsOnPage : List RenderElementID
+    , idsByPage      : IdsByPage
     }
 
 type alias RenderData =
@@ -31,10 +30,6 @@ port chapterRendered      : (RenderResult -> msg) -> Sub msg
 
 port chapterReflowed      : (RenderResult -> msg) -> Sub msg
 
-port headingsUpdated      : (HeadingUpdate -> msg) -> Sub msg
-
-port pageSet              : (PageNum -> msg) -> Sub msg
-
 port inlineLinkClicked    : (RenderElementID -> msg) -> Sub msg
 
 port inlineShareClicked   : (RenderElementID -> msg) -> Sub msg
@@ -52,8 +47,6 @@ port setTitle             : String -> Cmd msg
 port setReadInStorage     : RenderElementID -> Cmd msg
 
 port setBookmarkInStorage : RenderElementID -> Cmd msg
-
-port jumpToEntry          : RenderElementID -> Cmd msg
 
 port openSharePopup       : ShareButtons.Msg -> Cmd msg
 

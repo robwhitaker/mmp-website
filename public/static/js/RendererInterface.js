@@ -65,9 +65,7 @@ var RendererInterface = (function() {
             Renderer.on("rendered", function(renderData) {
                 Reader.ports.chapterRendered.send(
                     { "currentPage" : renderData.currentPage
-                    , "numPages" : renderData.numPages
-                    , "focusedHeading" : null
-                    , "headingsOnPage" : Array.prototype.filter.call(renderData.headingsOnPage, function() { return true; })
+                    , "idsByPage": cloneIdsByPage(renderData.idsByPage)
                     }
                 );
             });
@@ -75,17 +73,7 @@ var RendererInterface = (function() {
             Renderer.on("reflowed", function(renderData) {
                 Reader.ports.chapterReflowed.send(
                     { "currentPage" : renderData.currentPage
-                    , "numPages" : renderData.numPages
-                    , "focusedHeading" : renderData.focusedHeading
-                    , "headingsOnPage" : Array.prototype.filter.call(renderData.headingsOnPage, function() { return true; })
-                    }
-                );
-            });
-
-            Renderer.on("pageTurned", function(headingsOnPage, headingAtTop) {
-                Reader.ports.headingsUpdated.send(
-                    { headingsOnPage : Array.prototype.filter.call(headingsOnPage, function() { return true; })
-                    , headingAtTop   : headingAtTop
+                    , "idsByPage": cloneIdsByPage(renderData.idsByPage)
                     }
                 );
             });
@@ -113,11 +101,6 @@ var RendererInterface = (function() {
 
             Renderer.on("keyPress", function(keyCode) {
                 Reader.ports.keyPressedInReader.send(keyCode);
-            });
-
-            Renderer.on("setPage", function(pageNum) {
-                console.log(pageNum)
-                Reader.ports.pageSet.send(pageNum);
             });
 
             Renderer.on("click", function() {
@@ -157,10 +140,6 @@ var RendererInterface = (function() {
         var data = JSON.parse(localStorage.getItem("MMP_ReaderData") || "{}");
         data["bookmark"] = eId;
         localStorage.setItem("MMP_ReaderData", JSON.stringify(data));
-    });
-
-    Reader.ports.jumpToEntry.subscribe(function(eId) {
-        Renderer.goToHeading(eId);
     });
 
     Reader.ports.setPage.subscribe(function(pageNum) {
@@ -241,6 +220,20 @@ var RendererInterface = (function() {
     Reader.ports.setSelectedId.subscribe(function(sId) {
         Renderer.setSelectedId(sId);
     });
+
+    //HELPERS
+    function cloneIdsByPage(inArr) {
+        //clone idsByPage because... uh... well, who knows, but Elm's ports were confused without this
+        var idsByPage = [];
+        inArr.forEach(function(arr) {
+            var newArr = [];
+            arr.forEach(function(elem) {
+                newArr.push(elem);
+            });
+            idsByPage.push(newArr);
+        });
+        return idsByPage;
+    }
 
     return { init : init };
 

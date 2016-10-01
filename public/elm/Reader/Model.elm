@@ -1,6 +1,7 @@
 module Reader.Model exposing (..)
 
 import Dict exposing (Dict)
+import Array exposing (Array)
 
 import Reader.Components.ShareDialog as ShareDialog
 import Reader.Components.CreditsRoll as CreditsRoll
@@ -13,17 +14,11 @@ import Core.Utils.SelectionList as SL exposing (SelectionList)
 type Direction
     = Forward
     | Backward
-    | PageNum Int
-
-type LastNavAction
-    = PageTurn Direction
-    | PageJump RenderElementID
 
 type State
     = Ready
     | Loading
     | Rendering
-    | TurningPage
 
 type BookmarkState
     = HasBookmark
@@ -38,8 +33,7 @@ type alias Model =
     , shareDialog       : ShareDialog.Model
     , creditsRoll       : CreditsRoll.Model
     , contactModal      : ContactModal.Model
-    , headingIDsOnPage  : List RenderElementID
-    , lastNavAction     : LastNavAction
+    , idsByPage         : IdsByPage
     , state             : State
     , tocExpanded       : Bool
     , locationHost      : LocationHost
@@ -57,8 +51,7 @@ empty =
     , shareDialog       = ShareDialog.empty
     , creditsRoll       = CreditsRoll.empty
     , contactModal      = ContactModal.empty
-    , headingIDsOnPage  = []
-    , lastNavAction     = PageTurn (PageNum 0)
+    , idsByPage         = Array.empty
     , state             = Loading
     , tocExpanded       = False
     , locationHost      = ""
