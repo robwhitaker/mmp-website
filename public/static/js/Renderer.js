@@ -390,13 +390,9 @@ var Renderer = window.Renderer = (function() {
         return Array.prototype.filter.call(storyTextArea.querySelectorAll("p,h1,h2,h3,h4,h5,h6"), function(t) { return !!t.id; });
     }
 
-    var getHeadingsOnPage = function() {
-        return renderObjectsByPage[getCurrentPage()] //grab the list of IDs on the current page
-            .filter(function(id) {return id[0] == "c" || id[0] == "e";}); //heading IDs start with c or e
-    }
-
     var getReflowCheckpointsOnPage = function() {
-        return renderObjectsByPage[getCurrentPage()]
+        console.log("reflowCheckpointsOnPage - page:",getCurrentPage(),renderObjectsByPage[getCurrentPage()],renderObjectsByPage);
+        return (renderObjectsByPage[getCurrentPage()] || []) //render objects on the page or empty list if there are none
             .filter(function(eId) { return eId != null });
     }
 
@@ -415,8 +411,6 @@ var Renderer = window.Renderer = (function() {
         var bookRect = getViewport();
 
         var result = !(bookRect.width * 0.75 <= itemRect.left || bookRect.width * 0.25 >= itemRect.right);
-
-        // if(result) { console.log(item.id,itemRect.left,itemRect.right); }
 
         return result;
     };
@@ -463,41 +457,20 @@ var Renderer = window.Renderer = (function() {
 
         var nextNotOnPage = nextRect.left > headingRect.left;
 
-        var headingAtTop = isAtTop(heading);
+        var topElem = getHeadingsAndPs().filter(collidesWithBook).filter(function(elem) {
+            return hasContent(elem);
+        })[0];
+
+        var topElemId = !!topElem ? topElem.id : null;
+
+        var headingAtTop = heading.id == topElemId || heading.offsetTop == 0;
 
         return nextNotOnPage && nextIsP && !headingAtTop;
     };
 
-    var isAtTop = function(heading) {
-        if(!!renderObjectsByPage[getPageOfId(heading.id)])
-            return heading.id == renderObjectsByPage[getPageOfId(heading.id)][0] || heading.offsetTop == 0;
-
-        var topElem = getHeadingsAndPs().filter(collidesWithBook).filter(function(elem) {
-            return hasContent(elem);
-        })[0];
-        var topElemId = !!topElem ? topElem.id : null;
-        return heading.id == topElemId || heading.offsetTop == 0;
-    }
-
     var hasContent = function(elem) {
         return (elem.innerText || elem.textContent || "").trim() != "";
     }
-
-    var getFocusedHeading = function() {
-        var storyTextArea = document.getElementById("text-container");
-        if(storyTextArea == null) return null;
-
-        var headingsOnPage = getHeadingsOnPage();
-        if(headingsOnPage.length > 0) return null;
-
-        for(var i=getCurrentPage(); i>=0; i--) {
-            var headings = renderObjectsByPage[i].filter(function(id) {
-                return id[0] == "c" || id[0] == "e";
-            });
-            if(headings.length > 0) return headings[headings.length-1];
-        }
-
-    };
 
     var getTextContainerScrollWidth = function() {
         return document.getElementById('text-container').scrollWidth;
