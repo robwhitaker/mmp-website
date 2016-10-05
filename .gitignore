@@ -16,7 +16,7 @@ Gemfile.lock
 
 ### Assorted ###
 config/database.yml
-config/secret.yml
+config/secrets.yml
 log
 var
 *.xcf
