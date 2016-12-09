@@ -9,9 +9,8 @@ import Mouse
 import Reader.Ports
 
 import Task exposing (Task)
-
 import Html exposing (Html)
-import Html.App
+import Http
 
 import Core.Utils.SelectionList as SL
 import Core.Utils.MaybeExtra exposing (..)
@@ -34,20 +33,21 @@ import Core.Models.Chapter as Chapter
 import Debug
 
 init : Flags -> (Model, Cmd Msg)
-init { localStorage, hash, host }=
-    (,)
-        Reader.Model.empty
-        (Requests.send Nothing Requests.Get (Json.list Chapter.decoder) "/chapters"
-            |> Task.perform
-                (\_ -> NoOp)
-                (\chapters -> Load chapters localStorage hash host)
-        )
+init { localStorage, hash, host } =
+    let request = Requests.mkRequest Nothing Requests.Get (Json.list Chapter.decoder) "/chapters"
+        requestHandle =
+            Result.map (\chapters -> Load chapters localStorage hash host)
+            >> Result.withDefault NoOp
+    in
+        (,)
+            Reader.Model.empty
+            (Http.send requestHandle request)
 
 ---- WIRING ----
 
-main : Program Flags
+main : Program Flags Model Msg
 main =
-    Html.App.programWithFlags
+    Html.programWithFlags
         { init = init
         , update = update
         , view = view

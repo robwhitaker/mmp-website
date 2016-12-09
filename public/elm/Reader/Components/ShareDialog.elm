@@ -3,7 +3,6 @@ module Reader.Components.ShareDialog exposing (Model,empty,Msg(..),initInnerMode
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Html.App as Html
 
 import Json.Decode as Json
 
@@ -85,7 +84,7 @@ view model =
             [ class "url-container" ]
             [ input [ value <| model.locationHost ++ if model.shareFromHeading then "/#!/" ++ model.shareId else "" ] [] ]
         , input
-            [ type' "checkbox"
+            [ type_ "checkbox"
             , checked model.shareFromHeading
             , onCheck ToggleShareFromHeading
             ] []
