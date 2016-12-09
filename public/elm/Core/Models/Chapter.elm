@@ -2,7 +2,7 @@ module Core.Models.Chapter exposing (..)
 
 import Core.Models.Entry as Entry exposing (Entry)
 
-import Json.Decode as Decoder exposing (Decoder, (:=))
+import Json.Decode as Decoder exposing (Decoder, field)
 import Json.Encode as Encoder exposing (Value)
 
 type alias Chapter =
@@ -30,15 +30,15 @@ empty =
 
 decoder : Decoder Chapter
 decoder =
-    Decoder.object8 Chapter
-        ("id" := Decoder.maybe Decoder.int)
-        ("order" := Decoder.int)
-        ("stylesheet" := Decoder.string)
-        ("title" := Decoder.string)
-        ("content" := Decoder.string)
-        ("release_date" := Decoder.map (Maybe.withDefault "") (Decoder.maybe Decoder.string))
-        ("authors_note" := Decoder.string)
-        ("entries" := Decoder.list Entry.decoder)
+    Decoder.map8 Chapter
+        (field "id" <| Decoder.maybe Decoder.int)
+        (field "order" <| Decoder.int)
+        (field "stylesheet" <| Decoder.string)
+        (field "title" <| Decoder.string)
+        (field "content" <| Decoder.string)
+        (field "release_date" <| Decoder.map (Maybe.withDefault "") (Decoder.maybe Decoder.string))
+        (field "authors_note" <| Decoder.string)
+        (field "entries" <| Decoder.list Entry.decoder)
 
 encode : Chapter -> Value
 encode chapter =

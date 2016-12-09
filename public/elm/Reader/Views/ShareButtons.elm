@@ -5,6 +5,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
 import String
+import Tuple exposing (first,second)
 
 ---- TYPE ALIASES ----
 
@@ -56,8 +57,8 @@ mkShareLink shareButton =
         div [ class <| "share-btn " ++ shareButton.cssClass
             , onClick
                 { srcBtnClass = shareButton.cssClass
-                , width = fst shareButton.popupDimensions
-                , height = snd shareButton.popupDimensions
+                , width = first shareButton.popupDimensions
+                , height = second shareButton.popupDimensions
                 , endpoint = shareButton.endpoint
                 }
             ] btnContents

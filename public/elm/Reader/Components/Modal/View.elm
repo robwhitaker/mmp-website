@@ -1,6 +1,5 @@
 module Reader.Components.Modal.View exposing (view)
 
-import Html.App as Html
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)

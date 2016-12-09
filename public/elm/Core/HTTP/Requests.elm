@@ -1,4 +1,4 @@
-module Core.HTTP.Requests exposing (send, RequestType(..))
+module Core.HTTP.Requests exposing (mkRequest, RequestType(..))
 
 import Http
 import Json.Encode as Json
@@ -10,8 +10,8 @@ type RequestType = Post Json.Value | Get
 apiRoute : String
 apiRoute = "/api"
 
-send : Maybe String -> RequestType -> Decoder value -> String -> Task Http.Error value
-send secretKey reqType decoder endpoint =
+mkRequest : Maybe String -> RequestType -> Decoder value -> String -> Http.Request value
+mkRequest secretKey reqType decoder endpoint =
     let route = apiRoute ++ endpoint
         secretKeyValue =
             secretKey |> Maybe.map Json.string |> Maybe.withDefault Json.null
@@ -19,9 +19,9 @@ send secretKey reqType decoder endpoint =
         case reqType of
             Post payload ->
                 Http.post
-                    decoder
                     route
-                    (Http.string <| Json.encode 0 <| Json.object [("data", payload), ("secretKey", secretKeyValue)])
+                    (Http.stringBody "application/json" <| Json.encode 0 <| Json.object [("data", payload), ("secretKey", secretKeyValue)])
+                    decoder
 
             Get ->
-                Http.get decoder route
+                Http.get route decoder

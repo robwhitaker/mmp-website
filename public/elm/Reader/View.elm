@@ -13,7 +13,6 @@ import Reader.Views.ShareButtons as ShareButtons
 import Reader.Components.Modal.View as Modal
 import Reader.Components.Modal.Messages as Modal
 
-import Html.App as Html
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -154,13 +153,13 @@ follow =
                     , target "_blank"
                     ]
                     [ div [ id "mc_embed_signup_scroll" ]
-                        [ input [ class "email", id "mce-EMAIL", name "EMAIL", placeholder "email address", required True, type' "email", value "" ] []
+                        [ input [ class "email", id "mce-EMAIL", name "EMAIL", placeholder "email address", required True, type_ "email", value "" ] []
                         , div
                             [ attribute "aria-hidden" "true", attribute "style" "position: absolute; left: -5000px;" ]
-                            [ input [ name "b_{{% mailchimp.u %}}_{{% mailchimp.id %}}", tabindex -1, type' "text", value "" ] [] ]
+                            [ input [ name "b_{{% mailchimp.u %}}_{{% mailchimp.id %}}", tabindex -1, type_ "text", value "" ] [] ]
                         , div
                             [ class "clear" ]
-                            [ input [ class "button", id "mc-embedded-subscribe", name "subscribe", type' "submit", value "Subscribe" ] [] ]
+                            [ input [ class "button", id "mc-embedded-subscribe", name "subscribe", type_ "submit", value "Subscribe" ] [] ]
                         ]
                     ]
                 ]

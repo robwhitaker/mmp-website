@@ -2,5 +2,5 @@
 lock '3.6.1'
 
 set :application, 'mmp'
-set :repo_url, 'git@github.com:robwhitaker/MMPWebsiteV2.git'
+set :repo_url, 'git@github.com:robwhitaker/mmp-website.git'
 set :bundle_without, [:development, :test]

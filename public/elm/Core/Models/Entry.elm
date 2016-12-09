@@ -1,6 +1,6 @@
 module Core.Models.Entry exposing (..)
 
-import Json.Decode as Decoder exposing (Decoder, (:=))
+import Json.Decode as Decoder exposing (Decoder, field)
 import Json.Encode as Encoder exposing (Value)
 
 type alias Entry =
@@ -28,15 +28,15 @@ empty =
 
 decoder : Decoder Entry
 decoder =
-    Decoder.object8 Entry
-        ("id" := Decoder.maybe Decoder.int)
-        ("chapter_id" := Decoder.int)
-        ("level" := Decoder.int)
-        ("order" := Decoder.int)
-        ("title" := Decoder.string)
-        ("content" := Decoder.string)
-        ("release_date" := Decoder.map (Maybe.withDefault "") (Decoder.maybe Decoder.string))
-        ("authors_note" := Decoder.string)
+    Decoder.map8 Entry
+        (field "id" <| Decoder.maybe Decoder.int)
+        (field "chapter_id" <| Decoder.int)
+        (field "level" <| Decoder.int)
+        (field "order" <| Decoder.int)
+        (field "title" <| Decoder.string)
+        (field "content" <| Decoder.string)
+        (field "release_date" <| Decoder.map (Maybe.withDefault "") (Decoder.maybe Decoder.string))
+        (field "authors_note" <| Decoder.string)
 
 encode : Entry -> Value
 encode entry =

@@ -43,7 +43,7 @@ update  msg model =
                         | isFading = True
                         , innerComponent = { innerComponent | model = newComponentModel }
                     }
-                        ! [ (Process.sleep model.fadeOutDuration `Task.andThen` \_ -> Task.succeed HideModal) |> Task.perform (\_ -> NoOp) identity
+                        ! [ (Process.sleep model.fadeOutDuration |> Task.andThen (\_ -> Task.succeed HideModal)) |> Task.perform identity
                           , Cmd.map PassMsgToComponent cmds
                           ]
                 else
@@ -60,10 +60,10 @@ update  msg model =
                         TriggerFade -> FadeModal
                         TriggerHide -> HideModal
                         None        -> NoOp
-                (newModel', newCmds') = update action newModel
+                (newModel_, newCmds_) = update action newModel
             in
-                newModel'
-                    ! [ newCmds, newCmds']
+                newModel_
+                    ! [ newCmds, newCmds_]
 
 
         NoOp ->

@@ -197,10 +197,10 @@ update msg model =
                             lastHeading = List.head <| getHeadingsOnPage model.pages.current model.idsByPage
 
                             newSelectedId =
-                                Maybe.oneOf
+                                oneOf
                                     [ (List.reverse >> List.head) headingsOnPage
-                                    , lastHeading `Maybe.andThen` (\firstIDOnPrevPage ->
-                                            SL.indexOf (.id >> (==) firstIDOnPrevPage) model.toc `Maybe.andThen` (\index ->
+                                    , lastHeading |> Maybe.andThen (\firstIDOnPrevPage ->
+                                            SL.indexOf (.id >> (==) firstIDOnPrevPage) model.toc |> Maybe.andThen (\index ->
                                                 let tocAtIndex = SL.goto index model.toc
                                                     newToc = tocAtIndex |> untilContent SL.previous
                                                 in
@@ -287,7 +287,7 @@ update msg model =
                         |> String.toLower
                         |> Regex.find (Regex.AtMost 1) (Regex.regex "#!/?([ec][0-9]+)|(latest)")
                         |> List.head
-                        |> Maybe.map (.submatches >> Maybe.oneOf)
+                        |> Maybe.map (.submatches >> oneOf)
                         |>  (\megaMaybe ->
                                 case megaMaybe of
                                     (Just (Just id)) -> id
@@ -301,7 +301,7 @@ update msg model =
                     else
                         paramID
 
-                selectedID = Maybe.oneOf
+                selectedID = oneOf
                     [ Maybe.map (always targetID) (SL.indexOf (.id >> (==) targetID) loadedModel.toc)
                     , bookmark
                     ] ? ""
@@ -395,7 +395,7 @@ untilContent traverse toc =
 
 gotoHeading : RenderElementID -> TOC -> (TOC, TOC, Cmd Msg) --(@headingID,@contentAfterHeadingID,setStorageCmds)
 gotoHeading headingID toc =
-    SL.indexOf (.id >> (==) headingID) toc `Maybe.andThen` (\index ->
+    SL.indexOf (.id >> (==) headingID) toc |> Maybe.andThen (\index ->
         let tocAtHeadingId = SL.goto index toc
             tocWithContent =
                 if tocAtHeadingId.selected.body == "" then

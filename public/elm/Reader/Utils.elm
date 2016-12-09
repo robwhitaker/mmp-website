@@ -5,6 +5,8 @@ import Date
 import Time exposing (Time)
 import Regex
 
+import Tuple exposing (first)
+
 import Core.Utils.MaybeExtra exposing (..)
 
 import Core.Utils.SelectionList as SL exposing (SelectionList)
@@ -21,7 +23,7 @@ selectedTitleFromSL sl =
             else
                 (acc, lastLevel)
         ) ([(sl.selected.level, stripTags sl.selected.heading)], sl.selected.level)
-    |> fst
+    |> first
     |> List.foldl (\(lvl, heading) (section, title) ->
             let str = String.trim heading
                 splitStr = Regex.replace (Regex.AtMost 1) (Regex.regex "\\.\\s+") (always "<~!~>^^%") str

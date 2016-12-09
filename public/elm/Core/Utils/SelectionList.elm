@@ -63,16 +63,16 @@ toList sl =
 indexOf : (a -> Bool) -> SelectionList a -> Maybe Int
 indexOf pred sl =
     let
-        indexOf' index list =
+        indexOf_ index list =
             case List.head list of
                 Just head ->
                     if pred head then
                         Just index
                     else
-                        indexOf' (index+1) (Maybe.withDefault [] <| List.tail list)
+                        indexOf_ (index+1) (Maybe.withDefault [] <| List.tail list)
                 Nothing -> Nothing
     in
-        indexOf' 0 (toList sl)
+        indexOf_ 0 (toList sl)
 
 traverseFromSelectedUntil : (SelectionList a -> SelectionList a) -> (a -> Bool) -> SelectionList a -> Maybe (SelectionList a)
 traverseFromSelectedUntil traverse pred sl =
