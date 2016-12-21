@@ -29,6 +29,7 @@ type Msg
     | ChangeSelectedHeading RenderElementID
     | Dropdown Dropdown.Msg
     | Dump String
+    | Ping
     | NoOp
 
 debugLog : String -> Msg -> Msg

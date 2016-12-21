@@ -34,6 +34,8 @@ port inlineLinkClicked    : (RenderElementID -> msg) -> Sub msg
 
 port inlineShareClicked   : (RenderElementID -> msg) -> Sub msg
 
+port ping                 : (String -> msg) -> Sub msg
+
 -- OUTBOUND ----
 
 port setPage              : PageNum -> Cmd msg
@@ -55,3 +57,5 @@ port rollCredits          : Int -> Cmd msg
 port setScrollEnabled     : Bool -> Cmd msg
 
 port setSelectedId        : RenderElementID -> Cmd msg
+
+port pingback             : Bool -> Cmd msg

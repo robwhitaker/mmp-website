@@ -384,6 +384,9 @@ update msg model =
             let dump = Debug.log "Dump: " msg
             in model ! []
 
+        Ping ->
+            model ! [ pingback True ]
+
         NoOp -> model ! []
 
 ---- HELPERS ----

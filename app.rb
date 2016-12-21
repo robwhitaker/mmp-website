@@ -127,12 +127,12 @@ end
 
 def success_response
   status 200
-  body '{"data": 1}'
+  body '{ "data": 1 }'
 end
 
 def failure_response
   status 418
-  body '{"data": 0}'
+  body '{ "data": 0 }'
 end
 
 def log(payload)
@@ -140,6 +140,8 @@ def log(payload)
     f.puts(payload)
   end
 end
+
+private
 
 def authorized?(string)
   if File.file?('config/secrets.yml')
@@ -255,4 +257,15 @@ def diff_entry_ids(chapter_id, entries)
   end
 
   all_entry_ids - given_entry_ids
+end
+
+def error_email(message)
+  Pony.mail({
+    :to => 'larouxn@gmail.com',
+    :from => 'admin@midnightmurderparty.com',
+    :subject => 'Error!',
+    :body => message,
+    :via => :sendmail,
+    :via_options => { :location  => '/usr/sbin/sendmail' }
+  })
 end

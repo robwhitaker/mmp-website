@@ -57,7 +57,6 @@ namespace :deploy do
     end
   end
 
-  # before  :deploy,                 'deploy:check_revision'
   before  :deploy,                 'rvm1:install:gems'
   before  :deploy,                 'deploy:staging_assets'
   after   'deploy:staging_assets', 'deploy:git_pull'
