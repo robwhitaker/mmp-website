@@ -63,6 +63,7 @@ main =
                 , Keyboard.downs (keyToMsg model)
                 , mouseClickedInReader (\_ -> Dropdown (Nothing, Just False))
                 , Mouse.clicks (\_ -> Dropdown (Nothing, Just False))
+                , ping (always Ping)
                 ]
         }
 

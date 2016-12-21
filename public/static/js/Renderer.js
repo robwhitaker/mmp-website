@@ -1,4 +1,6 @@
 var Renderer = window.Renderer = (function() {
+
+
     //---- VARS ----
 
     var listeners = {
@@ -6,7 +8,8 @@ var Renderer = window.Renderer = (function() {
         "rendered"   : function() {},
         "reflowed"   : function() {},
         "linkClick"  : function() {},
-        "click"      : function() {}
+        "click"      : function() {},
+        "error"      : function() {}
     };
 
     var keys = []; //list of currently pressed keys
@@ -21,7 +24,16 @@ var Renderer = window.Renderer = (function() {
 
     var renderObjectsByPage = [];
 
-    //---- PPREARE FOR RENDER ----
+    //---- PREPARE FOR RENDER ----
+
+    window.onerror = function(errorMsg, url, lineNumber, column, errorObj) {
+        listeners["error"]('Error: ' + errorMsg
+                          +' Script: ' + url
+                          +' Line: ' + lineNumber
+                          +' Column: ' + column
+                          +' StackTrace: ' +  errorObj
+                          );
+    };
 
     updateDynamicStylesheet();
 
@@ -304,12 +316,16 @@ var Renderer = window.Renderer = (function() {
     }
 
     function refreshCommentCount(forceFF) {
-        if(isFirefox() && !forceFF) return; //hack because Firefox is broken
-        if(!(DISQUSWIDGETS && DISQUSWIDGETS.getCount)) {
-            console.log("Error: DISQUSWIDGETS not defined.");
-        } else {
-            console.log("Refreshing comment counts.");
-            DISQUSWIDGETS.getCount({reset: true});
+        try {
+            if(isFirefox() && !forceFF) return; //hack because Firefox is broken
+            if(!(DISQUSWIDGETS && DISQUSWIDGETS.getCount)) {
+                console.log("Error: DISQUSWIDGETS not defined.");
+            } else {
+                console.log("Refreshing comment counts.");
+                DISQUSWIDGETS.getCount({reset: true});
+            }
+        } catch(e) {
+            listeners["error"](e);
         }
     }
 

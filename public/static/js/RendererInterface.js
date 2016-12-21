@@ -1,14 +1,23 @@
 var RendererInterface = (function() {
 
+    window.onerror = function(errorMsg, url, lineNumber, column, errorObj) {
+        logError('Error: ' + errorMsg
+                +' Script: ' + url
+                +' Line: ' + lineNumber
+                +' Column: ' + column
+                +' StackTrace: ' +  errorObj
+                );
+    };
+
     var rendererFrame;
     var Renderer;
+    var receivedPingback = false;
     var Reader = window.Reader = Elm.Reader.Main.fullscreen(
         { hash : window.location.hash
         , host : window.location.protocol + "//" + window.location.host
         , localStorage : getLocalStorage()
         }
     );
-
 
     window.location.hash = "";
 
@@ -28,10 +37,37 @@ var RendererInterface = (function() {
         };
     }
 
-    function init(rendererFrameId) {
+    function logError(msg) {
+        var err = new Error(msg);
+        handleError(err);
+    }
+
+    function handleError(err) {
+        //TODO: add Google Analytics
+        console.error(err);
+        receivedPingback = false;
+        Reader.ports.ping.send("");
+        setTimeout(showErrorPopup,1000);
+    }
+
+    function showErrorPopup() {
+        if(!receivedPingback) {
+            document.getElementById("error-popup").style.display = "block";
+        }
+    }
+
+    function init(rendererFrameId,errCounter) {
+        if(errCounter == null) errCounter = 0;
         rendererFrame = document.getElementById(rendererFrameId);
         if(!rendererFrame) {
-            setTimeout(function() { init(rendererFrameId); }, 100);
+            if(errCounter % 50 == 0 && errCounter > 0) {
+                logError("Renderer frame is taking a long time to appear. Current duration: " + (errCounter / 10) + " seconds.");
+            }
+            if(errCounter > 150) {
+                logError("Renderer frame appearance timeout: 15 seconds.");
+                return;
+            }
+            setTimeout(function() { init(rendererFrameId, errCounter + 1); }, 100);
             return;
         }
 
@@ -106,6 +142,10 @@ var RendererInterface = (function() {
             Renderer.on("click", function() {
                 Reader.ports.mouseClickedInReader.send(null);
             });
+
+            Renderer.on("error", function(err) {
+                handleError(err);
+            });
         });
     }
 
@@ -115,7 +155,7 @@ var RendererInterface = (function() {
             if(!Renderer || !Renderer.render) {
                 console.log("Renderer not loaded: Waiting...", errCounter);
                 if(errCounter++ >= 20 && !!rendererFrame) {
-                    console.log("Renderer timeout: Reloading frame...");
+                    logError("Renderer timeout (2 seconds): Reloading frame...");
                     errCounter = 0;
                     rendererFrame.src = "/renderer.html";
                 }
@@ -147,15 +187,19 @@ var RendererInterface = (function() {
     });
 
     Reader.ports.switchDisqusThread.subscribe(function(disqusData) {
-        if(!DISQUS || !DISQUS.reset) return;
-        DISQUS.reset({
-          reload: true,
-          config: function () {
-            this.page.identifier = disqusData.identifier;
-            this.page.url = disqusData.url;
-            this.page.title = disqusData.title;
-          }
-        });
+        try {
+            if(!DISQUS || !DISQUS.reset) return;
+            DISQUS.reset({
+              reload: true,
+              config: function () {
+                this.page.identifier = disqusData.identifier;
+                this.page.url = disqusData.url;
+                this.page.title = disqusData.title;
+              }
+            });
+        } catch(e) {
+            handleError(e);
+        }
     });
 
     Reader.ports.setTitle.subscribe(function(title) {
@@ -219,6 +263,10 @@ var RendererInterface = (function() {
 
     Reader.ports.setSelectedId.subscribe(function(sId) {
         Renderer.setSelectedId(sId);
+    });
+
+    Reader.ports.pingback.subscribe(function() {
+        receivedPingback = true;
     });
 
     //HELPERS
