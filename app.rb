@@ -30,6 +30,12 @@ configure do
   use Rack::CommonLogger, file
 end
 
+error 400..510 do
+  subject = "#{env} | Error Occurred"
+  message = "#{env} | Error:\n#{env['sinatra.error'].message}"
+  send_error_email(subject, message)
+end
+
 get '/' do
   send_file File.join(settings.public_folder, 'reader.html')
 end
@@ -125,6 +131,8 @@ post '/api/chapters/delete' do
   end
 end
 
+private
+
 def success_response
   status 200
   body '{ "data": 1 }'
@@ -140,8 +148,6 @@ def log(payload)
     f.puts(payload)
   end
 end
-
-private
 
 def authorized?(string)
   if File.file?('config/secrets.yml')
@@ -259,11 +265,11 @@ def diff_entry_ids(chapter_id, entries)
   all_entry_ids - given_entry_ids
 end
 
-def error_email(message)
+def send_error_email(subject, message)
   Pony.mail({
     :to => 'larouxn@gmail.com',
     :from => 'admin@midnightmurderparty.com',
-    :subject => 'Error!',
+    :subject => subject,
     :body => message,
     :via => :sendmail,
     :via_options => { :location  => '/usr/sbin/sendmail' }
