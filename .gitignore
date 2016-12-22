@@ -34,6 +34,7 @@ current
 repo
 revisions.log
 rvm1scripts
+/vendor
 
 ## Documentation cache and generated files:
 /.yardoc/

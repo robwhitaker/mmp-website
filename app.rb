@@ -12,22 +12,37 @@ require './models/entry'
 set :server => :puma,
     :show_exceptions => :after_handler,
     :public_folder => 'public'
-env = ''
+environment = ''
 
 if File.file?('config/secrets.yml')
-  env = YAML.load_file('config/secrets.yml')["rack_env"]
+  environment = YAML.load_file('config/secrets.yml')["rack_env"]
 else
-  env = 'development'
+  environment = 'development'
 end
 
 databases = YAML.load(ERB.new(File.read('config/database.yml')).result)
-ActiveRecord::Base.establish_connection(databases[env])
+ActiveRecord::Base.establish_connection(databases[environment])
+
+Logger.class_eval { alias :write :'<<' }
+app_log = File.join(File.dirname(File.expand_path(__FILE__)), 'var', 'log', 'app.log')
+app_logger = Logger.new(app_log)
+error_logger = File.new(File.join(File.dirname(File.expand_path(__FILE__)), 'var', 'log', 'error.log'), "a+")
+error_logger.sync = true
 
 configure do
-  enable :logging
-  file = File.new('var/log/app.log', 'a+')
-  file.sync = true
-  use Rack::CommonLogger, file
+  use Rack::CommonLogger, app_logger
+end
+
+before {
+  env["rack.errors"] =  error_logger
+}
+
+error 400..510 do
+  pretty_env = environment.to_s.capitalize
+  subject = "#{pretty_env} Error Occurred"
+  message = "#{Time.now}\nsinatra.error: #{env["sinatra.error"]}"
+
+  send_error_email(subject, message)
 end
 
 get '/' do
@@ -125,6 +140,8 @@ post '/api/chapters/delete' do
   end
 end
 
+private
+
 def success_response
   status 200
   body '{ "data": 1 }'
@@ -140,8 +157,6 @@ def log(payload)
     f.puts(payload)
   end
 end
-
-private
 
 def authorized?(string)
   if File.file?('config/secrets.yml')
@@ -259,11 +274,11 @@ def diff_entry_ids(chapter_id, entries)
   all_entry_ids - given_entry_ids
 end
 
-def error_email(message)
+def send_error_email(subject, message)
   Pony.mail({
     :to => 'larouxn@gmail.com',
     :from => 'admin@midnightmurderparty.com',
-    :subject => 'Error!',
+    :subject => subject,
     :body => message,
     :via => :sendmail,
     :via_options => { :location  => '/usr/sbin/sendmail' }
