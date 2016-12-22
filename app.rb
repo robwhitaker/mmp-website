@@ -39,16 +39,8 @@ before {
 
 error 400..510 do
   pretty_env = environment.to_s.capitalize
-  sinatra_error = "sinatra.error: #{env["sinatra.error"]}"
-  recently_logged_errors = "Recently logged errors:\n"
-
-  error_log = File.join(File.dirname(File.expand_path(__FILE__)), 'var', 'log', 'error.log')
-  File.open(error_log) do |f|
-    f.readlines[-5..1].each { |line| recently_logged_errors << "#{line}\n" }
-  end
-
   subject = "#{pretty_env} Error Occurred"
-  message = "#{sinatra_error}\n#{recently_logged_errors}"
+  message = "#{Time.now}\nsinatra.error: #{env["sinatra.error"]}"
 
   send_error_email(subject, message)
 end
