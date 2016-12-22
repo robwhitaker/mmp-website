@@ -12,27 +12,35 @@ require './models/entry'
 set :server => :puma,
     :show_exceptions => :after_handler,
     :public_folder => 'public'
-env = ''
+environment = ''
 
 if File.file?('config/secrets.yml')
-  env = YAML.load_file('config/secrets.yml')["rack_env"]
+  environment = YAML.load_file('config/secrets.yml')["rack_env"]
 else
-  env = 'development'
+  environment = 'development'
 end
 
 databases = YAML.load(ERB.new(File.read('config/database.yml')).result)
-ActiveRecord::Base.establish_connection(databases[env])
+ActiveRecord::Base.establish_connection(databases[environment])
+
+Logger.class_eval { alias :write :'<<' }
+app_log = ::File.join(::File.dirname(::File.expand_path(__FILE__)), 'var', 'log', 'app.log')
+app_logger = ::Logger.new(app_log)
+error_logger = ::File.new(::File.join(::File.dirname(::File.expand_path(__FILE__)), 'var', 'log', 'error.log'), "a+")
+error_logger.sync = true
 
 configure do
-  enable :logging
-  file = File.new('var/log/app.log', 'a+')
-  file.sync = true
-  use Rack::CommonLogger, file
+  use Rack::CommonLogger, app_logger
 end
 
+before {
+  env["rack.errors"] =  error_logger
+}
+
 error 400..510 do
-  subject = "#{env} | Error Occurred"
-  message = "#{env} | Error:\n#{env['sinatra.error'].message}"
+  pretty_env = environment.to_s.capitalize
+  subject = "#{pretty_env} Error Occurred"
+  message = "#{pretty_env} | sinatra.error: \n#{env["sinatra.error"]}\nrack.errors: \n#{env["rack.errors"]}"
   send_error_email(subject, message)
 end
 
