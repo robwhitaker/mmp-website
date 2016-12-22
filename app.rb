@@ -24,9 +24,9 @@ databases = YAML.load(ERB.new(File.read('config/database.yml')).result)
 ActiveRecord::Base.establish_connection(databases[environment])
 
 Logger.class_eval { alias :write :'<<' }
-app_log = ::File.join(::File.dirname(::File.expand_path(__FILE__)), 'var', 'log', 'app.log')
-app_logger = ::Logger.new(app_log)
-error_logger = ::File.new(::File.join(::File.dirname(::File.expand_path(__FILE__)), 'var', 'log', 'error.log'), "a+")
+app_log = File.join(File.dirname(File.expand_path(__FILE__)), 'var', 'log', 'app.log')
+app_logger = Logger.new(app_log)
+error_logger = File.new(File.join(File.dirname(File.expand_path(__FILE__)), 'var', 'log', 'error.log'), "a+")
 error_logger.sync = true
 
 configure do
@@ -39,8 +39,17 @@ before {
 
 error 400..510 do
   pretty_env = environment.to_s.capitalize
+  sinatra_error = "sinatra.error: #{env["sinatra.error"]}"
+  recently_logged_errors = "Recently logged errors:\n"
+
+  error_log = File.join(File.dirname(File.expand_path(__FILE__)), 'var', 'log', 'error.log')
+  File.open(error_log) do |f|
+    f.readlines[-5..1].each { |line| recently_logged_errors << "#{line}\n" }
+  end
+
   subject = "#{pretty_env} Error Occurred"
-  message = "#{pretty_env} | sinatra.error: \n#{env["sinatra.error"]}\nrack.errors: \n#{env["rack.errors"]}"
+  message = "#{sinatra_error}\n#{recently_logged_errors}"
+
   send_error_email(subject, message)
 end
 
