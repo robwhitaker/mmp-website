@@ -33,6 +33,13 @@ type alias Flags =
     , host : LocationHost
     }
 
+type alias AnalyticEvent =
+    { category : String
+    , action   : String
+    , label    : Maybe String
+    , value    : Maybe Int
+    }
+
 type alias HeadingUpdate = { headingsOnPage : List RenderElementID, headingAtTop : Bool }
 
 type alias RenderElement =
