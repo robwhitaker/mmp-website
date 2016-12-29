@@ -77,7 +77,7 @@ toAnalyticEvent = toString
                     )
                 >> List.foldl (\current (xs,last) ->
                         let
-                            newCurrent =
+                            newCurrent = String.trim <|
                                 if String.startsWith last current then
                                     String.dropLeft (String.length last) current
                                 else
