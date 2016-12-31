@@ -270,9 +270,21 @@ var RendererInterface = (function() {
     });
 
     function sendAnalyticEvent(analyticData) {
-        console.error("---------------------------------------------");
+        console.log("-----------------ANALYTIC---------------------");
         console.log(analyticData);
-        console.error("---------------------------------------------");
+        console.log("----------------------------------------------");
+        try {
+            ga('send', 
+                { hitType : 'event'
+                , eventCategory : analyticData.category
+                , eventAction   : analyticData.action
+                , eventLabel    : analyticData.label
+                , eventValue    : analyticData.value
+                }
+            );
+        } catch(e) {
+            console.error(e);
+        }
     }
 
     Reader.ports.setScrollEnabled.subscribe(function(isEnabled) {
