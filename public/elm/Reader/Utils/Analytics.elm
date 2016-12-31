@@ -1,13 +1,26 @@
 module Reader.Utils.Analytics exposing (..)
 
 import Time exposing (Time)
-import Reader.Aliases exposing (RenderElementID, AnalyticEvent)
+import Reader.Aliases exposing (RenderElementID)
 import String
 import Char
 import Result
 
 (=>) = (<|)
-infixr 9 =>
+infixr 0 =>
+
+type alias AnalyticEvent =
+    { category : String
+    , action   : String
+    , label    : Maybe String
+    , value    : Maybe Int
+    }
+
+type alias AnalyticData =
+    { firstCoverOpen        : Bool
+    , progStartTime         : Time
+    , lastLoggedNavID       : RenderElementID
+    }
 
 type Analytic
     = SocialButtons ActionSocialButton
@@ -34,20 +47,26 @@ type LabelFollowMethod
 
 type ActionBook
     = Open OpenMethod
-    | InlineShareLinkClick RenderElementID
-    | InlineCommentsLinkClick RenderElementID
+    | InlineShareLinkClick RenderElementID     --handled by JS
+    | InlineCommentsLinkClick RenderElementID  --handled by JS
+    | BookRender
+    | BookReflow
+    | DropdownOpen
 
 type OpenMethod
-    = CoverClick MillisecondsSinceLoad
-    | UrlLoad
+    = OpenCoverClick MillisecondsSinceLoad
+    | OpenUrlLoad
 
 type alias MillisecondsSinceLoad = Time
 
 type ActionBookNavigation
     = TableOfContents RenderElementID
-    | PageTurn RenderElementID
+    | PageTurnForward RenderElementID
+    | PageTurnBackward RenderElementID
     | Url RenderElementID
     | Bookmark RenderElementID
+    | InlineLinkClick RenderElementID
+    | FirstLoad RenderElementID
 
 emptyAnalyticEvent : AnalyticEvent
 emptyAnalyticEvent =

@@ -7,15 +7,21 @@ import Html.Events exposing (..)
 import String
 import Tuple exposing (first,second)
 
+import Reader.Utils.Analytics exposing (LabelShareMethod(..))
+
 ---- TYPE ALIASES ----
 
 type alias Msg =
-    { srcBtnClass : String
-    , width       : Int
-    , height      : Int
-    , endpoint    : String
+    { data : Data
+    , analyticsLabel : LabelShareMethod
     }
 
+type alias Data =
+    { srcBtnClass   : String
+    , width         : Int
+    , height        : Int
+    , endpoint      : String
+    }
 type ShareLinkType = Txt String String | Img String
 
 type alias ShareButton =
@@ -23,6 +29,7 @@ type alias ShareButton =
     , linkType        : ShareLinkType
     , endpoint        : String
     , cssClass        : String
+    , analyticsType   : LabelShareMethod
     }
 
 ---- DEFAULTS ----
@@ -56,10 +63,13 @@ mkShareLink shareButton =
     in
         div [ class <| "share-btn " ++ shareButton.cssClass
             , onClick
-                { srcBtnClass = shareButton.cssClass
-                , width = first shareButton.popupDimensions
-                , height = second shareButton.popupDimensions
-                , endpoint = shareButton.endpoint
+                { data =
+                    { srcBtnClass = shareButton.cssClass
+                    , width = first shareButton.popupDimensions
+                    , height = second shareButton.popupDimensions
+                    , endpoint = shareButton.endpoint
+                    }
+                , analyticsLabel = shareButton.analyticsType
                 }
             ] btnContents
 
@@ -71,6 +81,7 @@ facebook = mkShareLink
     , linkType = Txt "facebook-icon.png" "Share"
     , endpoint = "https://www.facebook.com/sharer/sharer.php?u=http%3A//midnightmurderparty.com"
     , cssClass = "facebook-share-btn"
+    , analyticsType = ShareFacebook
     }
 
 twitter : Html Msg
@@ -79,6 +90,7 @@ twitter = mkShareLink
     , linkType = Txt "twitter-icon.png" "Tweet"
     , endpoint = "https://twitter.com/intent/tweet?text=Join%20in%20on%20a%20night%20of%20silly%20shenanigans%2C%20spooky%20stories%2C%20and%20murder%20at%20the%20Midnight%20Murder%20Party!&tw_p=tweetbutton&url=http%3A%2F%2Fmidnightmurderparty.com&via=MMPWebSeries"
     , cssClass = "twitter-share-btn"
+    , analyticsType = ShareTwitter
     }
 
 tumblr : Html Msg
@@ -87,6 +99,7 @@ tumblr = mkShareLink
     , linkType = Txt "tumblr-icon.png" "Post"
     , endpoint = "https://www.tumblr.com/widgets/share/tool?posttype=link&title=Midnight%20Murder%20Party&content=http%3A%2F%2Fwww.midnightmurderparty.com&tags=novel%2C%20web%20comic%2C%20midnight%20murder%20party%2C%20MMP%2C%20episodic%2C%20horror&canonicalUrl=http%3A%2F%2Fwww.midnightmurderparty.com"
     , cssClass = "tumblr-share-btn"
+    , analyticsType = ShareTumblr
     }
 
 gplus : Html Msg
@@ -95,6 +108,7 @@ gplus = mkShareLink
     , linkType = Txt "//www.gstatic.com/images/icons/gplus-32.png" "Share"
     , endpoint = "//plus.google.com/share?url=http%3A%2F%2Fwww.midnightmurderparty.com"
     , cssClass = "gplus-share-btn"
+    , analyticsType = ShareGooglePlus
     }
 
 reddit : Html Msg
@@ -103,4 +117,5 @@ reddit = mkShareLink
     , linkType = Img "//www.redditstatic.com/spreddit8.gif"
     , endpoint = "http://www.reddit.com/submit?url=http%3A%2F%2Fwww.midnightmurderparty.com"
     , cssClass = "reddit-share-btn"
+    , analyticsType = ShareReddit
     }

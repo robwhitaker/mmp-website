@@ -6,6 +6,7 @@ import Reader.Model exposing (..)
 import Reader.Messages exposing (..)
 import Reader.Ports exposing (..)
 import Reader.Utils as Utils
+import Reader.Utils.Analytics as Analytics exposing (LabelFollowMethod(..))
 
 import Reader.Views.Dropdown as Dropdown
 import Reader.Views.ShareButtons as ShareButtons
@@ -127,14 +128,15 @@ footerHeadings = [ "Follow", "Share", "Extras" ]
 footerContent = [ follow, share, extras ]
 
 follow =
-    let mkIcon (iconUrl, dest) =
-            a [ href dest, target "_BLANK" ] [ img [ src <| "/static/assets/img/" ++ iconUrl ] [] ]
+    let mkIcon (iconUrl, dest, analyticsLabel) =
+            a [ href dest, target "_BLANK", onClick (SendFollowAnalytic analyticsLabel) ]
+              [ img [ src <| "/static/assets/img/" ++ iconUrl ] [] ]
 
         icons =
-            [ ("facebook-icon.png", "https://www.facebook.com/MMPWebSeries/")
-            , ("twitter-icon.png", "https://twitter.com/MMPWebSeries")
-            , ("ello-icon.jpg", "https://ello.co/midnightmurderparty")
-            , ("rss-icon.png", "/rss")
+            [ ("facebook-icon.png", "https://www.facebook.com/MMPWebSeries/", FollowFacebook)
+            , ("twitter-icon.png", "https://twitter.com/MMPWebSeries", FollowTwitter)
+            , ("ello-icon.jpg", "https://ello.co/midnightmurderparty", FollowEllo)
+            , ("rss-icon.png", "/rss", FollowRss)
             ]
 
         prependIcons =
@@ -159,7 +161,7 @@ follow =
                             [ input [ name "b_{{% mailchimp.u %}}_{{% mailchimp.id %}}", tabindex -1, type_ "text", value "" ] [] ]
                         , div
                             [ class "clear" ]
-                            [ input [ class "button", id "mc-embedded-subscribe", name "subscribe", type_ "submit", value "Subscribe" ] [] ]
+                            [ input [ class "button", id "mc-embedded-subscribe", name "subscribe", type_ "submit", value "Subscribe", onClick (SendFollowAnalytic FollowEmail) ] [] ]
                         ]
                     ]
                 ]

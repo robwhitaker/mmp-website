@@ -16,6 +16,7 @@ var RendererInterface = (function() {
         { hash : window.location.hash
         , host : window.location.protocol + "//" + window.location.host
         , localStorage : getLocalStorage()
+        , progStartTime : new Date().getTime()
         }
     );
 
@@ -120,6 +121,13 @@ var RendererInterface = (function() {
                         scrollToElem(document.getElementById("comments-box"), function() {
                             Reader.ports.inlineLinkClicked.send(id);
                         });
+                        sendAnalyticEvent(
+                            { category : "Book"
+                            , action   : "Inline Comments Link Click"
+                            , label    : id
+                            , value    : null
+                            }
+                        );
                         break;
                     case "authorsnote":
                         scrollToElem(document.getElementById("authors-note"), function() {
@@ -128,6 +136,13 @@ var RendererInterface = (function() {
                         break;
                     case "share":
                         Reader.ports.inlineShareClicked.send(id);
+                        sendAnalyticEvent(
+                            { category : "Book"
+                            , action   : "Inline Share Link Click"
+                            , label    : id
+                            , value    : null
+                            }
+                        );
                         break;
                     default:
                         console.log(link, id);
@@ -254,6 +269,12 @@ var RendererInterface = (function() {
         }
     });
 
+    function sendAnalyticEvent(analyticData) {
+        console.error("---------------------------------------------");
+        console.log(analyticData);
+        console.error("---------------------------------------------");
+    }
+
     Reader.ports.setScrollEnabled.subscribe(function(isEnabled) {
         if(isEnabled)
             document.body.classList.remove("no-scroll");
@@ -268,6 +289,8 @@ var RendererInterface = (function() {
     Reader.ports.pingback.subscribe(function() {
         receivedPingback = true;
     });
+
+    Reader.ports.sendAnalyticEvent.subscribe(sendAnalyticEvent);
 
     //HELPERS
     function cloneIdsByPage(inArr) {

@@ -6,6 +6,7 @@ import Reader.Aliases exposing (..)
 import Keyboard exposing (KeyCode)
 --import Reader.Messages exposing (..)
 import Reader.Views.ShareButtons as ShareButtons
+import Reader.Utils.Analytics exposing (AnalyticEvent)
 
 ---- INPUT TYPE ALIASES ----
 
@@ -50,7 +51,7 @@ port setReadInStorage     : RenderElementID -> Cmd msg
 
 port setBookmarkInStorage : RenderElementID -> Cmd msg
 
-port openSharePopup       : ShareButtons.Msg -> Cmd msg
+port openSharePopup       : ShareButtons.Data -> Cmd msg
 
 port rollCredits          : Int -> Cmd msg
 
@@ -59,3 +60,5 @@ port setScrollEnabled     : Bool -> Cmd msg
 port setSelectedId        : RenderElementID -> Cmd msg
 
 port pingback             : Bool -> Cmd msg
+
+port sendAnalyticEvent    : AnalyticEvent -> Cmd msg
