@@ -44,16 +44,18 @@ var RendererInterface = (function() {
     }
 
     function handleError(err) {
-        //TODO: add Google Analytics
         console.error(err);
         receivedPingback = false;
         Reader.ports.ping.send("");
-        setTimeout(showErrorPopup,1000);
+        setTimeout(showErrorPopup.bind(null,err),1000);
     }
 
-    function showErrorPopup() {
+    function showErrorPopup(err) {
         if(!receivedPingback) {
+            sendAnalyticError(err,true);
             document.getElementById("error-popup").style.display = "block";
+        } else {
+            sendAnalyticError(err,false);
         }
     }
 
@@ -213,7 +215,7 @@ var RendererInterface = (function() {
               }
             });
         } catch(e) {
-            handleError(e);
+            handleError(e.stack);
         }
     });
 
@@ -282,6 +284,21 @@ var RendererInterface = (function() {
                 , eventValue    : analyticData.value
                 }
             );
+        } catch(e) {
+            console.error(e);
+        }
+    }
+
+    function sendAnalyticError(msg, isFatal) {
+        console.log("--------------ERROR ANALYTIC------------------");
+        console.log(msg, isFatal);
+        console.log("----------------------------------------------");
+        try {
+            ga('send','exception',
+                { exDescription : msg
+                , exFatal : !!isFatal 
+                }     
+              );
         } catch(e) {
             console.error(e);
         }
