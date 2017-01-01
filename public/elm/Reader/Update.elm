@@ -370,7 +370,7 @@ update msg model =
                 (selectedID, analyticFn) = oneOf
                     [ Maybe.map (always (targetID, (BookNavigation << Url))) (SL.indexOf (.id >> (==) targetID) loadedModel.toc)
                     , Maybe.map (flip (,) (BookNavigation << Bookmark)) bookmark
-                    ] ? ("", (BookNavigation << FirstLoad))
+                    ] ? (loadedModel.toc.selected.id, (BookNavigation << FirstLoad))
                 (newTocUnchecked, newToc, cmds) = gotoHeading selectedID loadedModel.toc
                 showCover = targetID /= newTocUnchecked.selected.id
                 newModel =

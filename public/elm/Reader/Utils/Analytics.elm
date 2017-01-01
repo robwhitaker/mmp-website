@@ -78,7 +78,7 @@ emptyAnalyticEvent =
 
 toAnalyticEvent : Analytic -> AnalyticEvent
 toAnalyticEvent = toString
-                >> String.filter (\ch -> ch /= '(' && ch /= ')')
+                >> String.filter (\ch -> not <| List.member ch ['(',')','"'])
                 >> String.words
                 >> List.map (
                     String.toList
