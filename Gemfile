@@ -8,7 +8,7 @@ gem 'rake'
 gem 'builder'
 gem 'nokogiri'
 gem 'pony'
-gem 'capistrano', '3.6.1'
+gem 'capistrano', '3.7.1'
 gem 'rvm1-capistrano3', require: false
 gem 'capistrano3-puma', github: "seuros/capistrano-puma"
 
