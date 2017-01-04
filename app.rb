@@ -34,15 +34,16 @@ configure do
 end
 
 before {
-  env["rack.errors"] =  error_logger
+  env["rack.errors"] = error_logger
 }
 
-error 400..510 do
-  pretty_env = environment.to_s.capitalize
-  subject = "#{pretty_env} Error Occurred"
-  message = "#{Time.now}\nsinatra.error: #{env["sinatra.error"]}"
+error 501..510 do
+  if environment == 'production'
+    subject = "Production Error Occurred"
+    message = "#{Time.now}\nsinatra.error: #{env["sinatra.error"]}"
 
-  send_error_email(subject, message)
+    send_error_email(subject, message)
+  end
 end
 
 get '/' do

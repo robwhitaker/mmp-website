@@ -1,4 +1,4 @@
-role :app,                     %w{deploy@mmp.nicklaroux.com}
+role :app,                     %w{deploy@104.131.167.22}
 set :branch,                   'staging'
 set :stage,                    'production'
 set :linked_files,             %w{config/database.yml config/secrets.yml public/reader.html}

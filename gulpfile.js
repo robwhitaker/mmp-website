@@ -54,7 +54,7 @@ gulp.task('build:reader-css', function() {
 
 gulp.task('build:reader-js', ['build:reader-elm'], function() {
 
-    gulp.src(['tmp-elm/Main.js','public/static/js/RendererInterface.js','public/static/js/disqus-include.js'])
+    gulp.src(['tmp-elm/Main.js','public/static/js/RendererInterface.js','public/static/js/disqus-include.js','public/static/js/ga-include.js'])
         .pipe(concat('reader.js'))
         .pipe(injectConfig())
         .pipe(ifElse(env === "prod", stripDebug))

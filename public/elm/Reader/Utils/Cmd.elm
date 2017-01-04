@@ -6,6 +6,7 @@ import Reader.Ports exposing (..)
 import Reader.Utils exposing (selectedTitleFromSL)
 
 import Reader.Utils.Disqus as Disqus
+import Reader.Utils.Analytics as Analytics exposing (Analytic)
 
 import Core.Utils.MaybeExtra exposing (..)
 import Core.Utils.SelectionList as SL exposing (SelectionList)
@@ -24,8 +25,8 @@ renderCmd isPageTurnBack model =
         , isPageTurnBack = isPageTurnBack
         }
 
-switchSelectedIdCmd : Bool -> Model -> Model -> Cmd msg
-switchSelectedIdCmd forceChange oldModel newModel =
+switchSelectedIdCmd : Bool -> Model -> Model -> Maybe (RenderElementID -> Analytic) -> Cmd msg
+switchSelectedIdCmd forceChange oldModel newModel mkNavAnalytic =
     let
         disqusUpdate =
             if oldModel.toc.selected.id == newModel.toc.selected.id && not forceChange then
@@ -44,11 +45,22 @@ switchSelectedIdCmd forceChange oldModel newModel =
                 Cmd.none
             else
                 setSelectedId newModel.toc.selected.id
+
+        analyticEvent =
+            if (oldModel.toc.selected.id == newModel.toc.selected.id || newModel.toc.selected.id == oldModel.analyticData.lastLoggedNavID) && not forceChange then
+                Cmd.none
+            else
+                case mkNavAnalytic of
+                    Just navAnalyticFn ->
+                        sendAnalyticEvent <| Analytics.toAnalyticEvent (navAnalyticFn newModel.toc.selected.id)
+                    Nothing ->
+                        Cmd.none
     in
         Cmd.batch
             [ disqusUpdate
             , titleUpdate
             , selectedUpdate
+            , analyticEvent
             ]
 
 setTitleCmd : Model -> Cmd msg
