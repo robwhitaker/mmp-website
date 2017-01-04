@@ -2,6 +2,7 @@ module Reader.Aliases exposing (..)
 
 import Array exposing (Array)
 import Core.Utils.SelectionList exposing (SelectionList)
+import Time exposing (Time)
 
 type alias ChapterID        = Int
 type alias CurrentPage      = PageNum
@@ -31,6 +32,7 @@ type alias Flags =
     { localStorage : LocalStorageData
     , hash : LocationHash
     , host : LocationHost
+    , progStartTime : Time
     }
 
 type alias HeadingUpdate = { headingsOnPage : List RenderElementID, headingAtTop : Bool }

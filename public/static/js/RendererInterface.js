@@ -16,6 +16,7 @@ var RendererInterface = (function() {
         { hash : window.location.hash
         , host : window.location.protocol + "//" + window.location.host
         , localStorage : getLocalStorage()
+        , progStartTime : new Date().getTime()
         }
     );
 
@@ -43,16 +44,18 @@ var RendererInterface = (function() {
     }
 
     function handleError(err) {
-        //TODO: add Google Analytics
         console.error(err);
         receivedPingback = false;
         Reader.ports.ping.send("");
-        setTimeout(showErrorPopup,1000);
+        setTimeout(showErrorPopup.bind(null,err),1000);
     }
 
-    function showErrorPopup() {
+    function showErrorPopup(err) {
         if(!receivedPingback) {
+            sendAnalyticError(err,true);
             document.getElementById("error-popup").style.display = "block";
+        } else {
+            sendAnalyticError(err,false);
         }
     }
 
@@ -120,6 +123,13 @@ var RendererInterface = (function() {
                         scrollToElem(document.getElementById("comments-box"), function() {
                             Reader.ports.inlineLinkClicked.send(id);
                         });
+                        sendAnalyticEvent(
+                            { category : "Book"
+                            , action   : "Inline Comments Link Click"
+                            , label    : id
+                            , value    : null
+                            }
+                        );
                         break;
                     case "authorsnote":
                         scrollToElem(document.getElementById("authors-note"), function() {
@@ -128,6 +138,13 @@ var RendererInterface = (function() {
                         break;
                     case "share":
                         Reader.ports.inlineShareClicked.send(id);
+                        sendAnalyticEvent(
+                            { category : "Book"
+                            , action   : "Inline Share Link Click"
+                            , label    : id
+                            , value    : null
+                            }
+                        );
                         break;
                     default:
                         console.log(link, id);
@@ -198,7 +215,7 @@ var RendererInterface = (function() {
               }
             });
         } catch(e) {
-            handleError(e);
+            handleError(e.stack);
         }
     });
 
@@ -254,6 +271,39 @@ var RendererInterface = (function() {
         }
     });
 
+    function sendAnalyticEvent(analyticData) {
+        console.log("-----------------ANALYTIC---------------------");
+        console.log(analyticData);
+        console.log("----------------------------------------------");
+        try {
+            ga('send', 
+                { hitType : 'event'
+                , eventCategory : analyticData.category
+                , eventAction   : analyticData.action
+                , eventLabel    : analyticData.label
+                , eventValue    : analyticData.value
+                }
+            );
+        } catch(e) {
+            console.error(e);
+        }
+    }
+
+    function sendAnalyticError(msg, isFatal) {
+        console.log("--------------ERROR ANALYTIC------------------");
+        console.log(msg, isFatal);
+        console.log("----------------------------------------------");
+        try {
+            ga('send','exception',
+                { exDescription : msg
+                , exFatal : !!isFatal 
+                }     
+              );
+        } catch(e) {
+            console.error(e);
+        }
+    }
+
     Reader.ports.setScrollEnabled.subscribe(function(isEnabled) {
         if(isEnabled)
             document.body.classList.remove("no-scroll");
@@ -268,6 +318,8 @@ var RendererInterface = (function() {
     Reader.ports.pingback.subscribe(function() {
         receivedPingback = true;
     });
+
+    Reader.ports.sendAnalyticEvent.subscribe(sendAnalyticEvent);
 
     //HELPERS
     function cloneIdsByPage(inArr) {

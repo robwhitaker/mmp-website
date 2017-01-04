@@ -7,6 +7,7 @@ import Reader.Components.ShareDialog as ShareDialog
 import Reader.Components.CreditsRoll as CreditsRoll
 import Reader.Components.ContactModal as ContactModal
 import Reader.Aliases exposing (..)
+import Reader.Utils.Analytics exposing (AnalyticData)
 import Core.Utils.SelectionList as SL exposing (SelectionList)
 
 ---- MODELS ----
@@ -38,6 +39,7 @@ type alias Model =
     , tocExpanded       : Bool
     , locationHost      : LocationHost
     , bookmark          : BookmarkState
+    , analyticData      : AnalyticData
     }
 
 ---- EMPTY MODELS ----
@@ -56,6 +58,7 @@ empty =
     , tocExpanded       = False
     , locationHost      = ""
     , bookmark          = LoadingBookmark
+    , analyticData      = emptyAnalyticData
     }
 
 emptyRenderElement : RenderElement
@@ -69,4 +72,11 @@ emptyRenderElement =
     , level         = -1
     , isRead        = False
     , releaseDate   = ""
+    }
+
+emptyAnalyticData : AnalyticData
+emptyAnalyticData =
+    { firstCoverOpen = False
+    , progStartTime  = 0
+    , lastLoggedNavID = ""
     }

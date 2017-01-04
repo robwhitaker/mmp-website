@@ -9,9 +9,10 @@ import Json.Decode as Json
 import Reader.Components.Modal.Model as Modal exposing (modal)
 import Reader.Components.Modal.Utils as Modal
 import Reader.Components.Modal.ExportMessages as Modal
-import Reader.Ports exposing (openSharePopup)
+import Reader.Ports exposing (openSharePopup, sendAnalyticEvent)
 import Reader.Aliases exposing (..)
 import Reader.Views.ShareButtons as ShareButtons
+import Reader.Utils.Analytics as Analytics exposing (..)
 
 type alias Model =
     Modal.Model InnerModel Msg
@@ -66,7 +67,9 @@ update msg model =
             ({ model | shareFromHeading = val }, Cmd.none, Modal.None)
 
         OpenSharePopup popupSettings ->
-            (model, openSharePopup popupSettings, Modal.None)
+            let analyticEvent = Analytics.toAnalyticEvent <| SocialButtons => Share => popupSettings.analyticsLabel
+            in
+                (model, Cmd.batch [openSharePopup popupSettings.data, sendAnalyticEvent analyticEvent], Modal.None)
 
         Close ->
             (model, Cmd.none, Modal.TriggerFade)

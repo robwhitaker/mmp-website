@@ -3,6 +3,7 @@ module Reader.Update exposing (..)
 import Dict exposing (Dict)
 import Maybe
 import Regex
+import Time
 
 import Core.Utils.SelectionList as SL exposing (SelectionList)
 import Core.Utils.MaybeExtra exposing (..)
@@ -14,6 +15,7 @@ import Reader.Model.Helpers
 import Reader.Messages exposing (..)
 import Reader.Ports exposing (..)
 import Reader.Utils exposing (..)
+import Reader.Utils.Analytics as Analytics exposing (..)
 import Reader.Utils.Cmd exposing (renderCmd, switchSelectedIdCmd, setTitleCmd, setDisqusThread)
 import Reader.Utils.Disqus as Disqus
 
@@ -35,15 +37,34 @@ update msg model =
     case debugLog "msg" msg of
 
         CoverClick ->
-            let newModel =
-                { model | showCover = False }
+            let analyticData = model.analyticData
+                newModel =
+                    { model
+                        | showCover = False
+                        , analyticData = { analyticData | firstCoverOpen = True }
+                    }
+                coverClickAnalyticTrigger =
+                    if model.analyticData.firstCoverOpen == False then
+                        Task.perform SendCoverOpenAnalytic Time.now
+                    else
+                        Cmd.none
             in
                 newModel
-                    ! [ setTitleCmd newModel, setDisqusThread newModel ]
+                    ! [ setTitleCmd newModel, setDisqusThread newModel, coverClickAnalyticTrigger ]
+
+        SendCoverOpenAnalytic firstOpenTime ->
+            model
+                ! [ sendAnalyticEvent (Analytics.toAnalyticEvent (Book => Open => OpenCoverClick => firstOpenTime - model.analyticData.progStartTime)) ]
+
+        SendFollowAnalytic analyticsLabel ->
+            model
+                ! [ sendAnalyticEvent <| Analytics.toAnalyticEvent (SocialButtons => Follow => analyticsLabel) ]
 
         OpenSharePopup sharePopupSettings ->
-            model
-                ! [ openSharePopup sharePopupSettings ]
+            let analyticEvent = Analytics.toAnalyticEvent <| SocialButtons => Share => sharePopupSettings.analyticsLabel
+            in
+                model
+                    ! [ openSharePopup sharePopupSettings.data, sendAnalyticEvent analyticEvent ]
 
         ShowShareDialog id ->
             let (_, newToc, _) = gotoHeading id model.toc
@@ -79,7 +100,7 @@ update msg model =
                     { model | toc = newToc }
             in
                 newModel
-                    ! [ switchSelectedIdCmd False model newModel, cmds ]
+                    ! [ switchSelectedIdCmd False model newModel <| Just (BookNavigation << InlineLinkClick), cmds ]
 
         TurnPage dir ->
             if model.state == Rendering then
@@ -96,6 +117,7 @@ update msg model =
                                     model.toc
                                         |> Maybe.withDefault model.toc
                             (newTocUnchecked, newToc, cmds) = gotoHeading nToc.selected.id model.toc
+                            analyticData = model.analyticData
                             newModel =
                                 if newToc == model.toc then
                                     model
@@ -103,6 +125,10 @@ update msg model =
                                     { model
                                         | toc = newToc
                                         , state = Rendering
+                                        , analyticData =
+                                            { analyticData
+                                                | lastLoggedNavID = newToc.selected.id
+                                            }
                                     }
 
                             newCmd =
@@ -112,7 +138,7 @@ update msg model =
                                     renderCmd False { newModel | toc = newTocUnchecked }
                         in
                             newModel
-                                ! [ newCmd, cmds ]
+                                ! [ newCmd, cmds, sendAnalyticEvent <| Analytics.toAnalyticEvent (BookNavigation => PageTurnForward => newToc.selected.id) ]
                     else
                         let
                             newPage = model.pages.current + 1
@@ -136,17 +162,27 @@ update msg model =
 
                             (_, newToc, cmds) = gotoHeading newSelectedId model.toc
 
-                            arrivedAtHeadingCmds =
+                            (arrivedAtHeadingCmds, lastLoggedId) =
                                 -- if we've arrived at a heading that is not the selected one, set it to the bookmark manually
                                 if not (List.member newSelectedId headingsOnPage) then
                                     case List.head headingsOnPage of
                                         Just id ->
-                                            setBookmarkInStorage id
+                                            (,)
+                                                (Cmd.batch
+                                                    [ setBookmarkInStorage id
+                                                    , if id /= model.analyticData.lastLoggedNavID then
+                                                        sendAnalyticEvent <| Analytics.toAnalyticEvent (BookNavigation => PageTurnForward => id)
+                                                      else
+                                                        Cmd.none
+                                                    ]
+                                                )
+                                                id
                                         Nothing ->
-                                            Cmd.none
+                                            (Cmd.none, newToc.selected.id)
                                 else
-                                    Cmd.none
+                                    (Cmd.none, newToc.selected.id)
 
+                            analyticData = model.analyticData
                             newModel =
                                 { model
                                     | pages =
@@ -154,11 +190,15 @@ update msg model =
                                         , total = model.pages.total
                                         }
                                     , toc = newToc
+                                    , analyticData =
+                                        { analyticData
+                                            | lastLoggedNavID = lastLoggedId
+                                        }
                                 }
                         in
                             newModel
                                 ! [ setPage newModel.pages.current
-                                  , switchSelectedIdCmd False model newModel
+                                  , switchSelectedIdCmd False model newModel <| Just (BookNavigation << PageTurnForward)
                                   , arrivedAtHeadingCmds
                                   , cmds
                                   ]
@@ -180,14 +220,19 @@ update msg model =
                                     newModel
                                         ! [ setTitleCmd newModel ]
                             else
-                                let newModel =
+                                let analyticData = model.analyticData
+                                    newModel =
                                     { model
                                         | toc = newToc
                                         , state = Rendering
+                                        , analyticData =
+                                            { analyticData
+                                                | lastLoggedNavID = newToc.selected.id
+                                            }
                                     }
                                 in
                                     newModel
-                                        ! [ renderCmd True newModel, cmds ]
+                                        ! [ renderCmd True newModel, cmds, sendAnalyticEvent <| Analytics.toAnalyticEvent (BookNavigation => PageTurnBackward => newToc.selected.id) ]
                     else
                         let
                             newPage = model.pages.current - 1
@@ -214,6 +259,7 @@ update msg model =
 
                             (_, newToc, cmds) = gotoHeading newSelectedId model.toc
 
+                            analyticData = model.analyticData
                             newModel =
                                 { model
                                     | pages =
@@ -221,11 +267,15 @@ update msg model =
                                         , total = model.pages.total
                                         }
                                     , toc = newToc
+                                    , analyticData =
+                                        { analyticData
+                                            | lastLoggedNavID = newToc.selected.id
+                                        }
                                 }
                         in
                             newModel
                                 ! [ setPage newModel.pages.current
-                                  , switchSelectedIdCmd False model newModel
+                                  , switchSelectedIdCmd False model newModel <| Just (BookNavigation << PageTurnBackward)
                                   , cmds
                                   ]
 
@@ -233,7 +283,14 @@ update msg model =
             let expanded = Maybe.withDefault model.tocExpanded maybeExpanded
             in
                 case maybeRenderElemID of
-                    Nothing -> { model | tocExpanded = expanded } ! []
+                    Nothing ->
+                        { model | tocExpanded = expanded }
+                            ! [
+                                if model.tocExpanded /= expanded && expanded == True then
+                                    sendAnalyticEvent <| Analytics.toAnalyticEvent (Book => DropdownOpen)
+                                else
+                                    Cmd.none
+                              ]
                     Just renderElemID ->
                         let nextUntilContent = untilContent SL.next
 
@@ -245,6 +302,7 @@ update msg model =
                             newPage =
                                 findPageOfId newToc.selected.id model.idsByPage 0 ? model.pages.current
 
+                            analyticData = model.analyticData
                             newModel =
                                 { model
                                     | pages =
@@ -254,6 +312,10 @@ update msg model =
                                     , toc = newToc
                                     , tocExpanded = expanded
                                     , state = if triggersRender then Rendering else model.state
+                                    , analyticData =
+                                        { analyticData
+                                            | lastLoggedNavID = newToc.selected.id
+                                        }
                                 }
 
                             findPageOfId : RenderElementID -> IdsByPage -> Int -> Maybe Int
@@ -275,12 +337,16 @@ update msg model =
                                     setPage newModel.pages.current
                         in
                             newModel
-                                ! [ switchSelectedIdCmd True model newModel
+                                ! [ switchSelectedIdCmd True model newModel <| Just (BookNavigation << TableOfContents)
                                   , nextCmd
                                   , cmds
+                                  , if model.tocExpanded /= expanded && expanded == True then
+                                        sendAnalyticEvent <| Analytics.toAnalyticEvent (Book => DropdownOpen)
+                                    else
+                                        Cmd.none
                                   ]
 
-        Load chapters { readEntries, bookmark } locationHash locationHost ->
+        Load chapters { readEntries, bookmark } locationHash locationHost progStartTime ->
             let loadedModel = Reader.Model.Helpers.fromChapterList chapters (Dict.fromList readEntries)
                 paramID =
                     locationHash
@@ -301,22 +367,36 @@ update msg model =
                     else
                         paramID
 
-                selectedID = oneOf
-                    [ Maybe.map (always targetID) (SL.indexOf (.id >> (==) targetID) loadedModel.toc)
-                    , bookmark
-                    ] ? ""
+                (selectedID, analyticFn) = oneOf
+                    [ Maybe.map (always (targetID, (BookNavigation << Url))) (SL.indexOf (.id >> (==) targetID) loadedModel.toc)
+                    , Maybe.map (flip (,) (BookNavigation << Bookmark)) bookmark
+                    ] ? (loadedModel.toc.selected.id, (BookNavigation << FirstLoad))
                 (newTocUnchecked, newToc, cmds) = gotoHeading selectedID loadedModel.toc
+                showCover = targetID /= newTocUnchecked.selected.id
                 newModel =
                     { loadedModel
                         | state = Rendering
                         , toc = newToc
-                        , showCover = targetID /= newTocUnchecked.selected.id
+                        , showCover = showCover
                         , locationHost = locationHost
                         , bookmark = if bookmark == Nothing then NoBookmark else HasBookmark
+                        , analyticData =
+                            { firstCoverOpen = not showCover
+                            , progStartTime = progStartTime
+                            , lastLoggedNavID = newToc.selected.id
+                            }
                     }
+                analyticEvent =
+                    if not showCover then
+                        sendAnalyticEvent <| Analytics.toAnalyticEvent (Book => Open => OpenUrlLoad)
+                    else
+                        Cmd.none
             in
                 newModel
-                    ! [ renderCmd False { newModel | toc = newTocUnchecked } ]
+                    ! [ renderCmd False { newModel | toc = newTocUnchecked }
+                      , sendAnalyticEvent <| Analytics.toAnalyticEvent (analyticFn newToc.selected.id)
+                      , analyticEvent
+                      ]
 
         ChapterHasRendered currentPage idsByPage ->
             let
@@ -329,9 +409,10 @@ update msg model =
                         , state = Ready
                         , idsByPage = idsByPage
                     }
+                renderEvent = sendAnalyticEvent <| Analytics.toAnalyticEvent (Book => BookRender)
             in
                 newModel
-                    ! [ switchSelectedIdCmd True model newModel ]
+                    ! [ switchSelectedIdCmd True model newModel Nothing, renderEvent ]
 
         ChapterHasReflowed currentPage idsByPage ->
             let
@@ -376,9 +457,13 @@ update msg model =
                         , toc = newToc
                         , idsByPage = idsByPage
                     }
+                reflowEvent = sendAnalyticEvent <| Analytics.toAnalyticEvent (Book => BookReflow)
             in
                 newModel
-                    ! [ switchSelectedIdCmd False model newModel, cmds ]
+                    ! [ switchSelectedIdCmd False model newModel Nothing
+                      , reflowEvent
+                      , cmds
+                      ]
 
         Dump msg ->
             let dump = Debug.log "Dump: " msg

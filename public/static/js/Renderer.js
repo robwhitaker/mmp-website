@@ -325,7 +325,7 @@ var Renderer = window.Renderer = (function() {
                 DISQUSWIDGETS.getCount({reset: true});
             }
         } catch(e) {
-            listeners["error"](e);
+            listeners["error"](e.stack);
         }
     }
 
