@@ -105,7 +105,7 @@ tumblr = mkShareLink
 gplus : Html Msg
 gplus = mkShareLink
     { popupDimensions = basicPopupSize
-    , linkType = Txt "//www.gstatic.com/images/icons/gplus-32.png" "Share"
+    , linkType = Txt "google-plus-icon.png" "Share"
     , endpoint = "//plus.google.com/share?url=http%3A%2F%2Fwww.midnightmurderparty.com"
     , cssClass = "gplus-share-btn"
     , analyticsType = ShareGooglePlus
@@ -114,7 +114,7 @@ gplus = mkShareLink
 reddit : Html Msg
 reddit = mkShareLink
     { popupDimensions = (875,750)
-    , linkType = Img "//www.redditstatic.com/spreddit8.gif"
+    , linkType = Img "reddit.gif"
     , endpoint = "http://www.reddit.com/submit?url=http%3A%2F%2Fwww.midnightmurderparty.com"
     , cssClass = "reddit-share-btn"
     , analyticsType = ShareReddit
