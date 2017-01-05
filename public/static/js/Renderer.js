@@ -4,12 +4,13 @@ var Renderer = window.Renderer = (function() {
     //---- VARS ----
 
     var listeners = {
-        "keyPress"   : function() {},
-        "rendered"   : function() {},
-        "reflowed"   : function() {},
-        "linkClick"  : function() {},
-        "click"      : function() {},
-        "error"      : function() {}
+        "keyPress"      : function() {},
+        "rendered"      : function() {},
+        "reflowed"      : function() {},
+        "linkClick"     : function() {},
+        "click"         : function() {},
+        "error"         : function() {},
+        "requestedReflow" : function() {}
     };
 
     var keys = []; //list of currently pressed keys
@@ -58,6 +59,10 @@ var Renderer = window.Renderer = (function() {
         currentPositionPercentage = storyTextArea.scrollLeft / storyTextArea.scrollWidth;
         updateReflowCheckpointId();
         console.log("reflow checkpoint: ", reflowCheckpointId);
+    }
+
+    function reflow() {
+        render();
     }
 
     function render(renderObj, eId, isPageTurnBack) {
@@ -310,7 +315,7 @@ var Renderer = window.Renderer = (function() {
                 if(watcher != null)
                     watcher.start();
                 else
-                    watcher = new Watcher(getTextContainerScrollWidth, function() { render(); });
+                    watcher = new Watcher(getTextContainerScrollWidth, function() { listeners["requestedReflow"](); });
             }
         }, 100);
     }
@@ -517,7 +522,7 @@ var Renderer = window.Renderer = (function() {
                 this.value = this.getValue();
                 this.callback(this.value);
             }
-        }.bind(this), 500);
+        }.bind(this), 50);
 
         return this;
     };
@@ -536,6 +541,7 @@ var Renderer = window.Renderer = (function() {
         render              : render,
         refreshCommentCount : refreshCommentCount,
         goToPage            : goToPage,
-        setSelectedId       : setSelectedId
+        setSelectedId       : setSelectedId,
+        reflow              : reflow
     };
 })();

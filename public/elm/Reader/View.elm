@@ -59,18 +59,19 @@ view model =
                 , div --LOADER LAYER
                     [ classList
                         [ ("loader", True)
-                        , ("isDisplayed", not model.showCover && (model.state == Rendering || model.state == Loading))
+                        , ("isDisplayed", not model.showCover && (model.state == Rendering || model.state == Loading || model.state == Reflowing))
                         ]
                     ]
                     [ case model.state of
                         Loading -> div [ class "loading-label" ] [ text "Loading..." ]
                         Rendering -> div [ class "loading-label" ] [ text "Rendering..." ]
+                        Reflowing -> div [ class "loading-label" ] [ text "Reflowing..." ]
                         _ -> text ""
                     , div [ class "loading-label" ] [ img [ src "/static/assets/img/ajax-loader-2.gif" ] [] ]
                     ]
                 , div [ class "book-back" ]
                     [ div
-                        [ classList [("book-inner",True), ("hidden", model.state == Rendering || model.state == Loading)] ]
+                        [ classList [("book-inner",True), ("hidden", model.state == Rendering || model.state == Loading || model.state == Reflowing)] ]
                         [ div
                             [ class "top-bar" ]
                             [ Html.map Dropdown <| Dropdown.view model.toc model.tocExpanded ]
