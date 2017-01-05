@@ -1,6 +1,6 @@
 @import url(https://fonts.googleapis.com/css?family=Tangerine);
 @import url(https://fonts.googleapis.com/css?family=Mirza);
-@import url(http://fonts.googleapis.com/css?family=Open+Sans+Condensed:300);
+@import url(https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300);
 
 /* ======== GENERAL ======== */
 
@@ -16,7 +16,7 @@ body, html {
 }
 
 body {
-    background: url('http://www.freevectors.net/files/large/DarkPattern.jpg');
+    background: url('/static/assets/img/dark-pattern.jpg');
     background-attachment: fixed;
 }
 
