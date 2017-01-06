@@ -337,7 +337,7 @@ section.comments {
     display: inline-block;
     max-width: 90%;
     white-space: nowrap;
-    margin: 0 auto;
+    margin: 0 auto 1em auto;
     cursor: pointer;
     position: relative;
 }
@@ -352,27 +352,32 @@ section.comments {
     display: flex;
     max-width: 100%;
     border: 1px solid rgba(0,0,0,0);
-    border-top-left-radius: 0.2em;
-    border-top-right-radius: 0.2em;
-    padding: 0.5em 1em 0 1em;
+    border-radius: 0.2em;
+    padding: 0.25em 1em;
     font-size: 18px;
-    font-family: Mirza;
+    font-family: 'Mirza';
     color: #444;
+    box-shadow: 0px 0px 2px #a59590;
+    transition: background-color 0.2s ease-in-out;
 }
 
 .drop-down-container.expanded .selected-label {
     color: black;
-}
-
-.drop-down-container.expanded .selected-label {
     background-color: #eee;
     border: 1px solid #999;
+    border-bottom-right-radius: 0px;
+    border-bottom-left-radius: 0px;
     border-bottom-style: dashed;
+    box-shadow: none;
 }
 
 .drop-down-container .selected-label:hover {
-    box-shadow: 0px 0px 2px #999;
+    box-shadow: 0px 0px 2px #222;
     color: black;
+}
+
+.drop-down-container.expanded .selected-label:hover {
+    box-shadow: none;
 }
 
 .drop-down-container .selected-label .label-text {
@@ -384,21 +389,21 @@ section.comments {
 .drop-down-container .arrow-down {
     width: 0;
     height: 0;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
     display: inline-block;
-    margin-top: 5px;
-    margin-left: 0.3em;
-    border-top: 5px solid #444;
-    vertical-align: bottom;
+    margin-top: 10px;
+    margin-left: 0.4em;
+    border-top: 6px solid #555;
+    transition: border-width 0.2s ease-in-out;
 }
 
 .drop-down-container:hover .arrow-down {
-    border-top: 5px solid #000;
+    border-top-color: #000;
 }
 
 .drop-down-container.expanded .arrow-down {
-    display: none;
+    border-width: 0px;
 }
 
 
@@ -408,8 +413,6 @@ section.comments {
 }
 
 .drop-down-container ul {
-    border: 1px solid #999;
-    border-top: none;
     text-align: left;
     list-style: none;
     position: absolute;
@@ -417,20 +420,22 @@ section.comments {
     left: 0;
     right: 0;
     z-index: 100000;
-    display: none;
     background-color: #eee;
     border-bottom-left-radius: 0.2em;
     border-bottom-right-radius: 0.2em;
-    max-height: 60vh;
+    max-height: 0vh;
     overflow-y: auto;
     box-sizing: border-box;
     font-family: 'Open Sans Condensed';
     font-size: 17px;
     color: #000;
+    transition: max-height 0.2s ease-in-out;
 }
 
 .drop-down-container.expanded ul {
-    display: block;
+    border: 1px solid #999;
+    border-top: none;
+    max-height: 60vh;
 }
 
 .drop-down-container ul li {
