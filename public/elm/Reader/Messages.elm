@@ -34,6 +34,7 @@ type Msg
     | Dropdown Dropdown.Msg
     | Dump String
     | Ping
+    | StartReflow
     | NoOp
 
 debugLog : String -> Msg -> Msg

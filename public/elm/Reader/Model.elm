@@ -20,6 +20,7 @@ type State
     = Ready
     | Loading
     | Rendering
+    | Reflowing
 
 type BookmarkState
     = HasBookmark

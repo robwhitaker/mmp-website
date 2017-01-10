@@ -63,6 +63,7 @@ main =
                 , Keyboard.downs (keyToMsg model)
                 , mouseClickedInReader (\_ -> Dropdown (Nothing, Just False))
                 , Mouse.clicks (\_ -> Dropdown (Nothing, Just False))
+                , reflowRequest (\_ -> StartReflow)
                 , ping (always Ping)
                 ]
         }
@@ -75,7 +76,8 @@ keyToMsg model key =
         model.shareDialog.isVisible ||
         model.creditsRoll.isVisible ||
         model.contactModal.isVisible ||
-        model.state == Rendering then
+        model.state == Rendering ||
+        model.state == Reflowing then
         NoOp
     else
         case key of

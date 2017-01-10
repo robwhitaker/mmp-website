@@ -1,6 +1,6 @@
 @import url(https://fonts.googleapis.com/css?family=Tangerine);
 @import url(https://fonts.googleapis.com/css?family=Mirza);
-@import url(http://fonts.googleapis.com/css?family=Open+Sans+Condensed:300);
+@import url(https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300);
 
 /* ======== GENERAL ======== */
 
@@ -16,7 +16,7 @@ body, html {
 }
 
 body {
-    background: url('http://www.freevectors.net/files/large/DarkPattern.jpg');
+    background: url('/static/assets/img/dark-pattern.jpg');
     background-attachment: fixed;
 }
 
@@ -71,10 +71,14 @@ section {
 }
 
 section.reader {
-    background: url("/static/assets/img/wood-bg-11.png");
+    background: url("/static/assets/img/wood-bg-11-low.png");
     background-size: cover;
     background-position: center top;
     box-shadow: 0px 20px 1em rgba(0,0,0,0.8);
+}
+
+body.wood-bg-loaded section.reader {
+    background-image: url("/static/assets/img/wood-bg-11.png");
 }
 
 section.comments {
@@ -98,10 +102,14 @@ section.comments {
 }
 
 .banner-logo {
-    background-image: url("/static/assets/img/MMPLogoFinal.png");
+    background-image: url("/static/assets/img/MMPLogoFinal_low.png");
     background-size: 100% 100%;
     height: 100%;
     max-width: 100%;
+}
+
+body.banner-logo-loaded .banner-logo {
+    background-image: url("/static/assets/img/MMPLogoFinal.png");
 }
 
 /* ---- Loader Overlay ---- */
@@ -125,18 +133,25 @@ section.comments {
 
 .book .book-back {
     z-index: 1;
+    background-image: url('/static/assets/img/book-back-low.png'); /*INSIDE*/
     position: absolute;
-    background-image: url('/static/assets/img/book-back.png'); /*INSIDE*/
     background-size: 100% 100%;
     top: 0; bottom: 0; left: 0; right: 0;
 }
 
+body.book-back-loaded .book .book-back {
+    background-image: url('/static/assets/img/book-back.png'); /*INSIDE*/
+}
+
 .book .loader.cover {
-    background-image: url('/static/assets/img/book-new-5.png');
+    background-image: url('/static/assets/img/book-new-5-low.png');
     z-index: 101;
     cursor: pointer;
 }
 
+body.book-cover-loaded .loader.cover {
+    background-image: url('/static/assets/img/book-new-5.png');
+}
 
 .book .loader.cover .glow {
     position: absolute;
@@ -337,7 +352,7 @@ section.comments {
     display: inline-block;
     max-width: 90%;
     white-space: nowrap;
-    margin: 0 auto;
+    margin: 0 auto 1em auto;
     cursor: pointer;
     position: relative;
 }
@@ -352,27 +367,32 @@ section.comments {
     display: flex;
     max-width: 100%;
     border: 1px solid rgba(0,0,0,0);
-    border-top-left-radius: 0.2em;
-    border-top-right-radius: 0.2em;
-    padding: 0.5em 1em 0 1em;
+    border-radius: 0.2em;
+    padding: 0.25em 1em;
     font-size: 18px;
-    font-family: Mirza;
+    font-family: 'Mirza';
     color: #444;
+    box-shadow: 0px 0px 2px #a59590;
+    transition: background-color 0.2s ease-in-out;
 }
 
 .drop-down-container.expanded .selected-label {
     color: black;
-}
-
-.drop-down-container.expanded .selected-label {
     background-color: #eee;
     border: 1px solid #999;
+    border-bottom-right-radius: 0px;
+    border-bottom-left-radius: 0px;
     border-bottom-style: dashed;
+    box-shadow: none;
 }
 
 .drop-down-container .selected-label:hover {
-    box-shadow: 0px 0px 2px #999;
+    box-shadow: 0px 0px 2px #222;
     color: black;
+}
+
+.drop-down-container.expanded .selected-label:hover {
+    box-shadow: none;
 }
 
 .drop-down-container .selected-label .label-text {
@@ -384,21 +404,21 @@ section.comments {
 .drop-down-container .arrow-down {
     width: 0;
     height: 0;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
     display: inline-block;
-    margin-top: 5px;
-    margin-left: 0.3em;
-    border-top: 5px solid #444;
-    vertical-align: bottom;
+    margin-top: 10px;
+    margin-left: 0.4em;
+    border-top: 6px solid #555;
+    transition: border-width 0.2s ease-in-out;
 }
 
 .drop-down-container:hover .arrow-down {
-    border-top: 5px solid #000;
+    border-top-color: #000;
 }
 
 .drop-down-container.expanded .arrow-down {
-    display: none;
+    border-width: 0px;
 }
 
 
@@ -408,8 +428,6 @@ section.comments {
 }
 
 .drop-down-container ul {
-    border: 1px solid #999;
-    border-top: none;
     text-align: left;
     list-style: none;
     position: absolute;
@@ -417,20 +435,22 @@ section.comments {
     left: 0;
     right: 0;
     z-index: 100000;
-    display: none;
     background-color: #eee;
     border-bottom-left-radius: 0.2em;
     border-bottom-right-radius: 0.2em;
-    max-height: 60vh;
+    max-height: 0vh;
     overflow-y: auto;
     box-sizing: border-box;
     font-family: 'Open Sans Condensed';
     font-size: 17px;
     color: #000;
+    transition: max-height 0.2s ease-in-out;
 }
 
 .drop-down-container.expanded ul {
-    display: block;
+    border: 1px solid #999;
+    border-top: none;
+    max-height: 60vh;
 }
 
 .drop-down-container ul li {

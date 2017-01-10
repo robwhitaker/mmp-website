@@ -4,12 +4,13 @@ var Renderer = window.Renderer = (function() {
     //---- VARS ----
 
     var listeners = {
-        "keyPress"   : function() {},
-        "rendered"   : function() {},
-        "reflowed"   : function() {},
-        "linkClick"  : function() {},
-        "click"      : function() {},
-        "error"      : function() {}
+        "keyPress"      : function() {},
+        "rendered"      : function() {},
+        "reflowed"      : function() {},
+        "linkClick"     : function() {},
+        "click"         : function() {},
+        "error"         : function() {},
+        "requestedReflow" : function() {}
     };
 
     var keys = []; //list of currently pressed keys
@@ -54,10 +55,14 @@ var Renderer = window.Renderer = (function() {
 
     function goToPage(pageNum) {
         var storyTextArea = document.getElementById("text-container");
-        storyTextArea.scrollLeft = getViewport().width * pageNum;
-        currentPositionPercentage = storyTextArea.scrollLeft / storyTextArea.scrollWidth;
+        setScrollLeft(getViewport().width * pageNum);
+        currentPositionPercentage = getScrollLeft() / getScrollWidth();
         updateReflowCheckpointId();
         console.log("reflow checkpoint: ", reflowCheckpointId);
+    }
+
+    function reflow() {
+        render();
     }
 
     function render(renderObj, eId, isPageTurnBack) {
@@ -176,7 +181,10 @@ var Renderer = window.Renderer = (function() {
             storyTextArea.id = "text-container";
 
             document.body.innerHTML = "";
-            document.body.appendChild(storyTextArea);
+            var scrollContainer = document.createElement("div");
+            scrollContainer.id = "scroll-container";
+            scrollContainer.appendChild(storyTextArea);
+            document.body.appendChild(scrollContainer);
 
             //Assign a unique ID to every paragraph without an ID in the body
             Array.prototype.map.call(document.body.querySelectorAll("p"), function(elem,i) {
@@ -187,7 +195,7 @@ var Renderer = window.Renderer = (function() {
         }
 
         storyTextArea = storyTextArea || document.getElementById('text-container');
-        var lastScrollWidth = getTextContainerScrollWidth();
+        var lastScrollWidth = getScrollWidth();
 
         refreshCommentCount(true);
 
@@ -201,9 +209,9 @@ var Renderer = window.Renderer = (function() {
             });
 
             //if there are any placeholders or not all the headings are loaded, we're not ready to continue yet. Try again in 50ms.
-            if(storyTextArea.getElementsByClassName("placeholder").length > 0 || (!!renderObj && renderObj.renderElements.length > getHeadings().length) || lastScrollWidth != getTextContainerScrollWidth()) {
+            if(storyTextArea.getElementsByClassName("placeholder").length > 0 || (!!renderObj && renderObj.renderElements.length > getHeadings().length) || lastScrollWidth != getScrollWidth()) {
                 console.log("DOM not ready: Waiting...");
-                lastScrollWidth = getTextContainerScrollWidth();
+                lastScrollWidth = getScrollWidth();
                 setTimeout(renderIfReady, 100);
                 return;
             }
@@ -253,7 +261,7 @@ var Renderer = window.Renderer = (function() {
 
                 //---- TRY TO PLACE READER BACK NEAR PROPER PAGE ----
                 //---- GET IMPORTANT VALUES FROM RENDER AND PASS TO CALLBACK ----
-                var numPages = Math.round(storyTextArea.scrollWidth/getViewport().width)
+                var numPages = Math.round(getScrollWidth()/getViewport().width);
                 var currentPage = 0;
 
 
@@ -273,12 +281,12 @@ var Renderer = window.Renderer = (function() {
                 //reset columns for FireFox again because we might have changed something
                 firefoxReset();
 
-                storyTextArea.scrollLeft = currentPage * getViewport().width;
+                setScrollLeft(currentPage * getViewport().width);
 
-                currentPositionPercentage = storyTextArea.scrollLeft / storyTextArea.scrollWidth;
+                currentPositionPercentage = getScrollLeft() / getScrollWidth();
 
                 renderObjectsByPage = [];
-                var scrollPos = storyTextArea.scrollLeft;
+                var scrollPos = getScrollLeft();
                 var allElems = getHeadingsAndPs();
                 allElems.forEach(function(elem) {
                     if(!hasContent(elem)) return;
@@ -310,7 +318,7 @@ var Renderer = window.Renderer = (function() {
                 if(watcher != null)
                     watcher.start();
                 else
-                    watcher = new Watcher(getTextContainerScrollWidth, function() { render(); });
+                    watcher = new Watcher(getScrollWidth, function() { listeners["requestedReflow"](); });
             }
         }, 100);
     }
@@ -332,9 +340,10 @@ var Renderer = window.Renderer = (function() {
     function firefoxReset() {
         //Force Firefox to draw as columns like every other browser
         var storyTextArea = document.getElementById("text-container");
+        var scrollContainer = document.getElementById("scroll-container");
         if(isFirefox() && !!storyTextArea) {
             console.log("Firefox detected: Checking for columns...");
-            if(storyTextArea.scrollHeight > storyTextArea.getBoundingClientRect().height) {
+            if(getScrollHeight() > scrollContainer.getBoundingClientRect().height) {
                 console.log("No columns found: Forcing Firefox to redraw...");
                 storyTextArea.appendChild(document.createElement("div"));
             }
@@ -347,15 +356,14 @@ var Renderer = window.Renderer = (function() {
         if(!item || !itemRect) return;
 
         var itemPos = itemRect.left;
-        var scrollLeft = document.getElementById("text-container").scrollLeft;
 
-        var page = Math.round((scrollLeft + itemPos)/getViewport().width);
+        var page = Math.round((getScrollLeft() + itemPos)/getViewport().width);
 
         return page;
     }
 
     function getCurrentPage() {
-        return Math.round(document.getElementById("text-container").scrollLeft / getViewport().width);
+        return Math.round(getScrollLeft() / getViewport().width);
     }
 
     //---- EVENT LISTENERS ----
@@ -363,8 +371,7 @@ var Renderer = window.Renderer = (function() {
     function updateDynamicStylesheet() {
         var dynamicStyle = document.getElementById("dynamic-style");
         dynamicStyle.innerHTML =
-            dynamicStyle.innerHTML.replace(/width:\s*[0-9]+/gi, "width: " + getViewport().width)
-                                  .replace(/height:\s*[0-9]+/gi, "height: " + getViewport().height);
+            dynamicStyle.innerHTML.replace(/width:\s*[0-9]+/gi, "width: " + getViewport().width);
     }
 
     var preventHold = false;
@@ -488,8 +495,20 @@ var Renderer = window.Renderer = (function() {
         return (elem.innerText || elem.textContent || "").trim() != "";
     }
 
-    var getTextContainerScrollWidth = function() {
-        return document.getElementById('text-container').scrollWidth;
+    function getScrollWidth() {
+        return document.getElementById('scroll-container').scrollWidth;
+    }
+
+    function setScrollLeft(newScrollLeft) {
+        document.getElementById('scroll-container').scrollLeft = newScrollLeft;
+    }
+
+    function getScrollLeft() {
+        return document.getElementById('scroll-container').scrollLeft;
+    }
+
+    function getScrollHeight() {
+        return document.getElementById('scroll-container').scrollHeight;
     }
 
     function isFirefox() {
@@ -517,7 +536,7 @@ var Renderer = window.Renderer = (function() {
                 this.value = this.getValue();
                 this.callback(this.value);
             }
-        }.bind(this), 500);
+        }.bind(this), 50);
 
         return this;
     };
@@ -536,6 +555,7 @@ var Renderer = window.Renderer = (function() {
         render              : render,
         refreshCommentCount : refreshCommentCount,
         goToPage            : goToPage,
-        setSelectedId       : setSelectedId
+        setSelectedId       : setSelectedId,
+        reflow              : reflow
     };
 })();

@@ -109,6 +109,10 @@ var RendererInterface = (function() {
                 );
             });
 
+            Renderer.on("requestedReflow", function() {
+                Reader.ports.reflowRequest.send("");
+            });
+
             Renderer.on("reflowed", function(renderData) {
                 Reader.ports.chapterReflowed.send(
                     { "currentPage" : renderData.currentPage
@@ -276,7 +280,7 @@ var RendererInterface = (function() {
         console.log(analyticData);
         console.log("----------------------------------------------");
         try {
-            ga('send', 
+            ga('send',
                 { hitType : 'event'
                 , eventCategory : analyticData.category
                 , eventAction   : analyticData.action
@@ -296,8 +300,8 @@ var RendererInterface = (function() {
         try {
             ga('send','exception',
                 { exDescription : msg
-                , exFatal : !!isFatal 
-                }     
+                , exFatal : !!isFatal
+                }
               );
         } catch(e) {
             console.error(e);
@@ -320,6 +324,10 @@ var RendererInterface = (function() {
     });
 
     Reader.ports.sendAnalyticEvent.subscribe(sendAnalyticEvent);
+
+    Reader.ports.beginReflow.subscribe(function() {
+        Renderer.reflow();
+    })
 
     //HELPERS
     function cloneIdsByPage(inArr) {

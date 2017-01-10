@@ -103,7 +103,7 @@ update msg model =
                     ! [ switchSelectedIdCmd False model newModel <| Just (BookNavigation << InlineLinkClick), cmds ]
 
         TurnPage dir ->
-            if model.state == Rendering then
+            if model.state == Rendering || model.state == Reflowing then
                 model ! []
             else case dir of
                 Forward ->
@@ -377,7 +377,7 @@ update msg model =
                     { loadedModel
                         | state = Rendering
                         , toc = newToc
-                        , showCover = showCover
+                        , showCover = showCover && model.showCover
                         , locationHost = locationHost
                         , bookmark = if bookmark == Nothing then NoBookmark else HasBookmark
                         , analyticData =
@@ -471,6 +471,10 @@ update msg model =
 
         Ping ->
             model ! [ pingback True ]
+
+        StartReflow ->
+            { model | state = Reflowing }
+                ! [ beginReflow True ]
 
         NoOp -> model ! []
 

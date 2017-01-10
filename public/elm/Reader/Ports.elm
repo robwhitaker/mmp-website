@@ -37,6 +37,8 @@ port inlineShareClicked   : (RenderElementID -> msg) -> Sub msg
 
 port ping                 : (String -> msg) -> Sub msg
 
+port reflowRequest        : (String -> msg) -> Sub msg
+
 -- OUTBOUND ----
 
 port setPage              : PageNum -> Cmd msg
@@ -62,3 +64,5 @@ port setSelectedId        : RenderElementID -> Cmd msg
 port pingback             : Bool -> Cmd msg
 
 port sendAnalyticEvent    : AnalyticEvent -> Cmd msg
+
+port beginReflow          : Bool -> Cmd msg
