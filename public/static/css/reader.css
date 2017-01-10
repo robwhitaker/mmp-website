@@ -78,7 +78,7 @@ section.reader {
 }
 
 body.wood-bg-loaded section.reader {
-    background: url("/static/assets/img/wood-bg-11.png");
+    background-image: url("/static/assets/img/wood-bg-11.png");
 }
 
 section.comments {
