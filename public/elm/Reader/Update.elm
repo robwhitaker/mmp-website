@@ -377,7 +377,7 @@ update msg model =
                     { loadedModel
                         | state = Rendering
                         , toc = newToc
-                        , showCover = showCover
+                        , showCover = showCover && model.showCover
                         , locationHost = locationHost
                         , bookmark = if bookmark == Nothing then NoBookmark else HasBookmark
                         , analyticData =
