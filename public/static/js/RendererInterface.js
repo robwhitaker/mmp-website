@@ -20,7 +20,7 @@ var RendererInterface = (function() {
         }
     );
 
-    window.location.hash = "";
+    // window.location.hash = "";
 
     function getLocalStorage() {
         var items = [];

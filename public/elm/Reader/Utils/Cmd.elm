@@ -14,6 +14,7 @@ import Core.Utils.SelectionList as SL exposing (SelectionList)
 import Dict
 import Regex
 import String
+import Navigation
 
 ---- COMMAND BUILDERS ----
 
@@ -25,8 +26,8 @@ renderCmd isPageTurnBack model =
         , isPageTurnBack = isPageTurnBack
         }
 
-switchSelectedIdCmd : Bool -> Model -> Model -> Maybe (RenderElementID -> Analytic) -> Cmd msg
-switchSelectedIdCmd forceChange oldModel newModel mkNavAnalytic =
+switchSelectedIdCmd : Bool -> Bool -> Model -> Model -> Maybe (RenderElementID -> Analytic) -> Cmd msg
+switchSelectedIdCmd forceChange isHashChange oldModel newModel mkNavAnalytic =
     let
         disqusUpdate =
             if oldModel.toc.selected.id == newModel.toc.selected.id && not forceChange then
@@ -46,6 +47,12 @@ switchSelectedIdCmd forceChange oldModel newModel mkNavAnalytic =
             else
                 setSelectedId newModel.toc.selected.id
 
+        hashUpdate =
+            if oldModel.toc.selected.id == newModel.toc.selected.id && not forceChange || isHashChange then
+                Cmd.none
+            else
+                Navigation.newUrl <| "#!/" ++ newModel.toc.selected.id
+
         analyticEvent =
             if (oldModel.toc.selected.id == newModel.toc.selected.id || newModel.toc.selected.id == oldModel.analyticData.lastLoggedNavID) && not forceChange then
                 Cmd.none
@@ -55,11 +62,13 @@ switchSelectedIdCmd forceChange oldModel newModel mkNavAnalytic =
                         sendAnalyticEvent <| Analytics.toAnalyticEvent (navAnalyticFn newModel.toc.selected.id)
                     Nothing ->
                         Cmd.none
+
     in
         Cmd.batch
             [ disqusUpdate
             , titleUpdate
             , selectedUpdate
+            , hashUpdate
             , analyticEvent
             ]
 

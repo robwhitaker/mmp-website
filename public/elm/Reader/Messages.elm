@@ -10,6 +10,7 @@ import Reader.Components.Modal.Messages as Modal
 import Reader.Components.ShareDialog as ShareDialog
 import Reader.Components.CreditsRoll as CreditsRoll
 import Reader.Components.ContactModal as ContactModal
+import Navigation exposing (Location)
 
 import Time exposing (Time)
 import Debug
@@ -26,9 +27,10 @@ type Msg
     | ShareDialogMsg (Modal.Msg ShareDialog.Msg)
     | CreditsRollMsg (Modal.Msg CreditsRoll.Msg)
     | ContactModalMsg (Modal.Msg ContactModal.Msg)
-    | Load (List Chapter) LocalStorageData LocationHash LocationHost Time
+    | Load (List Chapter) LocalStorageData LocationHash LocationHost Time Location
     | ChapterHasRendered CurrentPage IdsByPage
     | ChapterHasReflowed CurrentPage IdsByPage
+    | HashChange Location
     --| UpdateHeadingsOnPage HeadingUpdate
     | ChangeSelectedHeading RenderElementID
     | Dropdown Dropdown.Msg
@@ -40,7 +42,7 @@ type Msg
 debugLog : String -> Msg -> Msg
 debugLog label msg =
     let log = Debug.log label <| case msg of
-        Load _ _ _ _ _ -> "Load"
+        Load _ _ _ _ _ _ -> "Load"
         _ -> toString msg
     in
         msg
