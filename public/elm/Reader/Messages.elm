@@ -27,7 +27,7 @@ type Msg
     | ShareDialogMsg (Modal.Msg ShareDialog.Msg)
     | CreditsRollMsg (Modal.Msg CreditsRoll.Msg)
     | ContactModalMsg (Modal.Msg ContactModal.Msg)
-    | Load (List Chapter) LocalStorageData LocationHash LocationHost Time Location
+    | Load (List Chapter) LocalStorageData Time Location
     | ChapterHasRendered CurrentPage IdsByPage
     | ChapterHasReflowed CurrentPage IdsByPage
     | HashChange Location
@@ -42,7 +42,7 @@ type Msg
 debugLog : String -> Msg -> Msg
 debugLog label msg =
     let log = Debug.log label <| case msg of
-        Load _ _ _ _ _ _ -> "Load"
+        Load _ _ _ _ -> "Load"
         _ -> toString msg
     in
         msg

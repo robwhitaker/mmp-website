@@ -34,10 +34,10 @@ import Core.Models.Chapter as Chapter
 import Debug
 
 init : Flags -> Location -> (Model, Cmd Msg)
-init { localStorage, hash, host, progStartTime } location =
+init { localStorage, progStartTime } location =
     let request = Requests.mkRequest Nothing Requests.Get (Json.list Chapter.decoder) "/chapters"
         requestHandle =
-            Result.map (\chapters -> Load chapters localStorage hash host progStartTime location)
+            Result.map (\chapters -> Load chapters localStorage progStartTime location)
             >> Result.withDefault NoOp
     in
         (,)

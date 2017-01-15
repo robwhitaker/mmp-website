@@ -16,6 +16,15 @@ import Regex
 import String
 import Navigation
 
+---- TYPES FOR CLARITY ----
+
+type ShouldForce = ForceChange | NoForceChange
+
+type alias SelectionSwitchFlags =
+    { forceSelectionChange : ShouldForce
+    , analyticFn           : Maybe (RenderElementID -> Analytic)
+    }
+
 ---- COMMAND BUILDERS ----
 
 renderCmd : Bool -> Model -> Cmd msg
@@ -26,17 +35,18 @@ renderCmd isPageTurnBack model =
         , isPageTurnBack = isPageTurnBack
         }
 
-switchSelectedIdCmd : Bool -> Bool -> Model -> Model -> Maybe (RenderElementID -> Analytic) -> Cmd msg
-switchSelectedIdCmd forceChange isHashChange oldModel newModel mkNavAnalytic =
+switchSelectedIdCmd : SelectionSwitchFlags -> Model -> Model -> Cmd msg
+switchSelectedIdCmd { forceSelectionChange, analyticFn } oldModel newModel =
     let
+        forceChange = forceSelectionChange == ForceChange
         disqusUpdate =
-            if oldModel.toc.selected.id == newModel.toc.selected.id && not forceChange then
+            if oldModel.toc.selected.id == newModel.toc.selected.id then
                 Cmd.none
             else
                 setDisqusThread newModel
 
         titleUpdate =
-            if oldModel.toc.selected.id == newModel.toc.selected.id && oldModel.showCover == newModel.showCover && not forceChange then
+            if oldModel.toc.selected.id == newModel.toc.selected.id && oldModel.showCover == newModel.showCover then
                 Cmd.none
             else
                 setTitleCmd newModel
@@ -48,7 +58,7 @@ switchSelectedIdCmd forceChange isHashChange oldModel newModel mkNavAnalytic =
                 setSelectedId newModel.toc.selected.id
 
         hashUpdate =
-            if oldModel.toc.selected.id == newModel.toc.selected.id && not forceChange || isHashChange then
+            if oldModel.toc.selected.id == newModel.toc.selected.id then
                 Cmd.none
             else
                 Navigation.newUrl <| "#!/" ++ newModel.toc.selected.id
@@ -57,7 +67,7 @@ switchSelectedIdCmd forceChange isHashChange oldModel newModel mkNavAnalytic =
             if (oldModel.toc.selected.id == newModel.toc.selected.id || newModel.toc.selected.id == oldModel.analyticData.lastLoggedNavID) && not forceChange then
                 Cmd.none
             else
-                case mkNavAnalytic of
+                case analyticFn of
                     Just navAnalyticFn ->
                         sendAnalyticEvent <| Analytics.toAnalyticEvent (navAnalyticFn newModel.toc.selected.id)
                     Nothing ->

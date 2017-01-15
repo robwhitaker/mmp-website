@@ -17,7 +17,7 @@ import Reader.Messages exposing (..)
 import Reader.Ports exposing (..)
 import Reader.Utils exposing (..)
 import Reader.Utils.Analytics as Analytics exposing (..)
-import Reader.Utils.Cmd exposing (renderCmd, switchSelectedIdCmd, setTitleCmd, setDisqusThread)
+import Reader.Utils.Cmd as CmdHelpers exposing (renderCmd, switchSelectedIdCmd, setTitleCmd, setDisqusThread)
 import Reader.Utils.Disqus as Disqus
 
 import Reader.Components.Modal.Messages as Modal
@@ -99,9 +99,13 @@ update msg model =
             let (_, newToc, cmds) = gotoHeading hId model.toc
                 newModel =
                     { model | toc = newToc }
+                flags =
+                    { forceSelectionChange = CmdHelpers.NoForceChange
+                    , analyticFn = Just (BookNavigation << InlineLinkClick)
+                    }
             in
                 newModel
-                    ! [ switchSelectedIdCmd False False model newModel <| Just (BookNavigation << InlineLinkClick), cmds ]
+                    ! [ switchSelectedIdCmd flags model newModel, cmds ]
 
         TurnPage dir ->
             if model.state == Rendering || model.state == Reflowing then
@@ -196,10 +200,14 @@ update msg model =
                                             | lastLoggedNavID = lastLoggedId
                                         }
                                 }
+                            flags =
+                                { forceSelectionChange = CmdHelpers.NoForceChange
+                                , analyticFn = Just (BookNavigation << PageTurnForward)
+                                }
                         in
                             newModel
                                 ! [ setPage newModel.pages.current
-                                  , switchSelectedIdCmd False False model newModel <| Just (BookNavigation << PageTurnForward)
+                                  , switchSelectedIdCmd flags model newModel
                                   , arrivedAtHeadingCmds
                                   , cmds
                                   ]
@@ -273,10 +281,14 @@ update msg model =
                                             | lastLoggedNavID = newToc.selected.id
                                         }
                                 }
+                            flags =
+                                { forceSelectionChange = CmdHelpers.NoForceChange
+                                , analyticFn = Just (BookNavigation << PageTurnBackward)
+                                }
                         in
                             newModel
                                 ! [ setPage newModel.pages.current
-                                  , switchSelectedIdCmd False False model newModel <| Just (BookNavigation << PageTurnBackward)
+                                  , switchSelectedIdCmd flags model newModel
                                   , cmds
                                   ]
 
@@ -293,11 +305,14 @@ update msg model =
                                     Cmd.none
                               ]
                     Just renderElemID ->
-                        let (newModel, cmds) = jumpToEntry renderElemID model
+                        let (newModel, cmds) =
+                                jumpToEntry renderElemID model
+                                    { forceSelectionChange = CmdHelpers.ForceChange
+                                    , analyticFn = Just (BookNavigation << TableOfContents)
+                                    }
                         in
                             { newModel | tocExpanded = expanded }
-                                ! [ switchSelectedIdCmd True False model newModel <| Just (BookNavigation << TableOfContents)
-                                  , cmds
+                                ! [ cmds
                                   , if model.tocExpanded /= expanded && expanded == True then
                                         sendAnalyticEvent <| Analytics.toAnalyticEvent (Book => DropdownOpen)
                                     else
@@ -310,20 +325,20 @@ update msg model =
                 UrlParser.parseHash UrlParser.string loc
                     |> Maybe.andThen (\targetID -> Maybe.map (always targetID) <| SL.indexOf (.id >> (==) targetID) model.toc)
                     |> Maybe.andThen (\targetID ->
-                        let (newModel, cmds) = jumpToEntry targetID model
+                        let (newModel, cmds) =
+                                jumpToEntry targetID model
+                                    { forceSelectionChange = CmdHelpers.NoForceChange
+                                    , analyticFn = Just (BookNavigation << BookNavigationHashChange)
+                                    }
                         in
                             if newModel.toc.selected.id /= model.toc.selected.id then
-                                Just <|
-                                    newModel
-                                        ! [ switchSelectedIdCmd True True model newModel <| Just (BookNavigation << BookNavigationHashChange)
-                                          , cmds
-                                          ]
+                                Just <| newModel ! [ cmds ]
                             else
                                 Nothing
                         )
                     |> Maybe.withDefault (model ! [])
 
-        Load chapters { readEntries, bookmark } locationHash locationHost progStartTime location ->
+        Load chapters { readEntries, bookmark } progStartTime location ->
             let loadedModel = Reader.Model.Helpers.fromChapterList chapters (Dict.fromList readEntries)
                 -- get rid of the hashbang because it spooks the UrlParser
                 loc = { location | hash = String.filter ((/=) '!') location.hash }
@@ -346,7 +361,7 @@ update msg model =
                         | state = Rendering
                         , toc = newToc
                         , showCover = showCover && model.showCover
-                        , locationHost = locationHost
+                        , locationHost = location.protocol ++ "//" ++ location.host
                         , bookmark = if bookmark == Nothing then NoBookmark else HasBookmark
                         , analyticData =
                             { firstCoverOpen = not showCover
@@ -378,9 +393,13 @@ update msg model =
                         , idsByPage = idsByPage
                     }
                 renderEvent = sendAnalyticEvent <| Analytics.toAnalyticEvent (Book => BookRender)
+                flags =
+                    { forceSelectionChange = CmdHelpers.ForceChange
+                    , analyticFn = Nothing
+                    }
             in
                 newModel
-                    ! [ switchSelectedIdCmd True False model newModel Nothing, renderEvent ]
+                    ! [ switchSelectedIdCmd flags model newModel, renderEvent ]
 
         ChapterHasReflowed currentPage idsByPage ->
             let
@@ -426,9 +445,13 @@ update msg model =
                         , idsByPage = idsByPage
                     }
                 reflowEvent = sendAnalyticEvent <| Analytics.toAnalyticEvent (Book => BookReflow)
+                flags =
+                    { forceSelectionChange = CmdHelpers.NoForceChange
+                    , analyticFn = Nothing
+                    }
             in
                 newModel
-                    ! [ switchSelectedIdCmd False False model newModel Nothing
+                    ! [ switchSelectedIdCmd flags model newModel
                       , reflowEvent
                       , cmds
                       ]
@@ -511,8 +534,10 @@ getAllOnPage : PageNum -> IdsByPage -> List RenderElementID
 getAllOnPage pageNum idsByPage =
     Array.get pageNum idsByPage ? []
 
-jumpToEntry : RenderElementID -> Model -> (Model, Cmd Msg)
-jumpToEntry renderElemID model =
+
+
+jumpToEntry : RenderElementID -> Model -> CmdHelpers.SelectionSwitchFlags -> (Model, Cmd Msg)
+jumpToEntry renderElemID model flags =
     let
         findPageOfId : RenderElementID -> IdsByPage -> Int -> Maybe Int
         findPageOfId rId idsByPage index =
@@ -554,4 +579,4 @@ jumpToEntry renderElemID model =
             else
                 setPage newModel.pages.current
     in
-        (newModel, Cmd.batch [ nextCmd, cmds ])
+        (newModel, Cmd.batch [ switchSelectedIdCmd flags model newModel, nextCmd, cmds ])
