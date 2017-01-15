@@ -38,15 +38,17 @@ renderCmd isPageTurnBack model =
 switchSelectedIdCmd : SelectionSwitchFlags -> Model -> Model -> Cmd msg
 switchSelectedIdCmd { forceSelectionChange, analyticFn } oldModel newModel =
     let
+        -- forceChange is there for cases where these updates happen after a JS event, like a chapter render.
+        -- The model will not have changed, but these things still need to be updated.
         forceChange = forceSelectionChange == ForceChange
         disqusUpdate =
-            if oldModel.toc.selected.id == newModel.toc.selected.id then
+            if oldModel.toc.selected.id == newModel.toc.selected.id && not forceChange then
                 Cmd.none
             else
                 setDisqusThread newModel
 
         titleUpdate =
-            if oldModel.toc.selected.id == newModel.toc.selected.id && oldModel.showCover == newModel.showCover then
+            if oldModel.toc.selected.id == newModel.toc.selected.id && oldModel.showCover == newModel.showCover && not forceChange then
                 Cmd.none
             else
                 setTitleCmd newModel
@@ -58,7 +60,7 @@ switchSelectedIdCmd { forceSelectionChange, analyticFn } oldModel newModel =
                 setSelectedId newModel.toc.selected.id
 
         hashUpdate =
-            if oldModel.toc.selected.id == newModel.toc.selected.id || newModel.showCover then
+            if (oldModel.toc.selected.id == newModel.toc.selected.id && not forceChange) || newModel.showCover then
                 Cmd.none
             else
                 Navigation.modifyUrl <| "#!/" ++ newModel.toc.selected.id
