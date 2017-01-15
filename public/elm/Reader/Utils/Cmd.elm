@@ -58,10 +58,10 @@ switchSelectedIdCmd { forceSelectionChange, analyticFn } oldModel newModel =
                 setSelectedId newModel.toc.selected.id
 
         hashUpdate =
-            if oldModel.toc.selected.id == newModel.toc.selected.id then
+            if oldModel.toc.selected.id == newModel.toc.selected.id || newModel.showCover then
                 Cmd.none
             else
-                Navigation.newUrl <| "#!/" ++ newModel.toc.selected.id
+                Navigation.modifyUrl <| "#!/" ++ newModel.toc.selected.id
 
         analyticEvent =
             if (oldModel.toc.selected.id == newModel.toc.selected.id || newModel.toc.selected.id == oldModel.analyticData.lastLoggedNavID) && not forceChange then

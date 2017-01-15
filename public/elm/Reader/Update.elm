@@ -5,6 +5,7 @@ import Maybe
 import Regex
 import Time
 import UrlParser
+import Navigation
 
 import Core.Utils.SelectionList as SL exposing (SelectionList)
 import Core.Utils.MaybeExtra exposing (..)
@@ -49,9 +50,12 @@ update msg model =
                         Task.perform SendCoverOpenAnalytic Time.now
                     else
                         Cmd.none
+
+                coverClickHashEvent =
+                    Navigation.modifyUrl <| "#!/" ++ newModel.toc.selected.id
             in
                 newModel
-                    ! [ setTitleCmd newModel, setDisqusThread newModel, coverClickAnalyticTrigger ]
+                    ! [ setTitleCmd newModel, setDisqusThread newModel, coverClickAnalyticTrigger, coverClickHashEvent ]
 
         SendCoverOpenAnalytic firstOpenTime ->
             model
@@ -225,9 +229,10 @@ update msg model =
                         in
                             if newToc == model.toc then
                                 let newModel = { model | showCover = True }
+                                    hideHashCmd = Navigation.modifyUrl "/"
                                 in
                                     newModel
-                                        ! [ setTitleCmd newModel ]
+                                        ! [ setTitleCmd newModel, hideHashCmd ]
                             else
                                 let analyticData = model.analyticData
                                     newModel =
@@ -332,7 +337,7 @@ update msg model =
                                     }
                         in
                             if newModel.toc.selected.id /= model.toc.selected.id then
-                                Just <| newModel ! [ cmds ]
+                                Just <| { newModel | showCover = False } ! [ cmds ]
                             else
                                 Nothing
                         )
