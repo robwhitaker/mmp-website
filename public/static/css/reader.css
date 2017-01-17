@@ -237,6 +237,14 @@ body.book-cover-loaded .loader.cover {
     text-shadow: 2px 2px #000;
 }
 
+.book .loader.cover .glow .cover-txt.start-reading-txt {
+    bottom: 24%;
+    font-size: 3.5vh;
+    opacity: 0;
+    animation: fadein 1s forwards;
+    animation-delay: 6.5s;
+}
+
 .book .loader.cover .glow:hover .cover-txt {
 }
 
