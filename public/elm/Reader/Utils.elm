@@ -12,6 +12,8 @@ import Core.Utils.MaybeExtra exposing (..)
 import Core.Utils.SelectionList as SL exposing (SelectionList)
 import Core.Utils.String exposing (stripTags)
 
+import Reader.Aliases exposing (..)
+
 selectedTitleFromSL : SelectionList { a | heading : String, level : Int } -> String
 selectedTitleFromSL sl =
     SL.toList sl
@@ -43,6 +45,15 @@ selectedTitleFromSL sl =
             section ++ " - " ++ title
     )
 
+selectedTopParentId : TOC -> RenderElementID
+selectedTopParentId sl =
+    let prev = SL.previous sl
+    in
+        if prev.selected.level < sl.selected.level && prev.selected.body == "" then
+            selectedTopParentId prev
+        else
+            sl.selected.id
+
 dateStringToTime : String -> Time
 dateStringToTime dateStr =
     case Date.fromString dateStr of
@@ -54,3 +65,4 @@ maxReleaseDateAsTime list =
     List.foldl (\{ releaseDate } maxRD ->
         Basics.max maxRD (dateStringToTime releaseDate)
     ) 0 (SL.toList list)
+

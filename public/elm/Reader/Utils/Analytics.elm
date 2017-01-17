@@ -63,10 +63,11 @@ type ActionBookNavigation
     = TableOfContents RenderElementID
     | PageTurnForward RenderElementID
     | PageTurnBackward RenderElementID
-    | Url RenderElementID
+    | UrlLoad RenderElementID
     | Bookmark RenderElementID
     | InlineLinkClick RenderElementID
     | FirstLoad RenderElementID
+    | BookNavigationHashChange RenderElementID
 
 emptyAnalyticEvent : AnalyticEvent
 emptyAnalyticEvent =

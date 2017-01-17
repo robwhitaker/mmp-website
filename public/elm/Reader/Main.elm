@@ -5,6 +5,7 @@ import Regex
 import String
 import Keyboard exposing (KeyCode)
 import Mouse
+import Navigation exposing (Location)
 
 import Reader.Ports
 
@@ -32,11 +33,11 @@ import Core.Models.Chapter as Chapter
 --TODO: remove these when done
 import Debug
 
-init : Flags -> (Model, Cmd Msg)
-init { localStorage, hash, host, progStartTime } =
+init : Flags -> Location -> (Model, Cmd Msg)
+init { localStorage, progStartTime } location =
     let request = Requests.mkRequest Nothing Requests.Get (Json.list Chapter.decoder) "/chapters"
         requestHandle =
-            Result.map (\chapters -> Load chapters localStorage hash host progStartTime)
+            Result.map (\chapters -> Load chapters localStorage progStartTime location)
             >> Result.withDefault NoOp
     in
         (,)
@@ -47,7 +48,8 @@ init { localStorage, hash, host, progStartTime } =
 
 main : Program Flags Model Msg
 main =
-    Html.programWithFlags
+    Navigation.programWithFlags
+        (always NoOp)
         { init = init
         , update = update
         , view = view
