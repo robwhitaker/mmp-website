@@ -49,7 +49,7 @@ init { localStorage, progStartTime } location =
 main : Program Flags Model Msg
 main =
     Navigation.programWithFlags
-        HashChange
+        (always NoOp)
         { init = init
         , update = update
         , view = view

@@ -52,7 +52,7 @@ update msg model =
                         Cmd.none
 
                 coverClickHashEvent =
-                    Navigation.modifyUrl <| "#!/" ++ newModel.toc.selected.id
+                    Navigation.modifyUrl <| "#!/" ++ (selectedTopParentId newModel.toc)
             in
                 newModel
                     ! [ setTitleCmd newModel, setDisqusThread newModel, coverClickAnalyticTrigger, coverClickHashEvent ]
@@ -75,7 +75,7 @@ update msg model =
             let (_, newToc, _) = gotoHeading id model.toc
                 newShareDialog =
                     ShareDialog.initInnerModel
-                        id
+                        (selectedTopParentId newToc)
                         model.locationHost
                         (selectedTitleFromSL newToc)
                         model.shareDialog
@@ -324,25 +324,6 @@ update msg model =
                                         Cmd.none
                                   ]
 
-        HashChange location ->
-            let loc = { location | hash = String.filter ((/=) '!') location.hash }
-            in
-                UrlParser.parseHash UrlParser.string loc
-                    |> Maybe.andThen (\targetID -> Maybe.map (always targetID) <| SL.indexOf (.id >> (==) targetID) model.toc)
-                    |> Maybe.andThen (\targetID ->
-                        let (newModel, cmds) =
-                                jumpToEntry targetID model
-                                    { forceSelectionChange = CmdHelpers.NoForceChange
-                                    , analyticFn = Just (BookNavigation << BookNavigationHashChange)
-                                    }
-                        in
-                            if newModel.toc.selected.id /= model.toc.selected.id then
-                                Just <| { newModel | showCover = False } ! [ cmds ]
-                            else
-                                Nothing
-                        )
-                    |> Maybe.withDefault (model ! [])
-
         Load chapters { readEntries, bookmark } progStartTime location ->
             let loadedModel = Reader.Model.Helpers.fromChapterList chapters (Dict.fromList readEntries)
                 -- get rid of the hashbang because it spooks the UrlParser
@@ -561,7 +542,7 @@ jumpToEntry renderElemID model flags =
         triggersRender = newToc.selected.chapter /= model.toc.selected.chapter
 
         newPage =
-            findPageOfId newToc.selected.id model.idsByPage 0 ? model.pages.current
+            findPageOfId newTocUnchecked.selected.id model.idsByPage 0 ? model.pages.current
 
         analyticData = model.analyticData
         newModel =

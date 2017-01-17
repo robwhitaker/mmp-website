@@ -30,7 +30,6 @@ type Msg
     | Load (List Chapter) LocalStorageData Time Location
     | ChapterHasRendered CurrentPage IdsByPage
     | ChapterHasReflowed CurrentPage IdsByPage
-    | HashChange Location
     --| UpdateHeadingsOnPage HeadingUpdate
     | ChangeSelectedHeading RenderElementID
     | Dropdown Dropdown.Msg

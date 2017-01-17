@@ -3,7 +3,7 @@ module Reader.Utils.Cmd exposing (..)
 import Reader.Model exposing (..)
 import Reader.Aliases exposing (..)
 import Reader.Ports exposing (..)
-import Reader.Utils exposing (selectedTitleFromSL)
+import Reader.Utils exposing (selectedTitleFromSL, selectedTopParentId)
 
 import Reader.Utils.Disqus as Disqus
 import Reader.Utils.Analytics as Analytics exposing (Analytic)
@@ -63,7 +63,7 @@ switchSelectedIdCmd { forceSelectionChange, analyticFn } oldModel newModel =
             if (oldModel.toc.selected.id == newModel.toc.selected.id && not forceChange) || newModel.showCover then
                 Cmd.none
             else
-                Navigation.modifyUrl <| "#!/" ++ newModel.toc.selected.id
+                Navigation.modifyUrl <| "#!/" ++ (selectedTopParentId newModel.toc)
 
         analyticEvent =
             if (oldModel.toc.selected.id == newModel.toc.selected.id || newModel.toc.selected.id == oldModel.analyticData.lastLoggedNavID) && not forceChange then
