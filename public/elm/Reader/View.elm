@@ -52,8 +52,15 @@ view model =
                                 case model.bookmark of
                                     HasBookmark     -> "Resume Reading"
                                     NoBookmark      -> "Start Reading"
-                                    LoadingBookmark -> "..."
+                                    LoadingBookmark -> "Loading..."
                             ]
+                        , if not model.analyticData.firstCoverOpen && model.bookmark == NoBookmark then
+                            div
+                                [ class "cover-txt start-reading-txt" ]
+                                [ text "Click the cover to start reading..." ]
+                          else
+                            div [] []
+
                         ]
                     ]
                 , div --LOADER LAYER

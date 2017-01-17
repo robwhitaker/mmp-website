@@ -3,7 +3,7 @@ module Reader.Utils.Cmd exposing (..)
 import Reader.Model exposing (..)
 import Reader.Aliases exposing (..)
 import Reader.Ports exposing (..)
-import Reader.Utils exposing (selectedTitleFromSL)
+import Reader.Utils exposing (selectedTitleFromSL, selectedTopParentId)
 
 import Reader.Utils.Disqus as Disqus
 import Reader.Utils.Analytics as Analytics exposing (Analytic)
@@ -14,6 +14,16 @@ import Core.Utils.SelectionList as SL exposing (SelectionList)
 import Dict
 import Regex
 import String
+import Navigation
+
+---- TYPES FOR CLARITY ----
+
+type ShouldForce = ForceChange | NoForceChange
+
+type alias SelectionSwitchFlags =
+    { forceSelectionChange : ShouldForce
+    , analyticFn           : Maybe (RenderElementID -> Analytic)
+    }
 
 ---- COMMAND BUILDERS ----
 
@@ -25,9 +35,12 @@ renderCmd isPageTurnBack model =
         , isPageTurnBack = isPageTurnBack
         }
 
-switchSelectedIdCmd : Bool -> Model -> Model -> Maybe (RenderElementID -> Analytic) -> Cmd msg
-switchSelectedIdCmd forceChange oldModel newModel mkNavAnalytic =
+switchSelectedIdCmd : SelectionSwitchFlags -> Model -> Model -> Cmd msg
+switchSelectedIdCmd { forceSelectionChange, analyticFn } oldModel newModel =
     let
+        -- forceChange is there for cases where these updates happen after a JS event, like a chapter render.
+        -- The model will not have changed, but these things still need to be updated.
+        forceChange = forceSelectionChange == ForceChange
         disqusUpdate =
             if oldModel.toc.selected.id == newModel.toc.selected.id && not forceChange then
                 Cmd.none
@@ -46,20 +59,28 @@ switchSelectedIdCmd forceChange oldModel newModel mkNavAnalytic =
             else
                 setSelectedId newModel.toc.selected.id
 
+        hashUpdate =
+            if (oldModel.toc.selected.id == newModel.toc.selected.id && not forceChange) || newModel.showCover then
+                Cmd.none
+            else
+                Navigation.modifyUrl <| "#!/" ++ (selectedTopParentId newModel.toc)
+
         analyticEvent =
             if (oldModel.toc.selected.id == newModel.toc.selected.id || newModel.toc.selected.id == oldModel.analyticData.lastLoggedNavID) && not forceChange then
                 Cmd.none
             else
-                case mkNavAnalytic of
+                case analyticFn of
                     Just navAnalyticFn ->
                         sendAnalyticEvent <| Analytics.toAnalyticEvent (navAnalyticFn newModel.toc.selected.id)
                     Nothing ->
                         Cmd.none
+
     in
         Cmd.batch
             [ disqusUpdate
             , titleUpdate
             , selectedUpdate
+            , hashUpdate
             , analyticEvent
             ]
 

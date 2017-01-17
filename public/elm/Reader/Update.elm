@@ -4,6 +4,8 @@ import Dict exposing (Dict)
 import Maybe
 import Regex
 import Time
+import UrlParser
+import Navigation
 
 import Core.Utils.SelectionList as SL exposing (SelectionList)
 import Core.Utils.MaybeExtra exposing (..)
@@ -16,7 +18,7 @@ import Reader.Messages exposing (..)
 import Reader.Ports exposing (..)
 import Reader.Utils exposing (..)
 import Reader.Utils.Analytics as Analytics exposing (..)
-import Reader.Utils.Cmd exposing (renderCmd, switchSelectedIdCmd, setTitleCmd, setDisqusThread)
+import Reader.Utils.Cmd as CmdHelpers exposing (renderCmd, switchSelectedIdCmd, setTitleCmd, setDisqusThread)
 import Reader.Utils.Disqus as Disqus
 
 import Reader.Components.Modal.Messages as Modal
@@ -48,9 +50,12 @@ update msg model =
                         Task.perform SendCoverOpenAnalytic Time.now
                     else
                         Cmd.none
+
+                coverClickHashEvent =
+                    Navigation.modifyUrl <| "#!/" ++ (selectedTopParentId newModel.toc)
             in
                 newModel
-                    ! [ setTitleCmd newModel, setDisqusThread newModel, coverClickAnalyticTrigger ]
+                    ! [ setTitleCmd newModel, setDisqusThread newModel, coverClickAnalyticTrigger, coverClickHashEvent ]
 
         SendCoverOpenAnalytic firstOpenTime ->
             model
@@ -70,7 +75,7 @@ update msg model =
             let (_, newToc, _) = gotoHeading id model.toc
                 newShareDialog =
                     ShareDialog.initInnerModel
-                        id
+                        (selectedTopParentId newToc)
                         model.locationHost
                         (selectedTitleFromSL newToc)
                         model.shareDialog
@@ -98,9 +103,13 @@ update msg model =
             let (_, newToc, cmds) = gotoHeading hId model.toc
                 newModel =
                     { model | toc = newToc }
+                flags =
+                    { forceSelectionChange = CmdHelpers.NoForceChange
+                    , analyticFn = Just (BookNavigation << InlineLinkClick)
+                    }
             in
                 newModel
-                    ! [ switchSelectedIdCmd False model newModel <| Just (BookNavigation << InlineLinkClick), cmds ]
+                    ! [ switchSelectedIdCmd flags model newModel, cmds ]
 
         TurnPage dir ->
             if model.state == Rendering || model.state == Reflowing then
@@ -195,10 +204,14 @@ update msg model =
                                             | lastLoggedNavID = lastLoggedId
                                         }
                                 }
+                            flags =
+                                { forceSelectionChange = CmdHelpers.NoForceChange
+                                , analyticFn = Just (BookNavigation << PageTurnForward)
+                                }
                         in
                             newModel
                                 ! [ setPage newModel.pages.current
-                                  , switchSelectedIdCmd False model newModel <| Just (BookNavigation << PageTurnForward)
+                                  , switchSelectedIdCmd flags model newModel
                                   , arrivedAtHeadingCmds
                                   , cmds
                                   ]
@@ -216,9 +229,10 @@ update msg model =
                         in
                             if newToc == model.toc then
                                 let newModel = { model | showCover = True }
+                                    hideHashCmd = Navigation.modifyUrl "/"
                                 in
                                     newModel
-                                        ! [ setTitleCmd newModel ]
+                                        ! [ setTitleCmd newModel, hideHashCmd ]
                             else
                                 let analyticData = model.analyticData
                                     newModel =
@@ -272,10 +286,14 @@ update msg model =
                                             | lastLoggedNavID = newToc.selected.id
                                         }
                                 }
+                            flags =
+                                { forceSelectionChange = CmdHelpers.NoForceChange
+                                , analyticFn = Just (BookNavigation << PageTurnBackward)
+                                }
                         in
                             newModel
                                 ! [ setPage newModel.pages.current
-                                  , switchSelectedIdCmd False model newModel <| Just (BookNavigation << PageTurnBackward)
+                                  , switchSelectedIdCmd flags model newModel
                                   , cmds
                                   ]
 
@@ -292,74 +310,25 @@ update msg model =
                                     Cmd.none
                               ]
                     Just renderElemID ->
-                        let nextUntilContent = untilContent SL.next
-
-                            (newTocUnchecked, newToc, cmds) =
-                                gotoHeading renderElemID model.toc
-
-                            triggersRender = newToc.selected.chapter /= model.toc.selected.chapter
-
-                            newPage =
-                                findPageOfId newToc.selected.id model.idsByPage 0 ? model.pages.current
-
-                            analyticData = model.analyticData
-                            newModel =
-                                { model
-                                    | pages =
-                                        { current = newPage
-                                        , total = model.pages.total
-                                        }
-                                    , toc = newToc
-                                    , tocExpanded = expanded
-                                    , state = if triggersRender then Rendering else model.state
-                                    , analyticData =
-                                        { analyticData
-                                            | lastLoggedNavID = newToc.selected.id
-                                        }
-                                }
-
-                            findPageOfId : RenderElementID -> IdsByPage -> Int -> Maybe Int
-                            findPageOfId rId idsByPage index =
-                                case Array.get index idsByPage of
-                                    Just list ->
-                                        if List.member rId list then
-                                            Just index
-                                        else
-                                            findPageOfId rId idsByPage (index+1)
-                                    Nothing ->
-                                        Nothing
-
-
-                            nextCmd =
-                                if triggersRender then
-                                    renderCmd False { newModel | toc = newTocUnchecked }
-                                else
-                                    setPage newModel.pages.current
+                        let (newModel, cmds) =
+                                jumpToEntry renderElemID model
+                                    { forceSelectionChange = CmdHelpers.ForceChange
+                                    , analyticFn = Just (BookNavigation << TableOfContents)
+                                    }
                         in
-                            newModel
-                                ! [ switchSelectedIdCmd True model newModel <| Just (BookNavigation << TableOfContents)
-                                  , nextCmd
-                                  , cmds
+                            { newModel | tocExpanded = expanded }
+                                ! [ cmds
                                   , if model.tocExpanded /= expanded && expanded == True then
                                         sendAnalyticEvent <| Analytics.toAnalyticEvent (Book => DropdownOpen)
                                     else
                                         Cmd.none
                                   ]
 
-        Load chapters { readEntries, bookmark } locationHash locationHost progStartTime ->
+        Load chapters { readEntries, bookmark } progStartTime location ->
             let loadedModel = Reader.Model.Helpers.fromChapterList chapters (Dict.fromList readEntries)
-                paramID =
-                    locationHash
-                        |> String.toLower
-                        |> Regex.find (Regex.AtMost 1) (Regex.regex "#!/?([ec][0-9]+)|(latest)")
-                        |> List.head
-                        |> Maybe.map (.submatches >> oneOf)
-                        |>  (\megaMaybe ->
-                                case megaMaybe of
-                                    (Just (Just id)) -> id
-                                    _                       -> ""
-                            )
-
+                -- get rid of the hashbang because it spooks the UrlParser
+                loc = { location | hash = String.filter ((/=) '!') location.hash }
+                paramID = UrlParser.parseHash UrlParser.string loc ? ""
                 maxReleaseDate = maxReleaseDateAsTime loadedModel.toc
                 targetID =
                     if paramID == "latest" then
@@ -368,7 +337,7 @@ update msg model =
                         paramID
 
                 (selectedID, analyticFn) = oneOf
-                    [ Maybe.map (always (targetID, (BookNavigation << Url))) (SL.indexOf (.id >> (==) targetID) loadedModel.toc)
+                    [ Maybe.map (always (targetID, (BookNavigation << UrlLoad))) (SL.indexOf (.id >> (==) targetID) loadedModel.toc)
                     , Maybe.map (flip (,) (BookNavigation << Bookmark)) bookmark
                     ] ? (loadedModel.toc.selected.id, (BookNavigation << FirstLoad))
                 (newTocUnchecked, newToc, cmds) = gotoHeading selectedID loadedModel.toc
@@ -378,7 +347,7 @@ update msg model =
                         | state = Rendering
                         , toc = newToc
                         , showCover = showCover && model.showCover
-                        , locationHost = locationHost
+                        , locationHost = location.protocol ++ "//" ++ location.host
                         , bookmark = if bookmark == Nothing then NoBookmark else HasBookmark
                         , analyticData =
                             { firstCoverOpen = not showCover
@@ -410,9 +379,13 @@ update msg model =
                         , idsByPage = idsByPage
                     }
                 renderEvent = sendAnalyticEvent <| Analytics.toAnalyticEvent (Book => BookRender)
+                flags =
+                    { forceSelectionChange = CmdHelpers.ForceChange
+                    , analyticFn = Nothing
+                    }
             in
                 newModel
-                    ! [ switchSelectedIdCmd True model newModel Nothing, renderEvent ]
+                    ! [ switchSelectedIdCmd flags model newModel, renderEvent ]
 
         ChapterHasReflowed currentPage idsByPage ->
             let
@@ -458,9 +431,13 @@ update msg model =
                         , idsByPage = idsByPage
                     }
                 reflowEvent = sendAnalyticEvent <| Analytics.toAnalyticEvent (Book => BookReflow)
+                flags =
+                    { forceSelectionChange = CmdHelpers.NoForceChange
+                    , analyticFn = Nothing
+                    }
             in
                 newModel
-                    ! [ switchSelectedIdCmd False model newModel Nothing
+                    ! [ switchSelectedIdCmd flags model newModel
                       , reflowEvent
                       , cmds
                       ]
@@ -542,3 +519,50 @@ getHeadingsOnPage pageNum idsByPage =
 getAllOnPage : PageNum -> IdsByPage -> List RenderElementID
 getAllOnPage pageNum idsByPage =
     Array.get pageNum idsByPage ? []
+
+
+
+jumpToEntry : RenderElementID -> Model -> CmdHelpers.SelectionSwitchFlags -> (Model, Cmd Msg)
+jumpToEntry renderElemID model flags =
+    let
+        findPageOfId : RenderElementID -> IdsByPage -> Int -> Maybe Int
+        findPageOfId rId idsByPage index =
+            case Array.get index idsByPage of
+                Just list ->
+                    if List.member rId list then
+                        Just index
+                    else
+                        findPageOfId rId idsByPage (index+1)
+                Nothing ->
+                    Nothing
+
+        (newTocUnchecked, newToc, cmds) =
+            gotoHeading renderElemID model.toc
+
+        triggersRender = newToc.selected.chapter /= model.toc.selected.chapter
+
+        newPage =
+            findPageOfId newTocUnchecked.selected.id model.idsByPage 0 ? model.pages.current
+
+        analyticData = model.analyticData
+        newModel =
+            { model
+                | pages =
+                    { current = newPage
+                    , total = model.pages.total
+                    }
+                , toc = newToc
+                , state = if triggersRender then Rendering else model.state
+                , analyticData =
+                    { analyticData
+                        | lastLoggedNavID = newToc.selected.id
+                    }
+            }
+
+        nextCmd =
+            if triggersRender then
+                renderCmd False { newModel | toc = newTocUnchecked }
+            else
+                setPage newModel.pages.current
+    in
+        (newModel, Cmd.batch [ switchSelectedIdCmd flags model newModel, nextCmd, cmds ])

@@ -2,7 +2,7 @@ namespace :deploy do
   desc "Upload pre-built staging assets"
   task :staging_assets do
     on roles(:app) do
-      if fetch(:stage) == 'staging'
+      if fetch(:stage) == 'staging' || fetch(:stage) == 'staging-external'
         %w[ reader.min.js editor.min.js renderer.min.js ].each do |f|
           upload! 'public/static/build/js/' + f ,
                   '/home/deploy/mmp/public/static/build/js/' + f

@@ -30,8 +30,6 @@ type alias LocalStorageData =
 
 type alias Flags =
     { localStorage : LocalStorageData
-    , hash : LocationHash
-    , host : LocationHost
     , progStartTime : Time
     }
 

@@ -1,6 +1,7 @@
 @import url(https://fonts.googleapis.com/css?family=Tangerine);
 @import url(https://fonts.googleapis.com/css?family=Mirza);
 @import url(https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300);
+@import url('https://fonts.googleapis.com/css?family=Droid+Serif');
 
 /* ======== GENERAL ======== */
 
@@ -236,6 +237,14 @@ body.book-cover-loaded .loader.cover {
     text-shadow: 2px 2px #000;
 }
 
+.book .loader.cover .glow .cover-txt.start-reading-txt {
+    bottom: 24%;
+    font-size: 3.5vh;
+    opacity: 0;
+    animation: fadein 1s forwards;
+    animation-delay: 6.5s;
+}
+
 .book .loader.cover .glow:hover .cover-txt {
 }
 
@@ -368,9 +377,9 @@ body.book-cover-loaded .loader.cover {
     max-width: 100%;
     border: 1px solid rgba(0,0,0,0);
     border-radius: 0.2em;
-    padding: 0.25em 1em;
-    font-size: 18px;
-    font-family: 'Mirza';
+    padding: 0.6em 1em;
+    font-size: 14px;
+    font-family: 'Droid Serif','Times New Roman';
     color: #444;
     box-shadow: 0px 0px 2px #a59590;
     transition: background-color 0.2s ease-in-out;
@@ -407,8 +416,8 @@ body.book-cover-loaded .loader.cover {
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
     display: inline-block;
-    margin-top: 10px;
-    margin-left: 0.4em;
+    margin-top: 6px;
+    margin-left: 0.55em;
     border-top: 6px solid #555;
     transition: border-width 0.2s ease-in-out;
 }
@@ -517,12 +526,14 @@ body.book-cover-loaded .loader.cover {
 }
 
 #comments-box {
-    flex: 3;
+    flex: 3 1 auto;
+    -webkit-flex: 3 1 auto;
     min-width: 300px;
 }
 
 #authors-note {
-    flex: 1;
+    flex: 1 1 auto;
+    -webkit-flex: 1 1 auto;
     min-width: 200px;
     color: #ddd;
 }
@@ -620,7 +631,8 @@ footer input {
 }
 
 footer .link-section {
-    flex: 1;
+    flex: 1 1 auto;
+    -webkit-flex: 1 1 auto;
     text-align: center;
     margin: 1em 0.5em;
     min-width: 200px;
