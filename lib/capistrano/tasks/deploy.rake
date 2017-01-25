@@ -24,9 +24,7 @@ namespace :deploy do
   desc "Update base repo folder"
   task :git_pull do
     on roles(:app) do
-      if fetch(:stage) == 'production'
-        execute "cd ~/mmp && git pull"
-      end
+      execute "cd ~/mmp && git pull"
     end
   end
 
