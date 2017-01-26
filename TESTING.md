@@ -77,7 +77,74 @@ This checklist represents the bare minimum functionality that each tester should
 
 ## Expected Reader Functionality
 
+This is a broad overview of how the Reader application should be expected to function. If you notice behavior deviating from this, it is likely a bug and should be reported. If you encounter something questionable that isn’t covered here, feel free to treat it like a bug as well.
 
+### Home Page
+ 
+This page should display the logo and the book cover, taking up the whole screen. If you scroll down, you should see the footer. The comments/author’s note section should be hidden. The title of the page in the browser should be “Midnight Murder Party.” All of this should hold true whenever the book cover is closed.
+
+Clicking on the book cover should open the book.
+
+### Open Book
+
+When the book is open, the comments/author’s note section should be visible and have a height of at least 100% of your screen height (like the Reader section). The selected segment should be displayed at the top of the book with a little “expand” arrow next to it. A segment should never be selected if it doesn’t have content. In other words, “Episode 2.” should never been the heading. It should always be more like “Episode 2-2a-1. …” because segment “1” has actual text content. This same segment title should be displayed as the title of the web page in the form “Episode 2-2a-1… | Midnight Murder Party”. 
+
+The author’s note and comment section should always reflect the currently selected segment. Each time the selected segment changes, you should see Disqus refresh (little spinner icon). If this doesn’t happen, something went wrong.
+
+### Selecting a Segment
+
+Determining which segment is considered “selected” happens in a few ways.
+
+1. When you turn the page forward, the selected segment should be the last heading on the previous pages. If you land on a page with a new heading, you remain on the last segment until you turn the page forward. This way, it never assumes you’ve reached the new heading when there’s still content from the old one on the page. The exception to this rule is when a new heading appears at the very top of the page. The reader should then switch immediately to this heading.
+2. When you turn the page backward, the heading should change only once you’ve backed past the heading that was previously selected. It should switch the selection into the heading you have backed into. For example, if you are reading Segment 5 and back past the page with that heading, assuming the previous heading is Segment 4, that will be the new selection. However, if there are multiple headings on the page (ie Segment 4.5 and Segment 5 are on the same page), note that backing past the page with 4.5 and 5 should still bring you to Segment 4, skipping 4.5 entirely since you backed past it as well.
+3. When you use the dropdown to jump to a segment, the segment you jumped to should invariably be considered “selected,” no matter where it is on the page. The only exception is if that heading has no content, at which point the Reader should pick the closest subheading with content.
+4. When you use a URL to jump to a segment (explained later, under Share), it should be treated the same as using the dropdown to jump to a segment.
+5. Clicking on the inline links for Comments or Author’s Note should change the selected segment to the segment those links are contained in, if that segment isn’t already selected.
+6. Navigating forward or backward into another chapter should send you into either the next or previous selection with content, respectively. In other words, it should skip all headings that don’t have any content when picking selections.
+
+### Navigating Between Chapters Via Page Turns
+
+Turning the page can occassionally trigger rendering the next chapter. There is some specific behavior involved in this type of navigation which is as follows.
+
+1. Turning the page forward on the last page of a chapter should bring you to the first page of the next chapter. If you are on the last chapter, it should close the book and set the selection (and render) back to the beginning of the first chapter.
+2. Turning the page backward on the first page of a chapter should bring you to the last page of the previous chapter. Note that this shouldn’t bring you to the last HEADING but the last PAGE. The selection should still be the last segment of that chapter, of course. If you are on the first chapter, it should simply close the book.
+
+### The Dropdown
+
+The dropdown menu should sit at the top of the book and should display the short title of the selected segment and a black arrow next to that. When expanded, the arrow should disappear. Clicking on the closed dropdown should expand it. Selecting an item in the expanded dropdown or clicking outside of the dropdown, should close it.
+
+Unread segments should appear as bold. The latest release should be gold with the text (new!) next to it (this is subject to change). The currently selected segment should be highlighted. 
+
+If a segment title doesn’t fit within the width of the dropdown, it should not line wrap. It should instead be cut off with ellipses. 
+
+Clicking on a segment, should navigate the book to that segment, if it has content, or the next subsegment with content, if it doesn’t.
+
+### Book Bottom Bar
+
+The book bottom bar should have a “previous” button on the left, the pageNum / totalPages in the middle, and a “next” button on the right. The page count refers to the number of pages within the current chapter.
+
+Pressing the prev and next buttons should, hopefully obviously, progress the current page back or forward by one. The back and forward arrow keys should do the same.
+
+### End of Segment Links
+
+#### Author’s Note
+This link should appear conditionally. If there is no author’s note, it won’t appear. Clicking on it should smooth scroll the user down to the top of the author’s note section of the page.
+
+#### Comments
+This link should display a (mostly) up-to-date count of the comments for that segment. If the count is a little off, don’t worry, though. Disqus’s API falls behind sometimes. Clicking on this link should smooth scroll the user down to the comments section of the page.
+
+#### Share
+Clicking this link should open a full screen modal with share options centered on the screen (both vertically and horizontally). Options should include a text box with a URL in it that the user can copy. Below that should be a checkbox (checked by default) that enables the user to choose whether to share from the current segment or to just to share the page. Changing this will change the above URL. Below this should be social media share links. These are unaffected by the above checkbox.
+
+Loading a page from the share URL (with the segment ID included) should load the book at the segment matching that ID and with the cover open by default.
+
+### Social Media Share Buttons
+
+The social media share buttons (found in the footer of the page as well as in the Share modal), should open popups when clicked that allow you to share Midnight Murder Party from social media. Some browsers, like Internet Explorer, block these popups by default. This is worth noting, but not considered a bug. If the links otherwise don’t work for some reason, please report it.
+
+### Page Footer
+
+This part of the page isn’t entirely finished. Aside from the social media buttons, you don’t have to worry about this.
 
 ## Terminology Reference
 
