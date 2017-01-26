@@ -25,55 +25,57 @@ In the description, please include:
 This checklist represents the bare minimum functionality that each tester should cover; the expected behavior of each item on this list is described in detail under [Expected Reader Functionality](#expected-reader-functionality). A good test will consist of mixing and matching various permutations of items on the below list. Try to come up with your own creative test cases!
 
 - [ ] Book Events    
-    - [ ] Open 
-        - [ ] Cover Click
-        - [ ] Right arrow key
-        - [ ] URL Load
+    - [x] Open 
+        - [x] Cover Click
+        - [x] Right arrow key
+        - [x] URL Load
     - [ ] Inline Links
-        - [ ] Share
-        - [ ] Comment
-        - [ ] Author's Note
+        - [x] Share
+        - [x] Comment
+        - [x] Author's Note
     - [ ] Render
     - [ ] Reflow
 - [ ] Book Navigation Events
-    - [ ] Table Of Contents
+    - [x] Table Of Contents
         - [ ] Within Chapter
         - [ ] Between Chapters
-    - [ ] Page Turn (forward/backward)
+    - [x] Page Turn (forward/backward)
         - [ ] Within Chapter
         - [ ] Between Chapters  
-    - [ ] URL Load
+    - [x] URL Load
     - [ ] Bookmark
-    - [ ] Inline Link
+    - [x] Inline Link
         - [ ] Comment
         - [ ] Author's Note
     - [ ] Renderer checkpoint updates
 - [ ] On Selected Entry Change
-    - [ ] Disqus update
-    - [ ] Title update
+    - [x] Disqus update
+    - [x] Author's Note update
+    - [x] Title update
     - [ ] Bookmark update
-    - [ ] ToC heading update
+    - [x] Dropdown label update
     - [ ] Hash update
     - [ ] Renderer checkpoint update
 - [ ] Bookmarks
     - [ ] Set on Selected Entry Change
     - [ ] Set on arrival at Entry
-- [ ] Cover Open/Closed State
+- [x] Cover Open/Closed State
     - [ ] Open
     - [ ] Closed
-- [ ] Table of Contents
+- [x] Table of Contents
     - [ ] Heading matches selected entry
     - [ ] Expands / Contracts
     - [ ] Unread bolded
     - [ ] Selected entry highlighted
     - [ ] "new!" next to most recent unread entries
-- [ ] Misc.
+- [ ] Footer
     - [ ] Contact Link
     - [ ] Credits Link
-    - [ ] Social Buttons
+    - [x] Social Buttons
     - [ ] Mailchimp Sign-Up Form
+- [ ] Misc.
     - [ ] High-res images load
-    - [ ] Forward arrow disabled on last page
+    - [x] Forward arrow disabled on last page
 
 ## Expected Reader Functionality
 
@@ -83,60 +85,80 @@ This is a broad overview of how the Reader application should be expected to fun
  
 This page should display the logo and the book cover, taking up the whole screen. If you scroll down, you should see the footer. The comments/author’s note section should be hidden. The title of the page in the browser should be “Midnight Murder Party.” All of this should hold true whenever the book cover is closed.
 
-Clicking on the book cover should open the book.
+Clicking on the book cover or pressing the right arrow key should open the book.
 
 ### Open Book
 
-When the book is open, the comments/author’s note section should be visible and have a height of at least 100% of your screen height (like the Reader section). The selected segment should be displayed at the top of the book with a little “expand” arrow next to it. A segment should never be selected if it doesn’t have content. In other words, “Episode 2.” should never been the heading. It should always be more like “Episode 2-2a-1. …” because segment “1” has actual text content. This same segment title should be displayed as the title of the web page in the form “Episode 2-2a-1… | Midnight Murder Party”. 
+When the book is open, the comments/author’s note section should be visible below the book section and have a height of at least 100% of your screen height (like the Reader section). The [selected entry](#selected-entry) should be displayed at the top of the book with a little “expand” arrow next to it. An [empty entry](#empty-entry--no-content-entry) (an [entry](#entry) without content) should never be selected. In other words, “Episode 2.” should never be the heading. It should always be more like “Episode 2-2a-1. …” because segment “1” has actual text content. This same segment title should be displayed as the title of the web page in the form “Episode 2-2a-1… | Midnight Murder Party”. 
 
-The author’s note and comment section should always reflect the currently selected segment. Each time the selected segment changes, you should see Disqus refresh (little spinner icon). If this doesn’t happen, something went wrong.
+The author’s note and comment section should always reflect the [selected entry](#selected-entry). Each time the selected entry changes, you should see refresh (little spinner icon). If this doesn’t happen, something went wrong.
 
-### Selecting a Segment
+### Selecting an Entry
 
-Determining which segment is considered “selected” happens in a few ways.
+Determining which [entry](#entry) is considered “selected” happens in a few ways.
 
-1. When you turn the page forward, the selected segment should be the last heading on the previous pages. If you land on a page with a new heading, you remain on the last segment until you turn the page forward. This way, it never assumes you’ve reached the new heading when there’s still content from the old one on the page. The exception to this rule is when a new heading appears at the very top of the page. The reader should then switch immediately to this heading.
-2. When you turn the page backward, the heading should change only once you’ve backed past the heading that was previously selected. It should switch the selection into the heading you have backed into. For example, if you are reading Segment 5 and back past the page with that heading, assuming the previous heading is Segment 4, that will be the new selection. However, if there are multiple headings on the page (ie Segment 4.5 and Segment 5 are on the same page), note that backing past the page with 4.5 and 5 should still bring you to Segment 4, skipping 4.5 entirely since you backed past it as well.
-3. When you use the dropdown to jump to a segment, the segment you jumped to should invariably be considered “selected,” no matter where it is on the page. The only exception is if that heading has no content, at which point the Reader should pick the closest subheading with content.
-4. When you use a URL to jump to a segment (explained later, under Share), it should be treated the same as using the dropdown to jump to a segment.
-5. Clicking on the inline links for Comments or Author’s Note should change the selected segment to the segment those links are contained in, if that segment isn’t already selected.
+1. When you turn the page forward, the [selected entry](#selected-entry) should be the last heading on the previous pages. If you land on a page with a new heading, you remain on the last entry until you turn the page forward. This way, it never assumes you’ve reached the new heading when there’s still content from the old one on the page. The exception to this rule is when a new heading appears at the very top of the page. The Reader should then switch immediately to this heading.
+2. When you turn the page backward, the [selected entry](#selected-entry) should change only once you’ve backed past the heading that was previously selected. It should switch the selection into the heading you have backed into. For example, if you are reading Segment 5 and back past the page with that heading, assuming the previous heading is Segment 4, that will be the new selection. However, if there are multiple headings on the page (i.e. Segment 4.5 and Segment 5 are on the same page), note that backing past the page with 4.5 and 5 should still bring you to Segment 4, skipping 4.5 entirely since you backed past it as well.
+3. When you use the dropdown to jump to an entry, the entry you jumped to should invariably be considered “selected,” no matter where it is on the page. The only exception is if that heading has no content, at which point the Reader should pick the closest subheading with content.
+4. When you load the site from a [share URL](#share) (i.e. midnightmurderparty.com/#!/e10), it should be treated the same as using the dropdown to jump to an entry. It should also open the front cover automatically.
+5. Clicking on the inline links for Comments or Author’s Note should change the [selected entry](#selected-entry) to the entry those links are contained in, if that entry isn’t already selected.
 6. Navigating forward or backward into another chapter should send you into either the next or previous selection with content, respectively. In other words, it should skip all headings that don’t have any content when picking selections.
+
+### On Selected Entry Change
+
+A lot of the Reader works based on which entry is selected. When one of the above actions changes the selected entry, all of the following should happen.
+
+#### Disqus Update
+The Disqus thread below the book should update to reflect the new selection. Note that while the "Discussion for..." text above the Disqus thread should reflect the selected segment, it does not indicate that Disqus has loaded the correct thread. Comment on entries, and navigate away from and back to them to make sure Disqus is updating properly.
+
+#### Author's Note Update
+The Author's Note below the book, if there is one for that entry, should update.
+
+#### Title Update
+The title of the page in the browser should update with the selection. An example title might be “Episode 2-2a-1… | Midnight Murder Party”. The title should always match the selected entry.
+
+#### Dropdown Label Update
+The displayed label on the dropdown at the top of the book should update to reflect to new selection. See [The Dropdown](#the-dropdown) for more details. 
 
 ### Navigating Between Chapters Via Page Turns
 
 Turning the page can occassionally trigger rendering the next chapter. There is some specific behavior involved in this type of navigation which is as follows.
 
-1. Turning the page forward on the last page of a chapter should bring you to the first page of the next chapter. If you are on the last chapter, it should close the book and set the selection (and render) back to the beginning of the first chapter.
-2. Turning the page backward on the first page of a chapter should bring you to the last page of the previous chapter. Note that this shouldn’t bring you to the last HEADING but the last PAGE. The selection should still be the last segment of that chapter, of course. If you are on the first chapter, it should simply close the book.
+1. Turning the page forward on the last page of a chapter should bring you to the first page of the next chapter. If you are on the last chapter, nothing should happen.
+2. Turning the page backward on the first page of a chapter should bring you to the last page of the previous chapter. Note that this shouldn’t bring you to the last HEADING but the last PAGE. The selection should still be the last entry of that chapter, of course. If you are on the first chapter, it should simply close the book.
 
 ### The Dropdown
 
-The dropdown menu should sit at the top of the book and should display the short title of the selected segment and a black arrow next to that. When expanded, the arrow should disappear. Clicking on the closed dropdown should expand it. Selecting an item in the expanded dropdown or clicking outside of the dropdown, should close it.
+The dropdown menu should sit at the top of the book and should display the short title of the [selected entry](#selected-entry) and a black arrow next to that. When expanded, the arrow should disappear. Clicking on the closed dropdown should expand it. Selecting an item in the expanded dropdown or clicking outside of the dropdown, should close it.
 
-Unread segments should appear as bold. The latest release should be gold with the text (new!) next to it (this is subject to change). The currently selected segment should be highlighted. 
+Unread entries should appear as bold. The latest unread release(s) should have the text "new!" next to them. The [selected entry](#selected-entry) should be highlighted. 
 
-If a segment title doesn’t fit within the width of the dropdown, it should not line wrap. It should instead be cut off with ellipses. 
+If an entry title doesn’t fit within the width of the dropdown, it should not line wrap. It should instead be cut off with ellipses. 
 
-Clicking on a segment, should navigate the book to that segment, if it has content, or the next subsegment with content, if it doesn’t.
+Clicking on an entry should navigate the book to that entry, if it has content, or the next subheading with content, if it doesn’t.
 
 ### Book Bottom Bar
 
-The book bottom bar should have a “previous” button on the left, the pageNum / totalPages in the middle, and a “next” button on the right. The page count refers to the number of pages within the current chapter.
+The book bottom bar should have a “previous” button (<) on the left, the page number in the middle, and a “next” (>) button on the right. The page number is relative to the chapter.
 
 Pressing the prev and next buttons should, hopefully obviously, progress the current page back or forward by one. The back and forward arrow keys should do the same.
+
+If you are on the last page of the entire story, the next arrow should not be displayed.
 
 ### End of Segment Links
 
 #### Author’s Note
-This link should appear conditionally. If there is no author’s note, it won’t appear. Clicking on it should smooth scroll the user down to the top of the author’s note section of the page.
+This link should appear conditionally. If there is no author’s note, it won’t appear. Clicking on it should smooth scroll the user down to the top of the author’s note section of the page. 
+
+If the entry this link belongs to isn't the [selected entry](#selected-entry), the selected entry should change.
 
 #### Comments
-This link should display a (mostly) up-to-date count of the comments for that segment. If the count is a little off, don’t worry, though. Disqus’s API falls behind sometimes. Clicking on this link should smooth scroll the user down to the comments section of the page.
+This link should display a (mostly) up-to-date count of the comments for that segment. If the count is a little off, don’t worry, though. Disqus’s API falls behind sometimes. Clicking on this link should smooth scroll the user down to the comments section of the page. 
+
+If the entry this link belongs to isn't the [selected entry](#selected-entry), the selected entry should change.
 
 #### Share
-Clicking this link should open a full screen modal with share options centered on the screen (both vertically and horizontally). Options should include a text box with a URL in it that the user can copy. Below that should be a checkbox (checked by default) that enables the user to choose whether to share from the current segment or to just to share the page. Changing this will change the above URL. Below this should be social media share links. These are unaffected by the above checkbox.
-
-Loading a page from the share URL (with the segment ID included) should load the book at the segment matching that ID and with the cover open by default.
+Clicking this link should open a full screen modal with share options centered on the screen (both vertically and horizontally). Options should include a text box with a share URL in it that the user can copy. Below that should be a checkbox (checked by default) that enables the user to choose whether to share from the current entry or to just to share the page. Changing this will change the above URL. Below this should be social media share links. These are unaffected by the above checkbox.
 
 ### Social Media Share Buttons
 
@@ -165,7 +187,7 @@ An entry refers to a block of data from the database. It consists of a title, te
 
 #### Empty entry / No-content entry
 
-Often chapter headings with sub-headings will not have content of their own, though any entry may not have content. These no-content entries are treated differently in the Reader than entries with text content.
+An entry with only a heading and no content.
 
 #### Selected Entry
 
