@@ -40,7 +40,7 @@ div#error-popup {
     z-index: 10000000;
     color: white;
     padding: 1em;
-    font-family: 'Open Sans Condensed', Helvetica;
+    font-family: 'Open Sans Condensed', sans-serif;
     min-width: 300px;
     height: auto;
     font-size: 18px;
@@ -121,7 +121,7 @@ body.banner-logo-loaded .banner-logo {
     background-size: 100% 100%;
     display: none;
     z-index: 100;
-    font-family: 'Tangerine', cursive;
+    font-family: 'Tangerine', 'Droid Serif', 'Times New Roman';
     font-size: 50px;
     font-weight: bold;
     color: #333;
@@ -227,7 +227,7 @@ body.book-cover-loaded .loader.cover {
 .book .loader.cover .glow .cover-txt {
     color: #DCA234;
     font-size: 8vh;
-    font-family: 'Tangerine', cursive;
+    font-family: 'Tangerine', 'Droid Serif', 'Times New Roman';
     font-weight: normal;
     margin: 0 1em;
     position: absolute;
@@ -342,7 +342,7 @@ body.book-cover-loaded .loader.cover {
 }
 
 .book .page-num {
-    font-family: 'Mirza', cursive;
+    font-family: 'Mirza', 'Droid Serif', 'Times New Roman';
     height: 60px;
     font-size: 20px;
     line-height: 70px;
@@ -450,7 +450,7 @@ body.book-cover-loaded .loader.cover {
     max-height: 0vh;
     overflow-y: auto;
     box-sizing: border-box;
-    font-family: 'Open Sans Condensed';
+    font-family: 'Open Sans Condensed', sans-serif;
     font-size: 17px;
     color: #000;
     transition: max-height 0.2s ease-in-out;
@@ -540,7 +540,7 @@ body.book-cover-loaded .loader.cover {
 
 h2.fancy-heading {
     color: white;
-    font-family: Tangerine;
+    font-family: Tangerine, 'Droid Serif', 'Times New Roman';
     font-size: 45px;
     text-align: center;
     font-weight: normal;
@@ -896,7 +896,7 @@ footer .share-btn {
 
 .job {
   margin-top: 50px;
-  font-family: 'Tangerine', cursive;
+  font-family: 'Tangerine', 'Droid Serif', 'Times New Roman';
   margin-bottom: 5px;
   font-size: 48px;
 }
@@ -940,7 +940,7 @@ footer .share-btn {
     max-width: 500px;
     padding: 1em;
     cursor: text;
-    font: 18px 'Open Sans Condensed',Helvetica, Arial,sans-serif;
+    font: 18px 'Open Sans Condensed', sans-serif;
     overflow: auto;
     max-height: 100%;
     position: relative;
