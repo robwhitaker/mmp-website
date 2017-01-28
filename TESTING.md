@@ -33,8 +33,8 @@ This checklist represents the bare minimum functionality that each tester should
         - [x] Share
         - [x] Comment
         - [x] Author's Note
-    - [ ] Render
-    - [ ] Reflow
+    - [x] Render
+    - [x] Reflow
 - [ ] Book Navigation Events
     - [x] Table Of Contents
         - [ ] Within Chapter
@@ -47,15 +47,15 @@ This checklist represents the bare minimum functionality that each tester should
     - [x] Inline Link
         - [ ] Comment
         - [ ] Author's Note
-    - [ ] Renderer checkpoint updates
+    - [ ] Reflow checkpoint updates
 - [ ] On Selected Entry Change
     - [x] Disqus update
     - [x] Author's Note update
     - [x] Title update
-    - [ ] Bookmark update
+    - [x] Bookmark update
     - [x] Dropdown label update
-    - [ ] Hash update
-    - [ ] Renderer checkpoint update
+    - [x] Hash update
+    - [x] Reflow checkpoint update
 - [ ] Bookmarks
     - [ ] Set on Selected Entry Change
     - [ ] Set on arrival at Entry
@@ -80,6 +80,8 @@ This checklist represents the bare minimum functionality that each tester should
 ## Expected Reader Functionality
 
 This is a broad overview of how the Reader application should be expected to function. If you notice behavior deviating from this, it is likely a bug and should be reported. If you encounter something questionable that isn’t covered here, feel free to treat it like a bug as well.
+
+If a term is unclear, check out the [terminology reference](#terminology-reference) at the end of this doc.
 
 ### Home Page
  
@@ -120,12 +122,45 @@ The title of the page in the browser should update with the selection. An exampl
 #### Dropdown Label Update
 The displayed label on the dropdown at the top of the book should update to reflect to new selection. See [The Dropdown](#the-dropdown) for more details. 
 
+#### Bookmark Update
+When the selected entry changes, it should update the [bookmark](#bookmark) to match. More details on bookmark behavior below.
+
+#### Hash Update
+The hash is part of the URL which follows the hashtag (in `midnightmurderparty.com/#!/e10`, the hash is `#!/e10`). The hash should always contain the ID of the selected entry, which will always be in the format `#!/e{ID}` (for sub-chapters and segments) or `#!/c{ID}` (for chapters). If the selection changes and the hash doesn't, there is a good chance something went wrong. If you load the site from one of these hash URLs, it should immediately bring you back to the selected entry, regardless of where your bookmark is.
+
+The selected entry will always be an entry with content. However, in specific cases where the parent headings of the selected entry have no content, the hash URL will be that of the top-most parent entry without content. This is because it seems most reasonable to share links to the first heading of a segment than the first with content. For example:
+
+```
+Episode 2. ...
+    2a. Sleepytime Tea
+        1
+            ...content...
+```
+
+If a reader shares a link to segment 1, it makes more sense for the recipient to actually see the chapter and sub-chapter titles first. This only really matters when the screen is too small to fit all the headings at once. Note that, while the link should point to the top-most heading, the selected entry should still be the first one with content.
+
+#### Reflow Checkpoint Update
+
+The [reflow checkpoint](#reflow-checkpoint) update is a bit tricky because it doesn't happen on every selected entry change. The reflow checkpoint will be discussed more below, but for now just know that it should only change to match the selected entry ID when the heading for the selected entry is on the page.
+
 ### Navigating Between Chapters Via Page Turns
 
 Turning the page can occassionally trigger rendering the next chapter. There is some specific behavior involved in this type of navigation which is as follows.
 
 1. Turning the page forward on the last page of a chapter should bring you to the first page of the next chapter. If you are on the last chapter, nothing should happen.
 2. Turning the page backward on the first page of a chapter should bring you to the last page of the previous chapter. Note that this shouldn’t bring you to the last HEADING but the last PAGE. The selection should still be the last entry of that chapter, of course. If you are on the first chapter, it should simply close the book.
+
+### Render & Reflow
+
+#### Render
+
+The Reader application renders one chapter at a time since rendering the entire book in one go would be incredibly slow, especially as the book gets longer. When a chapter is rendering, the book text should disappear, and the reader should be presented with the word "Rendering..." along with a loading bar. 
+
+Make sure you land where you would expect after the render process. For example, if the book is small enough to have only one heading per page, make sure that when a page turn forward navigates to the next chapter, the render process doesn't skip to the first heading with content (maybe on page 3 or 4)--it should put you at the beginning of the next chapter.
+
+#### Reflow
+
+When the book resizes, all the text inside of it reflows, and the Reader application has to recalculate where everything is. While it's reflowing, the book text should disappear, and the reader should be presented with the word "Reflowing..." along with a loading bar. When the reflow completes, it should bring the reader to the [reflow checkpoint](#reflow-checkpoint), and that checkpoint element should glow gold for a couple seconds to indicate approximately where the reader left off. Reflowing repeatedly should never change the checkpoint, and no matter how many times the reader reflows in a row, they should always end up in the same spot.
 
 ### The Dropdown
 
@@ -201,6 +236,6 @@ Table of Contents. Refers to the dropdown displayed at the top of the book.
 
 The bookmark refers to an entry in persistant storage which the Reader application automatically keeps so it can bring the reader back to where they left off last time they visited the site.
 
-#### Checkpoint
+#### Reflow Checkpoint
 
-When a reflow occurs, the renderer does its best to remember where the reader was in the book and to put the reader back there. It does this using a checkpoint, which refers to a paragraph or heading on the current page which the renderer takes note of in case it needs to jump back there.
+When a reflow occurs, the renderer does its best to remember where the reader was in the book and to put the reader back there. It does this using a reflow checkpoint, which refers to a paragraph or heading on the current page which the renderer takes note of after most navigation events in order to mark the reader's place.
