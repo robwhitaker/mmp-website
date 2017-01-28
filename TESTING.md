@@ -25,44 +25,46 @@ In the description, please include:
 This checklist represents the bare minimum functionality that each tester should cover; the expected behavior of each item on this list is described in detail under [Expected Reader Functionality](#expected-reader-functionality). A good test will consist of mixing and matching various permutations of items on the below list. Try to come up with your own creative test cases!
 
 - [ ] Book Events    
-    - [x] Open 
-        - [x] Cover Click
-        - [x] Right arrow key
-        - [x] URL Load
+    - [ ] Open 
+        - [ ] Cover Click
+        - [ ] Right arrow key
+        - [ ] URL Load
     - [ ] Inline Links
-        - [x] Share
-        - [x] Comment
-        - [x] Author's Note
-    - [x] Render
-    - [x] Reflow
-- [ ] Book Navigation Events
-    - [x] Table Of Contents
-        - [ ] Within Chapter
-        - [ ] Between Chapters
-    - [x] Page Turn (forward/backward)
-        - [ ] Within Chapter
-        - [ ] Between Chapters  
-    - [x] URL Load
-    - [ ] Bookmark
-    - [x] Inline Link
+        - [ ] Share
         - [ ] Comment
         - [ ] Author's Note
-    - [ ] Reflow checkpoint updates
+    - [ ] Render
+    - [ ] Reflow
+- [ ] Book Navigation Events
+    - [ ] Table Of Contents
+        - [ ] Within Chapter
+        - [ ] Between Chapters
+    - [ ] Page Turn (forward/backward)
+        - [ ] Within Chapter
+        - [ ] Between Chapters  
+    - [ ] URL Load
+    - [ ] Bookmark
+    - [ ] Inline Link
+        - [ ] Comment
+        - [ ] Author's Note
 - [ ] On Selected Entry Change
-    - [x] Disqus update
-    - [x] Author's Note update
-    - [x] Title update
-    - [x] Bookmark update
-    - [x] Dropdown label update
-    - [x] Hash update
-    - [x] Reflow checkpoint update
+    - [ ] Disqus update
+    - [ ] Author's Note update
+    - [ ] Title update
+    - [ ] Bookmark update
+    - [ ] Dropdown label update
+    - [ ] Hash update
+    - [ ] Reflow checkpoint update
 - [ ] Bookmarks
     - [ ] Set on Selected Entry Change
     - [ ] Set on arrival at Entry
-- [x] Cover Open/Closed State
+- [ ] Reflow checkpoint
+    - [ ] Set conditionally on selected entry change
+    - [ ] Set properly on page turn
+- [ ] Cover Open/Closed State
     - [ ] Open
     - [ ] Closed
-- [x] Table of Contents
+- [ ] Table of Contents
     - [ ] Heading matches selected entry
     - [ ] Expands / Contracts
     - [ ] Unread bolded
@@ -71,11 +73,11 @@ This checklist represents the bare minimum functionality that each tester should
 - [ ] Footer
     - [ ] Contact Link
     - [ ] Credits Link
-    - [x] Social Buttons
+    - [ ] Social Buttons
     - [ ] Mailchimp Sign-Up Form
 - [ ] Misc.
     - [ ] High-res images load
-    - [x] Forward arrow disabled on last page
+    - [ ] Forward arrow disabled on last page
 
 ## Expected Reader Functionality
 
@@ -88,6 +90,14 @@ If a term is unclear, check out the [terminology reference](#terminology-referen
 This page should display the logo and the book cover, taking up the whole screen. If you scroll down, you should see the footer. The comments/author’s note section should be hidden. The title of the page in the browser should be “Midnight Murder Party.” All of this should hold true whenever the book cover is closed.
 
 Clicking on the book cover or pressing the right arrow key should open the book.
+
+#### The Book Cover
+
+The cover should display different text depending on whether or not you've visited the site before.
+
+1. If this is your first visit and no [bookmark](#setting-a-bookmark) is set, the cover should show the text "Start Reading".
+    1. On your first visit, if you don't open the cover for a seven seconds, text will fade in saying, "Click the cover to start reading..." Once you open the cover, this text will no longer be visible, even if you close it again.
+2. If you have visited before and a [bookmark](#setting-a-bookmark) was set, the cover should show the text "Resume Reading".
 
 ### Open Book
 
@@ -103,8 +113,9 @@ Determining which [entry](#entry) is considered “selected” happens in a few 
 2. When you turn the page backward, the [selected entry](#selected-entry) should change only once you’ve backed past the heading that was previously selected. It should switch the selection into the heading you have backed into. For example, if you are reading Segment 5 and back past the page with that heading, assuming the previous heading is Segment 4, that will be the new selection. However, if there are multiple headings on the page (i.e. Segment 4.5 and Segment 5 are on the same page), note that backing past the page with 4.5 and 5 should still bring you to Segment 4, skipping 4.5 entirely since you backed past it as well.
 3. When you use the dropdown to jump to an entry, the entry you jumped to should invariably be considered “selected,” no matter where it is on the page. The only exception is if that heading has no content, at which point the Reader should pick the closest subheading with content.
 4. When you load the site from a [share URL](#share) (i.e. midnightmurderparty.com/#!/e10), it should be treated the same as using the dropdown to jump to an entry. It should also open the front cover automatically.
-5. Clicking on the inline links for Comments or Author’s Note should change the [selected entry](#selected-entry) to the entry those links are contained in, if that entry isn’t already selected.
-6. Navigating forward or backward into another chapter should send you into either the next or previous selection with content, respectively. In other words, it should skip all headings that don’t have any content when picking selections.
+5. When you load the site after having visiting and read some of the book before, it should navigate you to the last bookmark set (see [Setting the Bookmark](#setting-the-bookmark) below). However, unlike loading from a share URL, it will not open the front cover automatically, instead showing the text "Resume Reading" on the cover.
+6. Clicking on the inline links for Comments or Author’s Note should change the [selected entry](#selected-entry) to the entry those links are contained in, if that entry isn’t already selected.
+7. Navigating forward or backward into another chapter should select either the next or previous selection with content, respectively. In other words, it should skip all headings that don’t have any content when picking selections.
 
 ### On Selected Entry Change
 
@@ -162,6 +173,20 @@ Make sure you land where you would expect after the render process. For example,
 
 When the book resizes, all the text inside of it reflows, and the Reader application has to recalculate where everything is. While it's reflowing, the book text should disappear, and the reader should be presented with the word "Reflowing..." along with a loading bar. When the reflow completes, it should bring the reader to the [reflow checkpoint](#reflow-checkpoint), and that checkpoint element should glow gold for a couple seconds to indicate approximately where the reader left off. Reflowing repeatedly should never change the checkpoint, and no matter how many times the reader reflows in a row, they should always end up in the same spot.
 
+### Setting the Bookmark
+
+The Reader application automatically manages a [bookmark](#bookmark) in the browser's local storage so that when a reader returns to the site in the same browser, the Reader will start them where they left off. The bookmark is updated in two ways:
+
+1. Whenever the selected entry changes, the bookmark is set to the new selected entry.
+2. When the reader turns the page forward, if there is a heading on the page they turn to, then that heading (the first on the page, if there are multiple) becomes the new bookmark.
+
+### Setting the Reflow Checkpoint
+
+The Reader application automatically manages a [reflow checkpoint](#reflow-checkpoint), which is used to maintain the reader's place in the book if the book size changes, causing the text to reflow. The reflow checkpoint can be set in several ways:
+
+1. **Selected entry change**. If the selected entry changes (from dropdown navigation, page turn, loading to a segment, rendering, etc.), and the heading corresponding to the new selected entry is on the page, the reflow checkpoint will point to that heading.
+2. **Page Turn**. A page turn will set the reflow checkpoint to the top paragraph or heading on the page, as we can't assume the reader has read any further than that. The only exception is if the selected heading is on the page, in which case, that heading will be assigned as the checkpoint instead. This prevents the reflow checkpoint from ever being assigned to a paragraph or heading outside the entry the reader is currently reading.
+
 ### The Dropdown
 
 The dropdown menu should sit at the top of the book and should display the short title of the [selected entry](#selected-entry) and a black arrow next to that. When expanded, the arrow should disappear. Clicking on the closed dropdown should expand it. Selecting an item in the expanded dropdown or clicking outside of the dropdown, should close it.
@@ -201,7 +226,22 @@ The social media share buttons (found in the footer of the page as well as in th
 
 ### Page Footer
 
-This part of the page isn’t entirely finished. Aside from the social media buttons, you don’t have to worry about this.
+#### Mailchimp Sign-Up Form
+
+Under the "Follow" heading in the footer, there should be a text box where you can input your email. You should be able to register for email notifications without leaving the page.
+
+#### "Extras" Links
+
+Under the "Extras heading in the footer, there should be several links.
+
+- _Contact_ - should open a modal with an email address and some other text. Clicking on the perimeter or the "X" should close this modal.
+- _Credits_ - should start a credits roll, which should run to completion and stop on the MMP logo. Clicking the "Exit Credits" button at the top right should close the credits.
+
+### Optimizations
+
+#### High-res Image Swap
+
+The MMP site is highly image-based, and some of these images are rather large. In order to be usable faster on slow connections, low resolution images are loaded in first, and the high resolution images are loaded in the background and swapped in when ready. Make sure that the high-res images always get swapped in.
 
 ## Terminology Reference
 
