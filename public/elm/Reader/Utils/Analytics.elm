@@ -67,7 +67,6 @@ type ActionBookNavigation
     | Bookmark RenderElementID
     | InlineLinkClick RenderElementID
     | FirstLoad RenderElementID
-    | BookNavigationHashChange RenderElementID
 
 emptyAnalyticEvent : AnalyticEvent
 emptyAnalyticEvent =
