@@ -55,6 +55,7 @@ type ActionBook
 
 type OpenMethod
     = OpenCoverClick MillisecondsSinceLoad
+    | OpenArrowForward MillisecondsSinceLoad
     | OpenUrlLoad
 
 type alias MillisecondsSinceLoad = Time

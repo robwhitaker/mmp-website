@@ -19,8 +19,8 @@ import Debug
 
 type Msg
     = TurnPage Direction
-    | CoverClick
-    | SendCoverOpenAnalytic Time
+    | CoverOpen (Time -> Analytics.OpenMethod)
+    | SendCoverOpenAnalytic (Time -> Analytics.OpenMethod) Time
     | SendFollowAnalytic Analytics.LabelFollowMethod
     | OpenSharePopup ShareButtons.Msg
     | ShowShareDialog RenderElementID

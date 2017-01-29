@@ -25,6 +25,7 @@ import Reader.Utils exposing (..)
 import Reader.Ports exposing (..)
 
 import Reader.Utils.Disqus exposing (..)
+import Reader.Utils.Analytics as Analytics
 
 import Core.HTTP.Requests as Requests
 import Json.Decode as Json
@@ -72,15 +73,23 @@ main =
 
 ---- INPUT TRANSFORMERS ----
 
+any_ = List.any identity
+none_ = not << any_
+
 keyToMsg : Model -> KeyCode -> Msg
 keyToMsg model key =
-    if  model.showCover ||
-        model.shareDialog.isVisible ||
-        model.creditsRoll.isVisible ||
-        model.contactModal.isVisible ||
-        model.state == Rendering ||
-        model.state == Reflowing then
-        NoOp
+    if any_
+        [ model.showCover
+        , model.shareDialog.isVisible
+        , model.creditsRoll.isVisible
+        , model.contactModal.isVisible
+        , model.state == Rendering
+        , model.state == Reflowing
+        ] then
+        if key == 39 && none_ [model.shareDialog.isVisible, model.creditsRoll.isVisible, model.contactModal.isVisible] then
+            CoverOpen Analytics.OpenArrowForward
+        else
+            NoOp
     else
         case key of
             37 -> TurnPage Backward

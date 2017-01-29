@@ -38,28 +38,28 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case debugLog "msg" msg of
 
-        CoverClick ->
+        CoverOpen method ->
             let analyticData = model.analyticData
                 newModel =
                     { model
                         | showCover = False
                         , analyticData = { analyticData | firstCoverOpen = True }
                     }
-                coverClickAnalyticTrigger =
+                coverOpenAnalyticTrigger =
                     if model.analyticData.firstCoverOpen == False then
-                        Task.perform SendCoverOpenAnalytic Time.now
+                        Task.perform (SendCoverOpenAnalytic method) Time.now
                     else
                         Cmd.none
 
-                coverClickHashEvent =
+                coverOpenHashEvent =
                     Navigation.modifyUrl <| "#!/" ++ (selectedTopParentId newModel.toc)
             in
                 newModel
-                    ! [ setTitleCmd newModel, setDisqusThread newModel, coverClickAnalyticTrigger, coverClickHashEvent ]
+                    ! [ setTitleCmd newModel, setDisqusThread newModel, coverOpenAnalyticTrigger, coverOpenHashEvent ]
 
-        SendCoverOpenAnalytic firstOpenTime ->
+        SendCoverOpenAnalytic method firstOpenTime ->
             model
-                ! [ sendAnalyticEvent (Analytics.toAnalyticEvent (Book => Open => OpenCoverClick => firstOpenTime - model.analyticData.progStartTime)) ]
+                ! [ sendAnalyticEvent (Analytics.toAnalyticEvent (Book => Open => method => firstOpenTime - model.analyticData.progStartTime)) ]
 
         SendFollowAnalytic analyticsLabel ->
             model

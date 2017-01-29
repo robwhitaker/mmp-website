@@ -42,7 +42,7 @@ view model =
                         [ ("loader cover", True)
                         , ("isDisplayed", model.showCover)
                         ]
-                    , onClick CoverClick
+                    , onClick (CoverOpen Analytics.OpenCoverClick)
                     ]
                     [ div
                         [ class "glow" ]
