@@ -73,20 +73,19 @@ end
 get '/api/chapters' do # public chapters
   content_type :json
   success_response
-  json all_chapters_with_entries("restricted")
+  json all_chapters_with_entries('restricted')
+end
+
+get '/api/next' do # next release's release date
+  content_type :json
+  success_response
+  json next_release_date
 end
 
 get '/rss' do # rss (public chapters)
   @releases = rss_feed
   success_response
   builder :rss
-end
-
-post '/webhook' do
-  content_type :json
-
-  payload = JSON.parse(request.body.read)
-  log(payload)
 end
 
 post '/api/chapters' do # all chapters
@@ -199,10 +198,10 @@ def with_entries(chapter)
   chapter_with_entries
 end
 
-def all_chapters_with_entries(type = "unrestricted")
+def all_chapters_with_entries(type = 'unrestricted')
   chapters_with_entries = []
 
-  if type == "restricted"
+  if type == 'restricted'
     chapters = Chapter.order(order: :asc).where('release_date <= ?', DateTime.now)
   else
     chapters = Chapter.order(order: :asc)
@@ -215,10 +214,10 @@ def all_chapters_with_entries(type = "unrestricted")
   chapters_with_entries
 end
 
-def rss_content
+def next_release_date
   all_content = []
 
-  Chapter.order(order: :asc).where('release_date <= ?', DateTime.now).each do |chapter|
+  Chapter.order(order: :asc).each do |chapter|
     entries = chapter.entries
     chapter = chapter.as_json.deep_symbolize_keys
     chapter[:level] = 0
@@ -227,7 +226,24 @@ def rss_content
     entries.each {|entry| all_content.push(entry.as_json.deep_symbolize_keys)}
   end
 
-  all_content
+  all_content.select do |blob|
+    return blob[:release_date] if blob[:release_date] > DateTime.now
+  end
+end
+
+def released_content
+  released_content = []
+
+  Chapter.order(order: :asc).where('release_date <= ?', DateTime.now).each do |chapter|
+    entries = chapter.entries
+    chapter = chapter.as_json.deep_symbolize_keys
+    chapter[:level] = 0
+
+    released_content.push(chapter)
+    entries.each {|entry| released_content.push(entry.as_json.deep_symbolize_keys)}
+  end
+
+  released_content
 end
 
 def rss_feed
@@ -235,7 +251,7 @@ def rss_feed
   release_stack = []
   current_chapter_id = nil
 
-  rss_content.each do |sub_release|
+  released_content.each do |sub_release|
     if release_stack.empty? || sub_release[:level] > release_stack.last[:level]
       release_stack.push(sub_release)
     else
