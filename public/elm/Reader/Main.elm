@@ -6,6 +6,7 @@ import String
 import Keyboard exposing (KeyCode)
 import Mouse
 import Navigation exposing (Location)
+import Date
 
 import Reader.Ports
 
@@ -36,14 +37,25 @@ import Debug
 
 init : Flags -> Location -> (Model, Cmd Msg)
 init { localStorage, progStartTime } location =
-    let request = Requests.mkRequest Nothing Requests.Get (Json.list Chapter.decoder) "/chapters"
-        requestHandle =
+    let dataRequest = Requests.mkRequest Nothing Requests.Get (Json.list Chapter.decoder) "/chapters"
+        dataRequestHandle =
             Result.map (\chapters -> Load chapters localStorage progStartTime location)
-            >> Result.withDefault NoOp
+                >> Result.withDefault NoOp
+
+        nextEntryRequest = Requests.mkRequest Nothing Requests.Get (Json.string) "/next"
+        nextEntryRequestHandle =
+            Result.mapError (always "") --to make the type signature of andThen match
+                >> Result.andThen (Date.fromString)
+                >> Result.map SetNextReleaseDate
+                >> Result.withDefault NoOp
     in
         (,)
             Reader.Model.empty
-            (Http.send requestHandle request)
+            (Cmd.batch
+                [ Http.send nextEntryRequestHandle nextEntryRequest
+                , Http.send dataRequestHandle dataRequest
+                ]
+            )
 
 ---- WIRING ----
 

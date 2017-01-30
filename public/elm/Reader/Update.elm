@@ -325,7 +325,9 @@ update msg model =
                                   ]
 
         Load chapters { readEntries, bookmark } progStartTime location ->
-            let loadedModel = Reader.Model.Helpers.fromChapterList chapters (Dict.fromList readEntries)
+            let loadedModel_ = Reader.Model.Helpers.fromChapterList chapters (Dict.fromList readEntries)
+                loadedModel = --to make sure the async load doesn't throw away the results from the nextReleaseDate HTTP request
+                    { loadedModel_ | nextReleaseDate = model.nextReleaseDate }
                 -- get rid of the hashbang because it spooks the UrlParser
                 loc = { location | hash = String.filter ((/=) '!') location.hash }
                 paramID = UrlParser.parseHash UrlParser.string loc ? ""
@@ -441,6 +443,10 @@ update msg model =
                       , reflowEvent
                       , cmds
                       ]
+
+        SetNextReleaseDate date ->
+            { model | nextReleaseDate = Just date }
+                ! []
 
         Dump msg ->
             let dump = Debug.log "Dump: " msg

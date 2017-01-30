@@ -1,5 +1,4 @@
 @import url(https://fonts.googleapis.com/css?family=Tangerine);
-@import url(https://fonts.googleapis.com/css?family=Mirza);
 @import url(https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300);
 @import url('https://fonts.googleapis.com/css?family=Droid+Serif');
 
@@ -298,8 +297,9 @@ body.book-cover-loaded .loader.cover {
 .book .book-inner .bottom-bar {
     text-align: center;
     display: flex;
-    /*padding-bottom: 1em;*/
-    /*padding-top: 0.5em;*/
+    height: 60px;
+    max-height: 60px;
+    align-items: center;
 }
 
 .book .book-inner .bottom-bar > div {
@@ -314,21 +314,21 @@ body.book-cover-loaded .loader.cover {
 }
 
 .book .book-arrow.btn-disabled {
-    color: #888;
     cursor: default;
 }
 
 .book .book-arrow .last-page-txt {
     display: none;
     text-align: right;
-    font-size: 16px;
+    font-size: 14px;
+    white-space: nowrap;
 }
 
-.book .book-arrow.btn-disabled:hover .last-page-txt {
+.book .book-arrow.btn-disabled .last-page-txt {
     display: block;
 }
 
-.book .book-arrow.btn-disabled:hover i {
+.book .book-arrow.btn-disabled i {
     display: none;
 }
 
@@ -342,10 +342,8 @@ body.book-cover-loaded .loader.cover {
 }
 
 .book .page-num {
-    font-family: 'Mirza', 'Droid Serif', 'Times New Roman';
-    height: 60px;
-    font-size: 20px;
-    line-height: 70px;
+    font-family: 'Droid Serif', 'Times New Roman';
+    font-size: 15px;
     color: #444;
 }
 

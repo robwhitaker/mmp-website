@@ -21,6 +21,8 @@ import Html.Events exposing (..)
 import Markdown
 import String
 
+import Date.Format as Date
+
 view : Model -> Html Msg
 view model =
     let isLastPage =
@@ -93,7 +95,11 @@ view model =
                             , div [ class "page-num" ] [ text <| toString (model.pages.current + 1) ] --++ " / " ++ toString model.pages.total ]
                             , div
                                 [ classList [("book-arrow forward-btn", True),("btn-disabled", isLastPage)], onClick (TurnPage Forward) ]
-                                [ div [ class "last-page-txt" ] [ text "Check back on Sunday!" ]
+                                [ div [ class "last-page-txt" ]
+                                      <| case model.nextReleaseDate of
+                                            Just date -> [ text "Next release:", br [] [], text <| Date.format "%A %m/%d/%y" date]
+                                            Nothing   -> [ text <| "To be continued..." ]
+
                                 , i [ class "fa fa-angle-right" ] []
                                 ]
                             ]

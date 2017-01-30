@@ -13,6 +13,7 @@ import Reader.Components.ContactModal as ContactModal
 import Navigation exposing (Location)
 
 import Time exposing (Time)
+import Date exposing (Date)
 import Debug
 
 ---- Messages ----
@@ -30,7 +31,7 @@ type Msg
     | Load (List Chapter) LocalStorageData Time Location
     | ChapterHasRendered CurrentPage IdsByPage
     | ChapterHasReflowed CurrentPage IdsByPage
-    --| UpdateHeadingsOnPage HeadingUpdate
+    | SetNextReleaseDate Date
     | ChangeSelectedHeading RenderElementID
     | Dropdown Dropdown.Msg
     | Dump String
