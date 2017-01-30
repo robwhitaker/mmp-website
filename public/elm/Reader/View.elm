@@ -21,6 +21,9 @@ import Html.Events exposing (..)
 import Markdown
 import String
 
+import Date.Format as Date
+import Json.Decode as Json
+
 view : Model -> Html Msg
 view model =
     let isLastPage =
@@ -42,7 +45,7 @@ view model =
                         [ ("loader cover", True)
                         , ("isDisplayed", model.showCover)
                         ]
-                    , onClick CoverClick
+                    , onClick (CoverOpen Analytics.OpenCoverClick)
                     ]
                     [ div
                         [ class "glow" ]
@@ -93,7 +96,11 @@ view model =
                             , div [ class "page-num" ] [ text <| toString (model.pages.current + 1) ] --++ " / " ++ toString model.pages.total ]
                             , div
                                 [ classList [("book-arrow forward-btn", True),("btn-disabled", isLastPage)], onClick (TurnPage Forward) ]
-                                [ div [ class "last-page-txt" ] [ text "Check back on Sunday!" ]
+                                [ div [ class "last-page-txt" ]
+                                      <| case model.nextReleaseDate of
+                                            Just date -> [ text "Next release:", br [] [], text <| Date.format "%A %m/%d/%y" date]
+                                            Nothing   -> [ text <| "To be continued..." ]
+
                                 , i [ class "fa fa-angle-right" ] []
                                 ]
                             ]
@@ -161,15 +168,18 @@ follow =
                     , name "mc-embedded-subscribe-form"
                     , novalidate True
                     , target "_blank"
+                    , onWithOptions "keydown" { defaultOptions | stopPropagation = True } (Json.map (always NoOp) keyCode)
                     ]
                     [ div [ id "mc_embed_signup_scroll" ]
                         [ input [ class "email", id "mce-EMAIL", name "EMAIL", placeholder "email address", required True, type_ "email", value "" ] []
                         , div
                             [ attribute "aria-hidden" "true", attribute "style" "position: absolute; left: -5000px;" ]
                             [ input [ name "b_{{% mailchimp.u %}}_{{% mailchimp.id %}}", tabindex -1, type_ "text", value "" ] [] ]
-                        , div
-                            [ class "clear" ]
-                            [ input [ class "button", id "mc-embedded-subscribe", name "subscribe", type_ "submit", value "Subscribe", onClick (SendFollowAnalytic FollowEmail) ] [] ]
+                        , button
+                            [ class "button", id "mc-embedded-subscribe", name "subscribe", type_ "submit", onClick (SendFollowAnalytic FollowEmail) ]
+                            [ i [ class "fa fa-envelope-o", attribute "aria-hidden" "true" ] []
+                            , text " Subscribe"
+                            ]
                         ]
                     ]
                 ]

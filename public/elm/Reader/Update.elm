@@ -38,28 +38,28 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case debugLog "msg" msg of
 
-        CoverClick ->
+        CoverOpen method ->
             let analyticData = model.analyticData
                 newModel =
                     { model
                         | showCover = False
                         , analyticData = { analyticData | firstCoverOpen = True }
                     }
-                coverClickAnalyticTrigger =
+                coverOpenAnalyticTrigger =
                     if model.analyticData.firstCoverOpen == False then
-                        Task.perform SendCoverOpenAnalytic Time.now
+                        Task.perform (SendCoverOpenAnalytic method) Time.now
                     else
                         Cmd.none
 
-                coverClickHashEvent =
+                coverOpenHashEvent =
                     Navigation.modifyUrl <| "#!/" ++ (selectedTopParentId newModel.toc)
             in
                 newModel
-                    ! [ setTitleCmd newModel, setDisqusThread newModel, coverClickAnalyticTrigger, coverClickHashEvent ]
+                    ! [ setTitleCmd newModel, setDisqusThread newModel, coverOpenAnalyticTrigger, coverOpenHashEvent ]
 
-        SendCoverOpenAnalytic firstOpenTime ->
+        SendCoverOpenAnalytic method firstOpenTime ->
             model
-                ! [ sendAnalyticEvent (Analytics.toAnalyticEvent (Book => Open => OpenCoverClick => firstOpenTime - model.analyticData.progStartTime)) ]
+                ! [ sendAnalyticEvent (Analytics.toAnalyticEvent (Book => Open => method => firstOpenTime - model.analyticData.progStartTime)) ]
 
         SendFollowAnalytic analyticsLabel ->
             model
@@ -325,7 +325,9 @@ update msg model =
                                   ]
 
         Load chapters { readEntries, bookmark } progStartTime location ->
-            let loadedModel = Reader.Model.Helpers.fromChapterList chapters (Dict.fromList readEntries)
+            let loadedModel_ = Reader.Model.Helpers.fromChapterList chapters (Dict.fromList readEntries)
+                loadedModel = --to make sure the async load doesn't throw away the results from the nextReleaseDate HTTP request
+                    { loadedModel_ | nextReleaseDate = model.nextReleaseDate }
                 -- get rid of the hashbang because it spooks the UrlParser
                 loc = { location | hash = String.filter ((/=) '!') location.hash }
                 paramID = UrlParser.parseHash UrlParser.string loc ? ""
@@ -441,6 +443,10 @@ update msg model =
                       , reflowEvent
                       , cmds
                       ]
+
+        SetNextReleaseDate date ->
+            { model | nextReleaseDate = Just date }
+                ! []
 
         Dump msg ->
             let dump = Debug.log "Dump: " msg
