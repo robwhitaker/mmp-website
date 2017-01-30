@@ -620,13 +620,13 @@ footer img[src="/static/assets/img/ello-icon.jpg"] {
     background-color: white;
 }
 
-footer input {
+/*footer input {
     margin-top: 0.4em;
     border-radius: 0.2em;
     padding: 0.4em;
     border: none;
     text-align: center;
-}
+}*/
 
 footer .link-section {
     flex: 1 1 auto;
@@ -652,35 +652,38 @@ footer .share-btn {
 /* ======== MAILCHIMP ======== */
 
 #mc_embed_signup {
-    clear: left;
-    font: 14px Helvetica, Arial, sans-serif;
-    width: 100%;
+    font: 14px 'Open Sans Condensed',sans-serif;
+    width: 200px;
+    margin: 0 auto;
+    text-align: center;
 }
 
 #mc_embed_signup_scroll {
-    display: flex;
-    flex-flow: row wrap;
     margin: 0 auto;
-    max-width: 250px;
-
 }
 
 #mc_embed_signup input.email {
-    flex: 2;
-    min-width: 100px;
-    border-top-right-radius: 0px;
+    width: 100%;
+    text-align: center;
     border-bottom-right-radius: 0px;
-}
-
-#mc_embed_signup .clear {
-    flex: 1;
+    border-bottom-left-radius: 0px;
+    padding: 18px 4px;
+    background-color: rgba(255,255,255,0.9);
 }
 
 #mc_embed_signup .button {
-    border-top-left-radius: 0px;
-    border-bottom-left-radius: 0px;
     width: 100%;
-    padding: 0;
+    border-top-right-radius: 0px;
+    border-top-left-radius: 0px;
+    background-color: #E5B249;
+    text-shadow: 0px 0px 4px #000;
+    font-family: Helvetica, Arial, sans-;
+    font-size: 15px;
+}
+
+#mc_embed_signup .button:hover {
+    background-color: #C39027;
+    cursor: pointer;
 }
 
 /* ======== Share Buttons ======== */
