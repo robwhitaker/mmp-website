@@ -55,6 +55,7 @@ type ActionBook
 
 type OpenMethod
     = OpenCoverClick MillisecondsSinceLoad
+    | OpenArrowForward MillisecondsSinceLoad
     | OpenUrlLoad
 
 type alias MillisecondsSinceLoad = Time
@@ -67,7 +68,6 @@ type ActionBookNavigation
     | Bookmark RenderElementID
     | InlineLinkClick RenderElementID
     | FirstLoad RenderElementID
-    | BookNavigationHashChange RenderElementID
 
 emptyAnalyticEvent : AnalyticEvent
 emptyAnalyticEvent =

@@ -2,6 +2,7 @@ module Reader.Model exposing (..)
 
 import Dict exposing (Dict)
 import Array exposing (Array)
+import Date exposing (Date)
 
 import Reader.Components.ShareDialog as ShareDialog
 import Reader.Components.CreditsRoll as CreditsRoll
@@ -40,6 +41,7 @@ type alias Model =
     , tocExpanded       : Bool
     , locationHost      : LocationHost
     , bookmark          : BookmarkState
+    , nextReleaseDate   : Maybe Date
     , analyticData      : AnalyticData
     }
 
@@ -58,6 +60,7 @@ empty =
     , state             = Loading
     , tocExpanded       = False
     , locationHost      = ""
+    , nextReleaseDate   = Nothing
     , bookmark          = LoadingBookmark
     , analyticData      = emptyAnalyticData
     }
