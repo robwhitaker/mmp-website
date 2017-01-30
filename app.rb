@@ -233,12 +233,8 @@ def next_release_date
     entries.each {|entry| all_content.push(entry.as_json.deep_symbolize_keys)}
   end
 
-  release_date = all_content.select do |data|
-    return data[:release_date] if data[:release_date] > DateTime.now
-    return ''
-  end
-
-  release_date
+  next_release = all_content.find { |data| data[:release_date] > DateTime.now }
+  next_release.class == Hash ? next_release[:release_date] : ''
 end
 
 def released_content
