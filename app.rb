@@ -73,7 +73,7 @@ end
 get '/api/chapters' do # public chapters
   content_type :json
   success_response
-  json all_chapters_with_entries('restricted')
+  json all_chapters_with_entries('released')
 end
 
 get '/api/next' do # next release's release date
@@ -95,7 +95,7 @@ post '/api/chapters' do # all chapters
 
   if authorized? payload["secretKey"]
     success_response
-    json all_chapters_with_entries
+    json all_chapters_with_entries('all')
   else
     failure_response
   end
@@ -192,23 +192,30 @@ def adjust_time_zones(data)
   adjusted_data
 end
 
-def with_entries(chapter)
+def with_entries(chapter, type = 'all')
   chapter_with_entries = chapter.attributes
-  chapter_with_entries[:entries] = chapter.entries
+
+  entries = if type == 'released'
+              chapter.entries.select { |entry| entry.release_date <= DateTime.now }
+            else
+              chapter.entries
+            end
+
+  chapter_with_entries[:entries] = entries
   chapter_with_entries
 end
 
-def all_chapters_with_entries(type = 'unrestricted')
+def all_chapters_with_entries(type = 'all')
   chapters_with_entries = []
 
-  if type == 'restricted'
+  if type == 'released'
     chapters = Chapter.order(order: :asc).where('release_date <= ?', DateTime.now)
   else
     chapters = Chapter.order(order: :asc)
   end
 
   chapters.each do |chapter|
-    chapters_with_entries.push(with_entries(chapter))
+    chapters_with_entries.push(with_entries(chapter, type))
   end
 
   chapters_with_entries
@@ -226,16 +233,15 @@ def next_release_date
     entries.each {|entry| all_content.push(entry.as_json.deep_symbolize_keys)}
   end
 
-  all_content.select do |blob|
-    return blob[:release_date] if blob[:release_date] > DateTime.now
-  end
+  next_release = all_content.find { |data| data[:release_date] > DateTime.now }
+  next_release.class == Hash ? next_release[:release_date] : ''
 end
 
 def released_content
   released_content = []
 
   Chapter.order(order: :asc).where('release_date <= ?', DateTime.now).each do |chapter|
-    entries = chapter.entries
+    entries = chapter.entries.select { |entry| entry.release_date <= DateTime.now }
     chapter = chapter.as_json.deep_symbolize_keys
     chapter[:level] = 0
 
