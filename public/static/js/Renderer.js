@@ -369,9 +369,10 @@ var Renderer = window.Renderer = (function() {
     //---- EVENT LISTENERS ----
 
     function updateDynamicStylesheet() {
-        var dynamicStyle = document.getElementById("dynamic-style");
+        var dynamicStyle  = document.getElementById("dynamic-style");
         dynamicStyle.innerHTML =
-            dynamicStyle.innerHTML.replace(/width:\s*[0-9]+/gi, "width: " + getViewport().width);
+            dynamicStyle.innerHTML.replace(/width:\s*[0-9]+/gi, "width: " + getViewport().width)
+                                  .replace(/height:\s*[0-9]+/gi, "height: " + getViewport().height);
     }
 
     var preventHold = false;
