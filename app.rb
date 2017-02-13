@@ -257,6 +257,8 @@ def released_content
 end
 
 def rss_feed
+  return [] if released_content.empty?
+
   feed = []
   release_stack = []
   current_chapter_id = nil
