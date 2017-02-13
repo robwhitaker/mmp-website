@@ -87,6 +87,41 @@ gulp.task('build:reader-elm', function() {
         .pipe(gulp.dest('tmp-elm'));
 });
 
+gulp.task('build:countdown-js', ['build:countdown-elm'], function() {
+
+    gulp.src(['tmp-elm/ReleaseCountdown.js','public/static/js/ga-include.js'])
+        .pipe(concat('countdown.js'))
+        .pipe(injectConfig())
+        .pipe(ifElse(env === "prod", stripDebug))
+        .pipe(uglifyJS({ mangle: false }))
+        .pipe(rename({
+            suffix: '.min'
+         }))
+        .pipe(gulp.dest('public/static/build/js'));
+});
+
+gulp.task('build:countdown-html', function() {
+    return gulp.src(['public/static/html/coming_soon.html'])
+        .pipe(injectConfig())
+        .pipe(gulp.dest('public'));
+});
+
+gulp.task('build:countdown-css', function() {
+    gulp.src('public/static/css/countdown.css')
+        .pipe(autoprefixer())
+        .pipe(minifyCSS())
+        .pipe(rename({
+            suffix: '.min'
+         }))
+        .pipe(gulp.dest('public/static/build/css'));
+});
+
+gulp.task('build:countdown-elm', function() {
+    return gulp.src('public/elm/ReleaseCountdown.elm')
+        .pipe(elm())
+        .pipe(gulp.dest('tmp-elm'));
+});
+
 gulp.task('build:editor-js', function() {
     gulp.src(['editor.js','init-editor.js'], { cwd: 'public/static/js' })
         .pipe(concat('editor.js'))
@@ -98,5 +133,9 @@ gulp.task('build:editor-js', function() {
 });
 
 gulp.task('build:reader', ['build:reader-html','build:reader-css','build:reader-js'], function() {
+    rimraf('./tmp-elm', function() {});
+});
+
+gulp.task('build:countdown', ['build:countdown-html','build:countdown-js','build:countdown-css'], function() {
     rimraf('./tmp-elm', function() {});
 });
