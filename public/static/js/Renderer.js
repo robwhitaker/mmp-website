@@ -464,6 +464,15 @@ var Renderer = window.Renderer = (function() {
             itemLeft = itemRect.left + bookRect.width <= item.firstChild.getBoundingClientRect().left ? itemRect.left + bookRect.width : itemRect.left;
         }
 
+        // Even if a few px of the container leak onto the page before and don't get caught above
+        // the text position should be on the right page and can be used to correct... probably.
+        var maybeTextNode = getFirstTextNode(item);
+        if(maybeTextNode != null) {
+            var nodePosLeft = getTextNodePosition(maybeTextNode).left;
+            if(nodePosLeft - itemLeft >= bookRect.width)
+                itemLeft = itemLeft + bookRect.width;
+        }
+
         return {
             top    : Math.floor(top),
             left   : Math.floor(itemLeft),
@@ -494,6 +503,26 @@ var Renderer = window.Renderer = (function() {
 
     var hasContent = function(elem) {
         return (elem.innerText || elem.textContent || "").trim() != "";
+    }
+
+    function getFirstTextNode(root) {
+        var children = root.childNodes;
+        for(var i=0; i<children.length;i++) {
+            var child = children[i];
+            if(child.nodeName === "#text")
+                return child;
+            else {
+                var maybeFirstTextNode = getFirstTextNode(child);
+                if(maybeFirstTextNode != null) return maybeFirstTextNode;
+            }
+        }
+        return null;
+    }
+
+    function getTextNodePosition(node) {
+        var range = document.createRange();
+        range.selectNodeContents(node);
+        return range.getBoundingClientRect();
     }
 
     function getScrollWidth() {
