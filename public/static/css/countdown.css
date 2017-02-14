@@ -12,6 +12,7 @@ body, html {
     width: 100%;
     max-width: 100%;
     color: white;
+    font: 18px Helvetica,Arial,sans-serif;
 }
 
 body > div {
@@ -60,7 +61,6 @@ section {
     font-family: 'Tangerine', 'Times New Roman', sans-serif;
     font-size: 55px;
     font-weight: 500;
-    color: #E5B249;
 }
 
 #countdown-timer .timer-field {
@@ -78,22 +78,35 @@ section {
     font-size: 20px;
     font-family: Helvetica, Arial, Verdana, sans-serif;
     text-align: center;
-    color: #E5B249;
+    color: #750000;
+    text-shadow: 0 0 16px white;
+    background-color: rgba(255,255,255,0.1);
+    box-shadow: 0 0 7px rgba(255,255,255,0.1);
+    border-radius: 0.2em;
 }
 
 .preview-sub {
     display: flex;
     flex-flow: row wrap;
+    justify-content: space-around;
 }
 
 .preview-sub > div {
     flex: 1 1 1px;
+    min-width: 300px;
+    margin-bottom: 1.5em;
+}
+
+.preview-sub .spacer {
+    flex: 1 5 1em;
+    min-width: 0px;
+    max-width: 1.5em;
 }
 
 .preview-sub .preview {
     position: relative;
     width: 500px;
-    padding-right: 1.5em;
+    align-self: center;
 }
 
 .preview-sub .preview:after {
@@ -113,6 +126,71 @@ section {
     height: 100%;
 }
 
-.preview-sub .subscribe {
-    padding-left: 1.5em;
+#mc_embed_signup {
+    padding: 0;
+    margin: 0;
+    font-size: 16px;
+}
+
+#mc_embed_signup form {
+    margin: 0;
+    padding: 0;
+}
+
+#mc_embed_signup h2 {
+    margin-top: 0;
+    font-size: 24px;
+}
+
+#mc_embed_signup h2 .mmp-title {
+    font-family: 'Tangerine';
+    font-size: 40px;
+    color: #E5B249;
+    font-weight: 500;
+}
+
+#mc_embed_signup input[type=checkbox] {
+    margin-right: 10px;
+    margin-left: 2.5px;
+    transform: scale(1.5);
+    padding: 10px;
+}
+
+#mc_embed_signup .header-label {
+    font-size: 20px;
+    margin-top: 0.8em;
+    display: block;
+}
+
+#mc_embed_signup ul li {
+    margin-left: 1em;
+}
+
+#mc_embed_signup .button {
+    width: 100%;
+    background-color: #750000;
+    text-shadow: 0px 0px 4px #000;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 15px;
+}
+
+#mc_embed_signup .button:hover {
+    background-color: #330000;
+    cursor: pointer;
+}
+
+#mc_embed_signup .asterisk {
+    color: #E5B249;
+}
+
+#mc_embed_signup #mc-embedded-subscribe-form input.mce_inline_error {
+    border-color: #750000;
+}
+
+#mc_embed_signup #mc-embedded-subscribe-form div.mce_inline_error {
+    color: #750000;
+}
+
+.highlight-color {
+    color: #E5B249;
 }

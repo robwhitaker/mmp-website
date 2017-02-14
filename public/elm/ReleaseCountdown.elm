@@ -89,34 +89,10 @@ view model =
                             , attribute "allowfullscreen" ""
                             ] []
                         ]
+                    , div [ class "spacer" ] []
                     , div
                         [ class "subscribe" ]
-                        [ h1 [] [ text "Tell me when Midnight Murder Party comes out!" ]
-                        , div
-                            [ id "mc_embed_signup" ]
-                            [ Html.form
-                                [ action "//{{% mailchimp.subdomain %}}.us11.list-manage.com/subscribe/post?u={{% mailchimp.u %}}&amp;id={{% mailchimp.id %}}"
-                                , class "validate"
-                                , id "mc-embedded-subscribe-form"
-                                , method "post"
-                                , name "mc-embedded-subscribe-form"
-                                , novalidate True
-                                , target "_blank"
-                                ]
-                                [ div [ id "mc_embed_signup_scroll" ]
-                                    [ input [ class "email", id "mce-EMAIL", name "EMAIL", placeholder "email address", required True, type_ "email", value "" ] []
-                                    , div
-                                        [ attribute "aria-hidden" "true", attribute "style" "position: absolute; left: -5000px;" ]
-                                        [ input [ name "b_{{% mailchimp.u %}}_{{% mailchimp.id %}}", tabindex -1, type_ "text", value "" ] [] ]
-                                    , button
-                                        [ class "button", id "mc-embedded-subscribe", name "subscribe", type_ "submit" ]
-                                        [ i [ class "fa fa-envelope-o", attribute "aria-hidden" "true" ] []
-                                        , text " Subscribe"
-                                        ]
-                                    ]
-                                ]
-                            ]
-                        ]
+                        [ mailchimpForm ]
                     ]
                 ]
             ]
@@ -143,6 +119,67 @@ timerView { nextReleaseDate, currentTime } =
             ) (time,[]) [(day,"day"),(Time.hour,"hour"),(Time.minute,"minute"),(Time.second,"second")]
     in
         div [ id "countdown-timer" ]
-            [ h1  [] [ text <| "The party begins on " ++ Date.format "%m/%d/%y" (Date.fromTime nextReleaseDate) ]
-            , div [ class "timer" ] (showTimer <| nextReleaseDate - currentTime)
+            [ h1
+                []
+                [ text "The party begins on "
+                , span
+                    [ class "highlight-color" ]
+                    [ text <| Date.format "%m/%d/%y" (Date.fromTime nextReleaseDate) ]
+                ]
+            , div
+                [ class "timer" ]
+                (showTimer <| nextReleaseDate - currentTime)
             ]
+
+mailchimpForm : Html Msg
+mailchimpForm =
+    div [ id "mc_embed_signup" ]
+        [ Html.form [ action "//midnightmurderparty.us11.list-manage.com/subscribe/post?u=7d09d2d3e4c3251078a03ce5d&id=c64c3b7e69", class "validate", id "mc-embedded-subscribe-form", method "post", name "mc-embedded-subscribe-form", attribute "novalidate" "", target "_blank" ]
+            [ div [ id "mc_embed_signup_scroll" ]
+                [ h2 []
+                    [ text "Let me know when "
+                    , span [ class "mmp-title" ] [ text "Midnight Murder Party" ]
+                    , text " comes out!"
+                    ]
+                , div [ class "indicates-required" ]
+                    [ span [ class "asterisk" ]
+                        [ text "*" ]
+                    , text " indicates required"
+                    ]
+                , div [ class "mc-field-group" ]
+                    [ label [ for "mce-EMAIL", class "header-label" ]
+                        [ text "Email Address  "
+                        , span [ class "asterisk" ]
+                            [ text "*" ]
+                        ]
+                    , input [ class "required email", id "mce-EMAIL", name "EMAIL", type_ "email", value "" ]
+                        []
+                    ]
+                , div [ class "mc-field-group input-group" ]
+                    [ ul []
+                        [ li []
+                            [ input [ id "mce-group[16105]-16105-0", name "group[16105][1]", type_ "checkbox", value "1" ]
+                                []
+                            , label [ for "mce-group[16105]-16105-0" ]
+                                [ text "Also notify me whenever there is a new release" ]
+                            ]
+                        ]
+                        ]
+                    , div [ class "clear", id "mce-responses" ]
+                        [ div [ class "response", id "mce-error-response", attribute "style" "display:none" ]
+                            []
+                        , div [ class "response", id "mce-success-response", attribute "style" "display:none" ]
+                            []
+                        ]
+                    , div [ attribute "aria-hidden" "true", attribute "style" "position: absolute; left: -5000px;" ]
+                        [ input [ name "b_7d09d2d3e4c3251078a03ce5d_c64c3b7e69", attribute "tabindex" "-1", type_ "text", value "" ]
+                            []
+                        ]
+                    , div [ class "clear" ]
+                        [ input [ class "button", id "mc-embedded-subscribe", name "subscribe", type_ "submit", value "Subscribe" ]
+                            []
+                        ]
+                    ]
+                ]
+            ]
+
