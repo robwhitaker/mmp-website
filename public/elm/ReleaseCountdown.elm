@@ -3,6 +3,7 @@ module ReleaseCountdown exposing (main)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Markdown
 
 import Date
 import Date.Format as Date
@@ -79,6 +80,7 @@ view model =
                     [ class "banner" ]
                     [ a [ href "/" ] [ div [ class "banner-logo" ] [] ] ]
                 , timerView model
+                , Markdown.toHtml [ class "summary-blurb" ] summaryBlurb
                 , div
                     [ class "preview-sub" ]
                     [ div
@@ -94,9 +96,9 @@ view model =
                         [ class "subscribe" ]
                         [ mailchimpForm ]
                     ]
+                , testimonialsView
                 ]
             ]
-        , footer [] []
         ]
 
 timerView : Model -> Html Msg
@@ -137,14 +139,9 @@ mailchimpForm =
         [ Html.form [ action "//midnightmurderparty.us11.list-manage.com/subscribe/post?u=7d09d2d3e4c3251078a03ce5d&id=c64c3b7e69", class "validate", id "mc-embedded-subscribe-form", method "post", name "mc-embedded-subscribe-form", attribute "novalidate" "", target "_blank" ]
             [ div [ id "mc_embed_signup_scroll" ]
                 [ h2 []
-                    [ text "Let me know when "
+                    [ text "I'm in! Let me know when "
                     , span [ class "mmp-title" ] [ text "Midnight Murder Party" ]
                     , text " comes out!"
-                    ]
-                , div [ class "indicates-required" ]
-                    [ span [ class "asterisk" ]
-                        [ text "*" ]
-                    , text " indicates required"
                     ]
                 , div [ class "mc-field-group" ]
                     [ label [ for "mce-EMAIL", class "header-label" ]
@@ -183,3 +180,42 @@ mailchimpForm =
                 ]
             ]
 
+testimonialsView : Html Msg
+testimonialsView =
+    let testimonialsHtml =
+            List.indexedMap (\i (dialogue,char) ->
+                div [ class <| if i % 2 == 0 then "left-align" else "right-align" ]
+                    [ Markdown.toHtml [] <| String.concat ["\"", dialogue, "\""]
+                    , div [ class "attribution" ] [ text <| "— " ++ char ]
+                    ]
+            ) testimonials
+    in
+        div [ class "testimonials" ] <|
+            h2 [] [ text "Testimonials from the partygoers: " ] ::
+            testimonialsHtml ++
+            [ Markdown.toHtml
+                [ class "center-align" ]
+                "\"_**Come on over and join the Party, Reader!**_\""
+            ]
+
+summaryBlurb : String
+summaryBlurb = """
+### _Midnight Murder Party_ is a lighthearted, gore-filled murder-fest, and you're invited!
+
+You hold in your hands a gold-trimmed invitation to the Midnight Murder Party, a serial novel that combines comedy and horror. Prepare to enter a world where resurrection is the norm, killing each other is a game, and being dismembered over the last cookie is expected. The hostess of the Party, Arlene, eagerly awaits your response. What do you say, Reader?
+"""
+
+testimonials : List (String, String)
+testimonials =
+    [ (,) "My Parties are always a _bloody_  good time!" "Arlene"
+    , (,) "Wanna see me kill Marc, like, a lot?" "Marissa"
+    , (,) "A ‘bloody good time?’ Really, Arlene?" "Marc"
+    , (,) "..." "Aidan"
+    , (,) "Marc, tell your creepy brother to stop staring at me." "Marissa"
+    , (,) "Aidan, stop staring at Marissa." "Marc"
+    , (,) "Excuse me. Have you finished the testimonials? The tea is ready." "April"
+    , (,) "Who cares about stupid tea? Where are the _cookies_?" "Marissa"
+    , (,) "Those will be out in a moment." "April"
+    , (,) "_Heck yeah!_" "Marissa"
+    , (,) "Oh, goodness. It seems we've gotten off topic. Well then, everyone, all together now..." "Arlene"
+    ]

@@ -87,8 +87,9 @@ section {
 
 .preview-sub {
     display: flex;
-    flex-flow: row wrap;
+    flex-flow: row wrap-reverse;
     justify-content: space-around;
+    margin-top: 1.5em;
 }
 
 .preview-sub > div {
@@ -140,11 +141,12 @@ section {
 #mc_embed_signup h2 {
     margin-top: 0;
     font-size: 24px;
+    margin-bottom: 5px;
 }
 
 #mc_embed_signup h2 .mmp-title {
     font-family: 'Tangerine';
-    font-size: 40px;
+    font-size: 35px;
     color: #E5B249;
     font-weight: 500;
 }
@@ -191,6 +193,78 @@ section {
     color: #750000;
 }
 
+#mc_embed_signup .header-label {
+    margin-top: 0;
+}
+
+#mc_embed_signup .mc-field-group {
+    min-height: 0;
+}
+
 .highlight-color {
     color: #E5B249;
+}
+
+.summary-blurb {
+    box-sizing: border-box;
+    border-radius: 0.4em;
+    background-color: rgba(0,0,0,0.4);
+    margin: 0 auto;
+    padding: 1.5em;
+}
+
+.summary-blurb h3 {
+    margin-bottom: 1.5em;
+}
+
+.summary-blurb h3 em {
+    font-family: 'Tangerine';
+    font-size: 35px;
+    color: #E5B249;
+    font-weight: 500;
+    font-style: normal;
+}
+
+.summary-blurb p {
+    text-align: justify;
+    line-height: 150%;
+    font-family: 'Verdana';
+}
+
+h2,h3 {
+    font-family: 'Verdana';
+    font-weight: normal !important;
+}
+
+.testimonials {
+    padding: 1.5em 0;
+    border-top: 1px solid white;
+}
+
+.testimonials h2 {
+    margin-bottom: 1.5em;
+    text-align: center;
+}
+
+.testimonials .right-align, .testimonials .left-align, .testimonials .center-align {
+    width: 50%;
+    min-width: 250px;
+    margin-bottom: 2em;
+    font-size: 25px;
+    font-family: Verdana;
+    clear: both;
+}
+
+.testimonials .right-align {
+    float: right;
+}
+
+.testimonials .center-align {
+    width: 100%;
+    text-align: center;
+}
+
+.testimonials .attribution {
+    text-align: right;
+    font-size: 16px;
 }
