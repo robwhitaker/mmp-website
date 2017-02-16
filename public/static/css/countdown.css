@@ -268,3 +268,151 @@ h2,h3 {
     text-align: right;
     font-size: 16px;
 }
+
+#social-shelf {
+    height: 84px;
+    overflow: hidden;
+    position: fixed;
+    top: -34px;
+    left: 0; right: 0;
+    text-align: right;
+    white-space: nowrap;
+    z-index: 1000000;
+    transition: top 0.2s ease-in-out;
+}
+
+#social-shelf.expanded {
+    top: 0;
+}
+
+.share-buttons {
+    height: 36px;
+    box-sizing: border-box;
+    padding: 7px;
+    border-bottom: 2px solid #E5B249;
+    background-color: #750000;
+    text-align: center;
+}
+
+.share-buttons .share-btn {
+    margin: 0 0.5em;
+}
+
+#expand-share {
+    display: inline-block;
+    background-color: #750000;
+    box-sizing: border-box;
+    border: 2px solid #E5B249;
+    border-top: 2px solid #750000;
+    padding: 8px 1em;
+    vertical-align: top;
+    position: relative;
+    top: -2px;
+    border-bottom-right-radius: 0.2em;
+    border-bottom-left-radius: 0.2em;
+    margin-right: 0.1em;
+}
+
+#expand-share:hover {
+    cursor: pointer;
+}
+
+.social-follow {
+    text-align: right;
+    display: inline-block;
+    height: 50px;
+    margin: 0.3em 0.1em;
+}
+
+.social-follow img {
+    width: 30px;
+    height: 30px;
+    margin: 0px 0.2em;
+    border-radius: 0.2em;
+}
+
+.social-follow img[src="/static/assets/img/ello-icon.jpg"] {
+    box-sizing: border-box;
+    padding: 2px;
+    background-color: white;
+}
+
+
+
+/* COPIED FROM READER.CSS, NOT THE BEST WAY, BUT FINE FOR NOW */
+/* ======== Share Buttons ======== */
+
+.share-btn {
+    position: relative;
+    z-index: 0;
+    background-color: grey;
+    overflow: hidden;
+    font: 12px Helvetica, Arial, sans-serif;
+    text-align: center;
+    height: 20px;
+    display: inline-block;
+    border-radius: 0.25em;
+    cursor: pointer;
+    color: white;
+    font-weight: bold;
+    text-shadow: 1px 1px black;
+    min-width: 75px;
+    max-width: 75px;
+}
+
+.share-btn img {
+    height: 20px;
+    width: 20px;
+    margin: 0;
+    min-height: 100%;
+    vertical-align: middle;
+    float: left;
+}
+
+.share-btn span {
+    vertical-align: middle;
+    margin: 0 0.6em 0 0.4em;
+    height: 100%;
+    line-height: 20px;
+}
+
+.share-btn .hover-overlay {
+    position: absolute;
+    background: rgba(255,255,255,0.1);
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: none;
+}
+
+.share-btn:hover .hover-overlay {
+    display: block;
+}
+
+/* ---- Custom Share Buttons ---- */
+
+.share-btn.facebook-share-btn {
+    background-image: linear-gradient(to bottom, rgba(74, 104, 183,1), rgba(59,86,161,1));
+}
+
+.share-btn.twitter-share-btn {
+    background-image: linear-gradient(to bottom, #FEFEFE, #E1E1E1);
+    color: #333;
+    text-shadow: none;
+}
+
+.share-btn.twitter-share-btn .hover-overlay { background: rgba(255,255,255,0.3); }
+
+.share-btn.tumblr-share-btn {
+    background-image: linear-gradient(to bottom, #36465D, #36465D);
+}
+
+.share-btn.gplus-share-btn {
+    background-image: linear-gradient(to bottom, #bf483b, #C43B2B);
+}
+
+.share-btn.reddit-share-btn img {
+    width: 100%;
+}
+
+.share-btn.reddit-share-btn .hover-overlay {
+    background: rgba(255,255,255,0.3);
+}

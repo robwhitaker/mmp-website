@@ -21,8 +21,19 @@
 <body>
 <script src="/static/build/js/countdown.min.js?nocache={{% gen.buildNum %}}"></script>
 <script>
-    Elm.ReleaseCountdown.fullscreen();
+    var Countdown = Elm.ReleaseCountdown.fullscreen();
+    // COPIED FROM RendererInterface.js
+    Countdown.ports.openSharePopup.subscribe(function(data) {
+        var elem = document.getElementsByClassName(data.srcBtnClass)[0];
+        if(!elem) return;
+
+        var top = (window.screen.availHeight/2 - data.height/2) * 0.3;
+        var left = (window.screen.availWidth/2 - data.width/2) * 0.3;
+
+        window.open(data.endpoint, "Share", "height="+data.height+",width="+data.width+",top="+top+",left="+left);
+    });
 </script>
+
 <script type='text/javascript' src='//s3.amazonaws.com/downloads.mailchimp.com/js/mc-validate.js'></script><script type='text/javascript'>(function($) {window.fnames = new Array(); window.ftypes = new Array();fnames[0]='EMAIL';ftypes[0]='email';}(jQuery));var $mcj = jQuery.noConflict(true);</script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-module ReleaseCountdown exposing (main)
+port module ReleaseCountdown exposing (main)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -14,6 +14,8 @@ import Http
 import Navigation
 
 import Core.HTTP.Requests as Requests
+import Reader.Utils.Analytics as Analytics exposing (..)
+import Reader.Views.ShareButtons as ShareButtons
 
 
 main = Html.program
@@ -41,17 +43,23 @@ init =
 type alias Model =
     { nextReleaseDate : Time
     , currentTime     : Time
+    , showShare       : Bool
     }
 
 empty : Model
 empty =
     { nextReleaseDate = 0
     , currentTime     = 0
+    , showShare       = False
     }
 
 -- Update
 
-type Msg = SetNextReleaseDate Time | SetCurrentTime Time
+type Msg
+    = SetNextReleaseDate Time
+    | SetCurrentTime Time
+    | OpenSharePopup ShareButtons.Msg
+    | ToggleShowShare
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -67,6 +75,15 @@ update msg model =
                     else Cmd.none
                   ]
 
+        -- DUPLICATED FROM Reader.Update
+        OpenSharePopup sharePopupSettings ->
+            model
+                ! [ openSharePopup sharePopupSettings.data ]
+
+        ToggleShowShare ->
+            { model | showShare = not model.showShare }
+                ! []
+
 -- View
 
 view : Model -> Html Msg
@@ -77,6 +94,15 @@ view model =
             [ div
                 [ class "container" ]
                 [ div
+                    [ id "social-shelf", classList [("expanded", model.showShare)] ]
+                    [ shareButtons
+                    , div
+                        [ id "expand-share"
+                        , onClick ToggleShowShare
+                        ] [ text "Share" ]
+                    , follow
+                    ]
+                , div
                     [ class "banner" ]
                     [ a [ href "/" ] [ div [ class "banner-logo" ] [] ] ]
                 , timerView model
@@ -180,6 +206,33 @@ mailchimpForm =
                 ]
             ]
 
+-- COPIED FROM Reader.View
+
+shareButtons =
+    Html.map OpenSharePopup <|
+    div
+        [ class "share-buttons" ]
+        [ ShareButtons.facebook
+        , ShareButtons.twitter
+        , ShareButtons.tumblr
+        , ShareButtons.gplus
+        , ShareButtons.reddit
+        ]
+
+follow =
+    let mkIcon (iconUrl, dest) =
+            a [ href dest, target "_BLANK" ]
+              [ img [ src <| "/static/assets/img/" ++ iconUrl ] [] ]
+
+        icons =
+            [ ("facebook-icon.png", "https://www.facebook.com/MMPWebSeries/")
+            , ("twitter-icon.png", "https://twitter.com/MMPWebSeries")
+            , ("ello-icon.jpg", "https://ello.co/midnightmurderparty")
+            , ("rss-icon.png", "/rss")
+            ]
+    in div [ class "social-follow" ] <| List.map mkIcon icons
+
+
 testimonialsView : Html Msg
 testimonialsView =
     let testimonialsHtml =
@@ -197,6 +250,13 @@ testimonialsView =
                 [ class "center-align" ]
                 "\"_**Come on over and join the Party, Reader!**_\""
             ]
+
+
+-- Wiring
+
+port openSharePopup       : ShareButtons.Data -> Cmd msg
+
+-- Static data that should be elsewhere
 
 summaryBlurb : String
 summaryBlurb = """
