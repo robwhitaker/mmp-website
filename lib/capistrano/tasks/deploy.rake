@@ -3,17 +3,17 @@ namespace :deploy do
   task :staging_assets do
     on roles(:app) do
       if fetch(:stage) == 'staging' || fetch(:stage) == 'staging-external'
-        %w[ reader.min.js editor.min.js renderer.min.js ].each do |f|
+        %w[ reader.min.js renderer.min.js editor.min.js countdown.min.js ].each do |f|
           upload! 'public/static/build/js/' + f ,
                   '/home/deploy/mmp/public/static/build/js/' + f
         end
 
-        %w[ reader.html renderer.html ].each do |f|
+        %w[ reader.html renderer.html editor.html coming_soon.html ].each do |f|
           upload! 'public/' + f ,
                   '/home/deploy/mmp/public/' + f
         end
 
-        %w[ reader.min.css renderer.min.css ].each do |f|
+        %w[ reader.min.css renderer.min.css editor.css countdown.min.css ].each do |f|
           upload! 'public/static/build/css/' + f ,
                   '/home/deploy/mmp/public/static/build/css/' + f
         end
@@ -41,7 +41,7 @@ namespace :deploy do
   task :build_assets do
     on roles(:app) do
       if fetch(:stage) == 'production'
-        execute "cd ~/mmp && gulp build:reader"
+        execute "cd ~/mmp && gulp build:reader && gulp build:editor-js && gulp build:countdown"
       end
     end
   end
