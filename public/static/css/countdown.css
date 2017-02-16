@@ -229,6 +229,11 @@ section {
     text-align: justify;
     line-height: 150%;
     font-family: 'Verdana';
+    margin-bottom: 1em;
+}
+
+.summary-blurb p:last-child {
+    margin-bottom: 0;
 }
 
 h2,h3 {
@@ -247,21 +252,25 @@ h2,h3 {
 }
 
 .testimonials .right-align, .testimonials .left-align, .testimonials .center-align {
-    width: 50%;
+    width: 60%;
     min-width: 250px;
-    margin-bottom: 2em;
+    margin: 1em auto;
+    padding-bottom: 1em;
     font-size: 25px;
     font-family: Verdana;
     clear: both;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.4);
 }
 
 .testimonials .right-align {
-    float: right;
+    /*float: right;*/
 }
 
 .testimonials .center-align {
     width: 100%;
     text-align: center;
+    border: none;
 }
 
 .testimonials .attribution {
@@ -304,7 +313,8 @@ h2,h3 {
     box-sizing: border-box;
     border: 2px solid #E5B249;
     border-top: 2px solid #750000;
-    padding: 8px 1em;
+    padding: 7px 2em;
+    font-size: 16px;
     vertical-align: top;
     position: relative;
     top: -2px;
@@ -321,12 +331,12 @@ h2,h3 {
     text-align: right;
     display: inline-block;
     height: 50px;
-    margin: 0.3em 0.1em;
+    margin: 0.2em 0.1em;
 }
 
 .social-follow img {
-    width: 30px;
-    height: 30px;
+    width: 27px;
+    height: 27px;
     margin: 0px 0.2em;
     border-radius: 0.2em;
 }
@@ -335,6 +345,11 @@ h2,h3 {
     box-sizing: border-box;
     padding: 2px;
     background-color: white;
+}
+
+footer {
+    font-size: 12px;
+    text-align: center;
 }
 
 

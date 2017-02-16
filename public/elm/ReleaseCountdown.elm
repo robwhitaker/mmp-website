@@ -123,6 +123,12 @@ view model =
                         [ mailchimpForm ]
                     ]
                 , testimonialsView
+                , footer
+                    []
+                    [ Markdown.toHtml
+                        []
+                        "© 2017 **Midnight Murder Party** All rights reserved"
+                    ]
                 ]
             ]
         ]
@@ -260,9 +266,11 @@ port openSharePopup       : ShareButtons.Data -> Cmd msg
 
 summaryBlurb : String
 summaryBlurb = """
-### _Midnight Murder Party_ is a lighthearted, gore-filled murder-fest, and you're invited!
+### _Midnight Murder Party_ is a lighthearted serial novel, a blood-soaked murder-fest, a story that believes that horror can be fun. It's a party, and you're invited!
 
-You hold in your hands a gold-trimmed invitation to the Midnight Murder Party, a serial novel that combines comedy and horror. Prepare to enter a world where resurrection is the norm, killing each other is a game, and being dismembered over the last cookie is expected. The hostess of the Party, Arlene, eagerly awaits your response. What do you say, Reader?
+You hold in your hands an invitation to the Midnight Murder Party, the paper trimmed with gold and the words handwritten in looping cursive by the hostess herself. The letter invites you to a mansion where the rules of life and death no longer apply. Resurrection is the norm; killing each other is a game; and being dismembered over the last cookie is to be expected. The rules of the night's game are simple: if you get killed, you have to tell the group a story.
+
+The hostess of the Party, Arlene, eagerly awaits your response. What do you say, Reader?
 """
 
 testimonials : List (String, String)
