@@ -331,7 +331,9 @@ update msg model =
         Load chapters { readEntries, bookmark } progStartTime location ->
             let loadedModel_ = Reader.Model.Helpers.fromChapterList chapters (Dict.fromList readEntries)
                 loadedModel = --to make sure the async load doesn't throw away the results from the nextReleaseDate HTTP request
-                    { loadedModel_ | nextReleaseDate = model.nextReleaseDate }
+                    { loadedModel_ | nextReleaseDate = model.nextReleaseDate
+                                   , windowSize = model.windowSize
+                    }
                 -- get rid of the hashbang because it spooks the UrlParser
                 loc = { location | hash = String.filter ((/=) '!') location.hash }
                 paramID = UrlParser.parseHash UrlParser.string loc ? ""
