@@ -57,6 +57,10 @@ update msg model =
                 newModel
                     ! [ setTitleCmd newModel, setDisqusThread newModel, coverOpenAnalyticTrigger, coverOpenHashEvent ]
 
+        UpdateWindowSize size ->
+            { model | windowSize = Just size }
+                ! []
+
         SendCoverOpenAnalytic method firstOpenTime ->
             model
                 ! [ sendAnalyticEvent (Analytics.toAnalyticEvent (Book => Open => method => firstOpenTime - model.analyticData.progStartTime)) ]

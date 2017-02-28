@@ -38,7 +38,12 @@ view model =
             [ class "reader" ]
             [ div [ class "banner" ] [ a [ href "/" ] [ div [ class "banner-logo" ] [] ] ]
             , div
-                [ class "book" ]
+                [ class "book"
+                , case model.windowSize of
+                    -- magic 0.8 matches 80vh from CSS
+                    Just size -> style [ ("height", toString (toFloat size.height * 0.8) ++ "px") ]
+                    Nothing -> style []
+                ]
                 [ div [ class "drop-shadow" ] []
                 , div --COVER LAYER
                     [ classList
