@@ -47,7 +47,11 @@ error 501..510 do
 end
 
 get '/' do
-  send_file File.join(settings.public_folder, 'reader.html')
+  if released_content.empty?
+    send_file File.join(settings.public_folder, 'coming_soon.html')
+  else
+    send_file File.join(settings.public_folder, 'reader.html')
+  end
 end
 
 get '/read.html' do
@@ -253,6 +257,8 @@ def released_content
 end
 
 def rss_feed
+  return [] if released_content.empty?
+
   feed = []
   release_stack = []
   current_chapter_id = nil
