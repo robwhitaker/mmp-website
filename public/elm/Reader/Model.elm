@@ -3,6 +3,7 @@ module Reader.Model exposing (..)
 import Dict exposing (Dict)
 import Array exposing (Array)
 import Date exposing (Date)
+import Window exposing (Size)
 
 import Reader.Components.ShareDialog as ShareDialog
 import Reader.Components.CreditsRoll as CreditsRoll
@@ -43,6 +44,7 @@ type alias Model =
     , bookmark          : BookmarkState
     , nextReleaseDate   : Maybe Date
     , analyticData      : AnalyticData
+    , bookDimensions    : Maybe (Float, Float)
     }
 
 ---- EMPTY MODELS ----
@@ -63,6 +65,7 @@ empty =
     , nextReleaseDate   = Nothing
     , bookmark          = LoadingBookmark
     , analyticData      = emptyAnalyticData
+    , bookDimensions    = Nothing
     }
 
 emptyRenderElement : RenderElement

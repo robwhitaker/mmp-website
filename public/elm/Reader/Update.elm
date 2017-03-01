@@ -57,6 +57,21 @@ update msg model =
                 newModel
                     ! [ setTitleCmd newModel, setDisqusThread newModel, coverOpenAnalyticTrigger, coverOpenHashEvent ]
 
+        UpdateWindowSize windowSize ->
+            let (minRatio,idealRatio,maxRatio,widthToHeightRatio) = (0.75, 0.8, 1, 68.5 / 80)
+                winHeight = toFloat windowSize.height
+                newSize =
+                    case model.bookDimensions of
+                        Nothing   -> Just (widthToHeightRatio * winHeight * idealRatio, winHeight * idealRatio)
+                        Just (width,height) -> Just <|
+                            if height / winHeight < minRatio || height / winHeight > maxRatio then
+                                (widthToHeightRatio * winHeight * idealRatio, winHeight * idealRatio)
+                            else
+                                (width,height)
+            in
+                { model | bookDimensions = newSize }
+                    ! []
+
         SendCoverOpenAnalytic method firstOpenTime ->
             model
                 ! [ sendAnalyticEvent (Analytics.toAnalyticEvent (Book => Open => method => firstOpenTime - model.analyticData.progStartTime)) ]
@@ -327,7 +342,9 @@ update msg model =
         Load chapters { readEntries, bookmark } progStartTime location ->
             let loadedModel_ = Reader.Model.Helpers.fromChapterList chapters (Dict.fromList readEntries)
                 loadedModel = --to make sure the async load doesn't throw away the results from the nextReleaseDate HTTP request
-                    { loadedModel_ | nextReleaseDate = model.nextReleaseDate }
+                    { loadedModel_ | nextReleaseDate = model.nextReleaseDate
+                                   , bookDimensions = model.bookDimensions
+                    }
                 -- get rid of the hashbang because it spooks the UrlParser
                 loc = { location | hash = String.filter ((/=) '!') location.hash }
                 paramID = UrlParser.parseHash UrlParser.string loc ? ""

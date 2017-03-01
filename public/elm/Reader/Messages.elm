@@ -10,8 +10,9 @@ import Reader.Components.Modal.Messages as Modal
 import Reader.Components.ShareDialog as ShareDialog
 import Reader.Components.CreditsRoll as CreditsRoll
 import Reader.Components.ContactModal as ContactModal
-import Navigation exposing (Location)
 
+import Navigation exposing (Location)
+import Window exposing (Size)
 import Time exposing (Time)
 import Date exposing (Date)
 import Debug
@@ -21,6 +22,7 @@ import Debug
 type Msg
     = TurnPage Direction
     | CoverOpen (Time -> Analytics.OpenMethod)
+    | UpdateWindowSize Size
     | SendCoverOpenAnalytic (Time -> Analytics.OpenMethod) Time
     | SendFollowAnalytic Analytics.LabelFollowMethod
     | OpenSharePopup ShareButtons.Msg
