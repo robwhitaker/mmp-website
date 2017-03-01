@@ -24,7 +24,7 @@ namespace :deploy do
   desc "Update base repo folder"
   task :git_pull do
     on roles(:app) do
-      execute "cd ~/mmp && git pull"
+      execute "cd ~/mmp && git checkout #{fetch(:branch)} && git pull"
     end
   end
 
