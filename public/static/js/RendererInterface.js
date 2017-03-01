@@ -23,7 +23,13 @@ var RendererInterface = (function() {
     function getLocalStorage() {
         var items = [];
         var bookmark = null;
-        var data = JSON.parse(localStorage.getItem("MMP_ReaderData") || "{}");
+        var data = {};
+        try {
+            var storage = localStorage.getItem("MMP_ReaderData");
+            data = JSON.parse(storage || "{}");
+        } catch(e) {
+            logError(e.stack);
+        }
         for(key in data)
             if(key != "bookmark")
                 items.push([key,data[key]]);
@@ -186,19 +192,31 @@ var RendererInterface = (function() {
     });
 
     Reader.ports.setReadInStorage.subscribe(function(eId) {
-        if(!localStorage) return;
+        try {
+            if(!localStorage) return;
 
-        var data = JSON.parse(localStorage.getItem("MMP_ReaderData") || "{}");
-        data[eId] = true;
-        localStorage.setItem("MMP_ReaderData", JSON.stringify(data));
+            var storage = localStorage.getItem("MMP_ReaderData");
+            var data = JSON.parse(storage || "{}");
+
+            data[eId] = true;
+            localStorage.setItem("MMP_ReaderData", JSON.stringify(data));
+        } catch(e) {
+            logError(e.stack);
+        }
     });
 
     Reader.ports.setBookmarkInStorage.subscribe(function(eId) {
-        if(!localStorage) return;
+        try {
+            if(!localStorage) return;
 
-        var data = JSON.parse(localStorage.getItem("MMP_ReaderData") || "{}");
-        data["bookmark"] = eId;
-        localStorage.setItem("MMP_ReaderData", JSON.stringify(data));
+            var storage = localStorage.getItem("MMP_ReaderData");
+            var data = JSON.parse(storage || "{}");
+
+            data["bookmark"] = eId;
+            localStorage.setItem("MMP_ReaderData", JSON.stringify(data));
+        } catch(e) {
+            logError(e.stack);
+        }
     });
 
     Reader.ports.setPage.subscribe(function(pageNum) {
