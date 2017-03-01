@@ -7,6 +7,7 @@ import Keyboard exposing (KeyCode)
 import Mouse
 import Navigation exposing (Location)
 import Date
+import Window
 
 import Reader.Ports
 
@@ -54,6 +55,7 @@ init { localStorage, progStartTime } location =
             (Cmd.batch
                 [ Http.send nextEntryRequestHandle nextEntryRequest
                 , Http.send dataRequestHandle dataRequest
+                , Window.size |> Task.perform UpdateWindowSize
                 ]
             )
 
@@ -79,6 +81,7 @@ main =
                 , mouseClickedInReader (\_ -> Dropdown (Nothing, Just False))
                 , Mouse.clicks (\_ -> Dropdown (Nothing, Just False))
                 , reflowRequest (\_ -> StartReflow)
+                , Window.resizes UpdateWindowSize
                 , ping (always Ping)
                 ]
         }

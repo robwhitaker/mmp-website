@@ -10,6 +10,7 @@ repl-temp-*
 public/static/build
 public/reader.html
 public/renderer.html
+public/coming_soon.html
 /elm/elm-stuff
 repl-temp-*
 Gemfile.lock
