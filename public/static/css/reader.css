@@ -259,7 +259,7 @@ body.book-cover-loaded .loader.cover {
 
 .book {
     /*height: 80vh;*/
-    width: 68.5vh;
+    /*width: 68.5vh;*/
     min-height: 256px;
     min-width: 200px;
     max-width: 100%;

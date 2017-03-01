@@ -39,10 +39,12 @@ view model =
             [ div [ class "banner" ] [ a [ href "/" ] [ div [ class "banner-logo" ] [] ] ]
             , div
                 [ class "book"
-                , case model.windowSize of
-                    -- magic 0.8 matches 80vh from CSS
-                    Just size -> style [ ("height", toString (toFloat size.height * 0.8) ++ "px") ]
-                    Nothing -> style []
+                , case model.bookDimensions of
+                    Just (width,height) ->
+                        style [ ("height", toString height ++ "px")
+                              , ("width", toString width ++ "px")
+                              ]
+                    Nothing -> style [ ("height", "80vh"), ("width", "68.5vh") ]
                 ]
                 [ div [ class "drop-shadow" ] []
                 , div --COVER LAYER

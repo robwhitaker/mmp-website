@@ -44,7 +44,7 @@ type alias Model =
     , bookmark          : BookmarkState
     , nextReleaseDate   : Maybe Date
     , analyticData      : AnalyticData
-    , windowSize        : Maybe Size
+    , bookDimensions    : Maybe (Float, Float)
     }
 
 ---- EMPTY MODELS ----
@@ -65,7 +65,7 @@ empty =
     , nextReleaseDate   = Nothing
     , bookmark          = LoadingBookmark
     , analyticData      = emptyAnalyticData
-    , windowSize        = Nothing
+    , bookDimensions    = Nothing
     }
 
 emptyRenderElement : RenderElement
