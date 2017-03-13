@@ -2,6 +2,6 @@ class Entry < ActiveRecord::Base
   belongs_to :chapter
 
   def has_content?
-    self.content != ""
+    !self.content.blank?
   end
 end

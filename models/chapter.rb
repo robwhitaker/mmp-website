@@ -4,6 +4,6 @@ class Chapter < ActiveRecord::Base
   accepts_nested_attributes_for :entries
 
   def has_content?
-    self.content != ""
+    !self.content.blank?
   end
 end
