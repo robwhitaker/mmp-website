@@ -10,7 +10,7 @@ gem 'nokogiri', '1.7.0.1'
 gem 'pony', '1.11'
 gem 'capistrano', '3.7.1'
 gem 'rvm1-capistrano3', '1.4.0', require: false
-gem 'capistrano3-puma', :git => 'https://github.com/seuros/capistrano-puma.git'
+gem 'capistrano3-puma', '1.2.1'
 
 group :development do
   gem 'sqlite3', '1.3.13'
