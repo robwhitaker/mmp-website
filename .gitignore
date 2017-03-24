@@ -5,6 +5,14 @@ elm-stuff/
 ## elm-repl generated files
 repl-temp-*
 
+## PureScript
+/bower_components/
+/.pulp-cache/
+/output/
+/generated-docs/
+/.psc*
+/.psa*
+
 ## Static artifacts
 /node_modules
 public/static/build

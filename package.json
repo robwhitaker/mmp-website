@@ -20,7 +20,9 @@
     "rimraf": "^2.5.4",
     "yargs": "^5.0.0"
   },
-  "scripts": {},
+  "scripts": {
+    "editor": "pulp build -m Editor.Main -I purescript -t public/static/build/js/editor.min.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/robwhitaker/MMPWebsiteV2.git"
