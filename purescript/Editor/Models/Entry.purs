@@ -1,9 +1,14 @@
 module Editor.Models.Entry where
-  
+
+import Editor.Utils.Json (customAesonOptions, allowMissingFields)
+
 import Prelude
 import Data.DateTime (DateTime)
 import Data.Generic (class Generic, gShow, gEq)
 import Data.Maybe (Maybe(..))
+import Data.Argonaut (class EncodeJson, class DecodeJson)
+import Data.Argonaut.Generic.Decode (genericDecodeJson)
+import Data.Argonaut.Generic.Aeson (encodeJson)
 
 newtype Entry = Entry
     { id                :: Maybe Int
@@ -40,3 +45,8 @@ instance showEntry :: Show Entry where
 instance eqEntry :: Eq Entry where
     eq = gEq
 
+instance decodeJsonEntry :: DecodeJson Entry where
+   decodeJson = genericDecodeJson (customAesonOptions allowMissingFields)
+
+instance encodeJsonEntry :: EncodeJson Entry where
+   encodeJson = encodeJson
