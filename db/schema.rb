@@ -10,20 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170313224708) do
+ActiveRecord::Schema.define(version: 20170326163507) do
 
   create_table "chapters", force: :cascade do |t|
     t.integer  "order"
     t.text     "stylesheet"
     t.string   "title"
     t.text     "content"
-    t.datetime "release_date"
-    t.text     "authors_note"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
-    t.boolean  "interactive"
-    t.string   "gamedata"
-    t.string   "jssource"
+    t.datetime "releaseDate"
+    t.text     "authorsNote"
+    t.datetime "created_at",      null: false
+    t.datetime "updated_at",      null: false
+    t.boolean  "isInteractive"
+    t.string   "interactiveData"
+    t.string   "interactiveUrl"
   end
 
   create_table "entries", force: :cascade do |t|
@@ -32,13 +32,13 @@ ActiveRecord::Schema.define(version: 20170313224708) do
     t.integer  "order"
     t.string   "title"
     t.text     "content"
-    t.datetime "release_date"
-    t.text     "authors_note"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
-    t.boolean  "interactive"
-    t.string   "gamedata"
-    t.string   "jssource"
+    t.datetime "releaseDate"
+    t.text     "authorsNote"
+    t.datetime "created_at",      null: false
+    t.datetime "updated_at",      null: false
+    t.boolean  "isInteractive"
+    t.string   "interactiveData"
+    t.string   "interactiveUrl"
   end
 
 end
