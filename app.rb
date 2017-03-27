@@ -187,10 +187,10 @@ end
 
 def adjust_time_zones(data)
   adjusted_data = data
-  adjusted_data["release_date"] = adjust_time_zone(data["release_date"])
+  adjusted_data["releaseDate"] = adjust_time_zone(data["releaseDate"])
 
   data["entries_attributes"].each_with_index do |entry, index|
-    adjusted_data["entries_attributes"][index]["release_date"] = adjust_time_zone(entry["release_date"])
+    adjusted_data["entries_attributes"][index]["releaseDate"] = adjust_time_zone(entry["releaseDate"])
   end
 
   adjusted_data
@@ -200,7 +200,7 @@ def with_entries(chapter, type = 'all')
   chapter_with_entries = chapter.attributes
 
   entries = if type == 'released'
-              chapter.entries.select { |entry| entry.release_date <= DateTime.now }
+              chapter.entries.select { |entry| entry.releaseDate <= DateTime.now }
             else
               chapter.entries
             end
@@ -213,7 +213,7 @@ def all_chapters_with_entries(type = 'all')
   chapters_with_entries = []
 
   if type == 'released'
-    chapters = Chapter.order(order: :asc).where('release_date <= ?', DateTime.now)
+    chapters = Chapter.order(order: :asc).where('releaseDate <= ?', DateTime.now)
   else
     chapters = Chapter.order(order: :asc)
   end
@@ -237,15 +237,15 @@ def next_release_date
     entries.each {|entry| all_content.push(entry.as_json.deep_symbolize_keys)}
   end
 
-  next_release = all_content.find { |data| data[:release_date] > DateTime.now }
-  next_release.class == Hash ? next_release[:release_date] : ''
+  next_release = all_content.find { |data| data[:releaseDate] > DateTime.now }
+  next_release.class == Hash ? next_release[:releaseDate] : ''
 end
 
 def released_content
   released_content = []
 
-  Chapter.order(order: :asc).where('release_date <= ?', DateTime.now).each do |chapter|
-    entries = chapter.entries.select { |entry| entry.release_date <= DateTime.now }
+  Chapter.order(order: :asc).where('releaseDate <= ?', DateTime.now).each do |chapter|
+    entries = chapter.entries.select { |entry| entry.releaseDate <= DateTime.now }
     chapter = chapter.as_json.deep_symbolize_keys
     chapter[:level] = 0
 
