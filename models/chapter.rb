@@ -1,8 +1,9 @@
-class Entry < ActiveRecord::Base
-  belongs_to :chapter, foreign_key: 'chapterId'
+class Chapter < ActiveRecord::Base
+  has_many :entries, foreign_key: 'chapterId'
   after_initialize :init
 
   def init
+    self.stylesheet      ||= ''
     self.title           ||= ''
     self.content         ||= ''
     self.authorsNote     ||= ''
