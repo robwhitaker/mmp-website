@@ -1,30 +1,54 @@
 module Editor.Utils.Requests where
   
+import Editor.Models.Chapter (Chapter)
+import Editor.Models.Entry (Entry)
+import Network.HTTP.Affjax.Response (class Respondable)
+
 import Prelude
-import Network.HTTP.Affjax (AJAX, Affjax, get)
+import Control.Monad.Aff (Aff)
+import Data.Either (Either, either)
+import Data.Argonaut.Core (Json)
+import Data.Argonaut.Encode(class EncodeJson)
+import Data.Argonaut.Encode.Combinators ((:=),(~>))
+import Data.Argonaut.Generic.Aeson (decodeJson)
+import Network.HTTP.Affjax (AJAX, Affjax, AffjaxResponse, get, post)
 
-newtype Endpoint = Endpoint String
+getChapters :: forall e. Aff (ajax :: AJAX | e) (AffjaxResponse (Either String (Array Chapter)))
+getChapters = do 
+    affjaxResponse <- get chaptersEndpoint
+    pure $ affjaxResponse { response = decodeJson affjaxResponse.response }
 
-pathJoin :: Endpoint -> Endpoint -> Endpoint
-pathJoin (Endpoint a) (Endpoint b) = Endpoint $ a <> "/" <> b
+---- REQUEST HELPERS ----
 
-infixr 5 pathJoin as </>
+postRequest :: forall a e r. (EncodeJson a, Respondable r) => String -> String -> a -> Affjax e r
+postRequest endpoint secretKey postData = post endpoint payload
+  where 
+    payload = 
+        "secretKey" := secretKey
+        ~> "data" := postData
 
-apiBase :: Endpoint
-apiBase = Endpoint "/api"
+---- ENDPOINTS ----
 
-chaptersEndpoint :: Endpoint
-chaptersEndpoint = apiBase </> Endpoint "chapters"
+apiBase :: String
+apiBase = "/api"
 
-updateChapterEndpoint :: Endpoint
-updateChapterEndpoint = apiBase </> chaptersEndpoint </> Endpoint "crupdate"
+-- supports GET and POST
+chaptersEndpoint :: String
+chaptersEndpoint = apiBase <> "/chapters"
 
-deleteChapterEndpoint :: Endpoint
-deleteChapterEndpoint = apiBase </> chaptersEndpoint </> Endpoint "delete"
+-- supports POST
+chapterUpdateEndpoint :: String
+chapterUpdateEndpoint = chaptersEndpoint <> "/crupdate"
 
-nextEndpoint :: Endpoint
-nextEndpoint = apiBase </> Endpoint "next"
+-- supports POST
+chapterDeleteEndpoint :: String
+chapterDeleteEndpoint = chaptersEndpoint <> "/delete"
 
-getChapters :: forall e. Affjax e String
-getChapters = (\(Endpoint chEndpoint) -> get chEndpoint) chaptersEndpoint
+-- supports GET
+singleChapterEndpoint :: Int -> String
+singleChapterEndpoint cId = chaptersEndpoint <> "/" <> show cId
+
+-- supports GET
+nextReleaseEndpoint :: String
+nextReleaseEndpoint = apiBase <> "/next"
 
