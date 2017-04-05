@@ -1,15 +1,16 @@
 module Editor.Models.Chapter where
   
+import Editor.Data.ReleaseDate
 import Editor.Models.Entry (Entry)
-import Editor.Utils.Json (customAesonOptions, allowMissingFields)
 
 import Prelude
 import Data.Maybe (Maybe(..))
-import Data.DateTime (DateTime)
+import Data.Traversable (traverse)
 import Data.Generic (class Generic, gShow, gEq)
-import Data.Argonaut (class EncodeJson, class DecodeJson)
-import Data.Argonaut.Generic.Decode (genericDecodeJson)
-import Data.Argonaut.Generic.Aeson (encodeJson)
+import Data.Foreign (readArray)
+import Data.Foreign.Class(class IsForeign, readProp, read)
+import Data.Foreign.Index (prop)
+import Data.Foreign.NullOrUndefined(unNullOrUndefined, readNullOrUndefined)
 
 newtype Chapter = Chapter
     { id                :: Maybe Int
@@ -20,7 +21,7 @@ newtype Chapter = Chapter
     , stylesheet        :: String
     , title             :: String
     , content           :: String
-    , releaseDate       :: Maybe DateTime
+    , releaseDate       :: Maybe ReleaseDate
     , authorsNote       :: String
     , entries           :: Array Entry
     }
@@ -48,8 +49,29 @@ instance showChapter :: Show Chapter where
 instance eqChapter :: Eq Chapter where
     eq = gEq
 
-instance decodeJsonChapter :: DecodeJson Chapter where
-   decodeJson = genericDecodeJson (customAesonOptions allowMissingFields)
-
-instance encodeJsonChapter :: EncodeJson Chapter where
-   encodeJson = encodeJson
+instance chapterIsForeign :: IsForeign Chapter where
+    read value = do
+        id' <- readNullOrUndefined (readProp "id") value
+        order <- readProp "order" value
+        isInteractive <- readProp "isInteractive" value
+        interactiveUrl <- readProp "interactiveUrl" value
+        interactiveData <- readProp "interactiveData" value
+        stylesheet <- readProp "stylesheet" value
+        title <- readProp "title" value
+        content <- readProp "content" value
+        releaseDate <- readNullOrUndefined (\v -> prop "releaseDate" v >>= read) value
+        authorsNote <- readProp "authorsNote" value
+        entries <- readProp "entries" value >>= readArray >>= traverse read
+        pure $ Chapter 
+            { id : unNullOrUndefined id'
+            , order : order
+            , isInteractive : isInteractive
+            , interactiveUrl : interactiveUrl
+            , interactiveData : interactiveData
+            , stylesheet : stylesheet
+            , title : title
+            , content : content
+            , releaseDate : unNullOrUndefined releaseDate
+            , authorsNote : authorsNote
+            , entries : entries
+            }

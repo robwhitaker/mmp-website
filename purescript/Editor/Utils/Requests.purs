@@ -1,31 +1,28 @@
 module Editor.Utils.Requests where
   
+import Data.Foreign.Class (read)
 import Editor.Models.Chapter (Chapter)
 import Editor.Models.Entry (Entry)
 import Network.HTTP.Affjax.Response (class Respondable)
 
 import Prelude
 import Control.Monad.Aff (Aff)
-import Data.Either (Either, either)
-import Data.Argonaut.Core (Json)
-import Data.Argonaut.Encode(class EncodeJson)
-import Data.Argonaut.Encode.Combinators ((:=),(~>))
-import Data.Argonaut.Generic.Aeson (decodeJson)
 import Network.HTTP.Affjax (AJAX, Affjax, AffjaxResponse, get, post)
+import Data.Foreign (F)
 
-getChapters :: forall e. Aff (ajax :: AJAX | e) (AffjaxResponse (Either String (Array Chapter)))
+getChapters :: forall e. Aff (ajax :: AJAX | e) (AffjaxResponse (F (Array Chapter)))
 getChapters = do 
     affjaxResponse <- get chaptersEndpoint
-    pure $ affjaxResponse { response = decodeJson affjaxResponse.response }
+    pure $ affjaxResponse { response = read affjaxResponse.response }
 
 ---- REQUEST HELPERS ----
 
-postRequest :: forall a e r. (EncodeJson a, Respondable r) => String -> String -> a -> Affjax e r
-postRequest endpoint secretKey postData = post endpoint payload
-  where 
-    payload = 
-        "secretKey" := secretKey
-        ~> "data" := postData
+-- postRequest :: forall a e r. (EncodeJson a, Respondable r) => String -> String -> a -> Affjax e r
+-- postRequest endpoint secretKey postData = post endpoint payload
+--   where 
+--     payload = 
+--         "secretKey" := secretKey
+--         ~> "data" := postData
 
 ---- ENDPOINTS ----
 
