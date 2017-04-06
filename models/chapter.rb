@@ -7,6 +7,7 @@ class Chapter < ActiveRecord::Base
     self.title           ||= ''
     self.content         ||= ''
     self.authorsNote     ||= ''
+    self.docId           ||= ''
     self.interactiveData ||= ''
     self.interactiveUrl  ||= ''
     self.isInteractive   ||= false
