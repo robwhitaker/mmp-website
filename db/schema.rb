@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170328015953) do
+ActiveRecord::Schema.define(version: 20170406130556) do
 
   create_table "chapters", force: :cascade do |t|
     t.integer  "order"
@@ -24,6 +24,7 @@ ActiveRecord::Schema.define(version: 20170328015953) do
     t.boolean  "isInteractive"
     t.string   "interactiveData"
     t.string   "interactiveUrl"
+    t.string   "docId"
   end
 
   create_table "entries", force: :cascade do |t|
