@@ -7,7 +7,7 @@ import Data.Generic (class Generic, gShow, gEq)
 import Data.Maybe (Maybe(..), maybe)
 import Data.DateTime (DateTime)
 import Data.Foreign (toForeign, writeObject)
-import Data.Foreign.Class(class IsForeign, class AsForeign, (.=), readProp, read)
+import Data.Foreign.Class(class IsForeign, class AsForeign, (.=), readProp, read, write)
 import Data.Foreign.Index (prop)
 import Data.Foreign.Null (writeNull)
 import Data.Foreign.NullOrUndefined(unNullOrUndefined, readNullOrUndefined)
@@ -83,6 +83,6 @@ instance entryAsForeign :: AsForeign Entry where
             , "interactiveData" .= entry.interactiveData
             , "title" .= entry.title
             , "content" .= entry.content
-            , "releaseDate" .= maybe writeNull (toForeign <<< fromDateTime) entry.releaseDate
+            , "releaseDate" .= maybe writeNull (write <<< fromDateTime) entry.releaseDate
             , "authorsNote" .= entry.authorsNote
             ]

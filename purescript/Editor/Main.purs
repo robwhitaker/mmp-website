@@ -13,11 +13,12 @@ import Data.List.NonEmpty (NonEmptyList(..))
 import Editor.Models.Chapter (Chapter(..))
 import Editor.Utils.Requests (getChapters)
 import Network.HTTP.Affjax (AJAX)
+import Debug.Trace
 
 main :: forall e. Aff (console :: CONSOLE, ajax :: AJAX | e) Unit
 main = do
   chs <- getChapters
   let chapters = either (const []) id $ runExcept chs.response
-  liftEff $ log $ show chapters
-  liftEff $ log $ show $ runExcept (read $ write chapters) :: Either (NonEmptyList ForeignError) (Array Chapter.Chapter)
-  liftEff $ log $ show $ runExcept chs.response
+  -- liftEff $ log $ show chapters
+  liftEff $ log $ show $ runExcept (read $ write chapters) == runExcept chs.response 
+  -- liftEff $ log $ show $ runExcept chs.response

@@ -9,7 +9,7 @@ import Data.DateTime (DateTime)
 import Data.Traversable (traverse)
 import Data.Generic (class Generic, gShow, gEq)
 import Data.Foreign (readArray, toForeign, writeObject)
-import Data.Foreign.Class(class IsForeign, class AsForeign, (.=), readProp, read)
+import Data.Foreign.Class(class IsForeign, class AsForeign, (.=), readProp, read, write)
 import Data.Foreign.Index (prop)
 import Data.Foreign.Null (writeNull)
 import Data.Foreign.NullOrUndefined(unNullOrUndefined, readNullOrUndefined)
@@ -89,7 +89,7 @@ instance chapterAsForeign :: AsForeign Chapter where
             , "stylesheet" .= chapter.stylesheet
             , "title" .= chapter.title
             , "content" .= chapter.content
-            , "releaseDate" .= maybe writeNull (toForeign <<< fromDateTime) chapter.releaseDate
+            , "releaseDate" .= maybe writeNull (write <<< fromDateTime) chapter.releaseDate
             , "authorsNote" .= chapter.authorsNote
             , "entries" .= chapter.entries
             ]
