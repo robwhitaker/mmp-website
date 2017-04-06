@@ -16,6 +16,7 @@
     "purescript-affjax": "^3.0.2"
   },
   "devDependencies": {
-    "purescript-psci-support": "^2.0.0"
+    "purescript-psci-support": "^2.0.0",
+    "purescript-debug": "^2.0.0"
   }
 }

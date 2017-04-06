@@ -1,15 +1,17 @@
 module Editor.Models.Chapter where
   
-import Editor.Data.ReleaseDate
+import Editor.Data.ForeignDateTime (fromDateTime, toDateTime)
 import Editor.Models.Entry (Entry)
 
 import Prelude
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), maybe)
+import Data.DateTime (DateTime)
 import Data.Traversable (traverse)
 import Data.Generic (class Generic, gShow, gEq)
-import Data.Foreign (readArray)
-import Data.Foreign.Class(class IsForeign, readProp, read)
+import Data.Foreign (readArray, toForeign, writeObject)
+import Data.Foreign.Class(class IsForeign, class AsForeign, (.=), readProp, read)
 import Data.Foreign.Index (prop)
+import Data.Foreign.Null (writeNull)
 import Data.Foreign.NullOrUndefined(unNullOrUndefined, readNullOrUndefined)
 
 newtype Chapter = Chapter
@@ -21,7 +23,7 @@ newtype Chapter = Chapter
     , stylesheet        :: String
     , title             :: String
     , content           :: String
-    , releaseDate       :: Maybe ReleaseDate
+    , releaseDate       :: Maybe DateTime
     , authorsNote       :: String
     , entries           :: Array Entry
     }
@@ -59,7 +61,7 @@ instance chapterIsForeign :: IsForeign Chapter where
         stylesheet <- readProp "stylesheet" value
         title <- readProp "title" value
         content <- readProp "content" value
-        releaseDate <- readNullOrUndefined (\v -> prop "releaseDate" v >>= read) value
+        releaseDate <- readNullOrUndefined (\v -> prop "releaseDate" v >>= read >>= pure <<< toDateTime) value
         authorsNote <- readProp "authorsNote" value
         entries <- readProp "entries" value >>= readArray >>= traverse read
         pure $ Chapter 
@@ -75,3 +77,20 @@ instance chapterIsForeign :: IsForeign Chapter where
             , authorsNote : authorsNote
             , entries : entries
             }
+
+instance chapterAsForeign :: AsForeign Chapter where
+    write (Chapter chapter) = 
+        writeObject
+            [ "id" .= maybe writeNull toForeign chapter.id
+            , "order" .= chapter.order
+            , "isInteractive" .= chapter.isInteractive
+            , "interactiveUrl" .= chapter.interactiveUrl
+            , "interactiveData" .= chapter.interactiveData
+            , "stylesheet" .= chapter.stylesheet
+            , "title" .= chapter.title
+            , "content" .= chapter.content
+            , "releaseDate" .= maybe writeNull (toForeign <<< fromDateTime) chapter.releaseDate
+            , "authorsNote" .= chapter.authorsNote
+            , "entries" .= chapter.entries
+            ]
+

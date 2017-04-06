@@ -1,40 +1,27 @@
-module Editor.Data.ReleaseDate where
+module Editor.Data.ForeignDateTime where
 
 import Prelude
-import Data.Array (concat)
 import Data.Date (canonicalDate)
-import Data.DateTime (DateTime(..))
-import Data.Enum (toEnum)
-import Data.Foreign (ForeignError(..), fail, readString)
-import Data.Foreign.Class (class IsForeign)
-import Data.Generic (class Generic)
-import Data.Int (fromString)
+import Data.DateTime (DateTime(..), date, minute, second, time, day, month, year)
 import Data.Either (Either(..), either)
+import Data.Enum (fromEnum, toEnum)
+import Data.Foreign (ForeignError(..), fail, readString, toForeign)
+import Data.Foreign.Class (class AsForeign, class IsForeign)
+import Data.Int (fromString)
 import Data.Maybe (Maybe(..), maybe)
 import Data.String (length, take)
 import Data.String.Regex (parseFlags, regex, split)
-import Data.Time (Time(..))
+import Data.Time (Time(..), hour, millisecond)
 import Data.Traversable (traverse)
 
-newtype ReleaseDate = ReleaseDate DateTime
+newtype ForeignDateTime = ForeignDateTime DateTime
 
-derive instance genericReleaseDate :: Generic ReleaseDate
-
-instance showReleaseDate :: Show ReleaseDate where
-    show (ReleaseDate a) = show a
-
-instance eqReleaseDate :: Eq ReleaseDate where
-    eq (ReleaseDate a) (ReleaseDate b) = eq a b
-
-instance ordReleaseDate :: Ord ReleaseDate where
-    compare (ReleaseDate a) (ReleaseDate b) = compare a b
-
-instance releaseDateIsForeign :: IsForeign ReleaseDate where
+instance foreignDateTimeIsForeign :: IsForeign ForeignDateTime where
     read value = do
         strVal <- readString value
         maybe 
             (fail (ErrorAtProperty "releaseDate" $ ForeignError ""))
-            (pure <<< ReleaseDate)
+            (pure <<< ForeignDateTime)
             (parseISO8601 strVal)
       where
             parseISO8601 :: String -> Maybe DateTime
@@ -51,3 +38,23 @@ instance releaseDateIsForeign :: IsForeign ReleaseDate where
                 DateTime <$> 
                     (canonicalDate <$> toEnum year <*> toEnum month <*> toEnum day) <*> 
                     (Time <$> toEnum hour <*> toEnum minute <*> toEnum second <*> toEnum milli)
+
+instance foreignDateTimeAsForeign :: AsForeign ForeignDateTime where
+    write (ForeignDateTime datetime) =
+        let d = date datetime
+            t = time datetime
+        in toForeign $ 
+            (show $ fromEnum $ year d) <> "-" <>
+            (show $ fromEnum $ month d) <> "-" <>
+            (show $ fromEnum $ day d) <> "T" <>
+            (show $ fromEnum $ hour t) <> ":" <>
+            (show $ fromEnum $ minute t) <> ":" <>
+            (show $ fromEnum $ second t) <> "." <>
+            (show $ fromEnum $ millisecond t) <> "Z"
+
+toDateTime :: ForeignDateTime -> DateTime
+toDateTime (ForeignDateTime datetime) = datetime
+
+fromDateTime :: DateTime -> ForeignDateTime
+fromDateTime = ForeignDateTime
+

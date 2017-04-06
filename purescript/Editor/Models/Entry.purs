@@ -1,12 +1,15 @@
 module Editor.Models.Entry where
 
-import Editor.Data.ReleaseDate
+import Editor.Data.ForeignDateTime (fromDateTime, toDateTime)
 
 import Prelude
 import Data.Generic (class Generic, gShow, gEq)
-import Data.Maybe (Maybe(..))
-import Data.Foreign.Class(class IsForeign, readProp, read)
+import Data.Maybe (Maybe(..), maybe)
+import Data.DateTime (DateTime)
+import Data.Foreign (toForeign, writeObject)
+import Data.Foreign.Class(class IsForeign, class AsForeign, (.=), readProp, read)
 import Data.Foreign.Index (prop)
+import Data.Foreign.Null (writeNull)
 import Data.Foreign.NullOrUndefined(unNullOrUndefined, readNullOrUndefined)
 
 newtype Entry = Entry
@@ -18,7 +21,7 @@ newtype Entry = Entry
     , interactiveData   :: String
     , title             :: String
     , content           :: String
-    , releaseDate       :: Maybe ReleaseDate
+    , releaseDate       :: Maybe DateTime
     , authorsNote       :: String
     }
 
@@ -54,7 +57,7 @@ instance entryIsForeign :: IsForeign Entry where
         interactiveData <- readProp "interactiveData" value
         title <- readProp "title" value
         content <- readProp "content" value
-        releaseDate <- readNullOrUndefined (\v -> prop "releaseDate" v >>= read) value
+        releaseDate <- readNullOrUndefined (\v -> prop "releaseDate" v >>= read >>= pure <<< toDateTime) value
         authorsNote <- readProp "authorsNote" value
         pure $ Entry
             { id : unNullOrUndefined id'
@@ -68,3 +71,18 @@ instance entryIsForeign :: IsForeign Entry where
             , releaseDate : unNullOrUndefined releaseDate
             , authorsNote : authorsNote
             }
+
+instance entryAsForeign :: AsForeign Entry where
+    write (Entry entry) = 
+        writeObject
+            [ "id" .= maybe writeNull toForeign entry.id
+            , "chapterId" .= entry.chapterId
+            , "order" .= entry.order
+            , "isInteractive" .= entry.isInteractive
+            , "interactiveUrl" .= entry.interactiveUrl
+            , "interactiveData" .= entry.interactiveData
+            , "title" .= entry.title
+            , "content" .= entry.content
+            , "releaseDate" .= maybe writeNull (toForeign <<< fromDateTime) entry.releaseDate
+            , "authorsNote" .= entry.authorsNote
+            ]
