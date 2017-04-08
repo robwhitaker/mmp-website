@@ -1,28 +1,41 @@
 module Editor.Utils.Requests where
-  
-import Data.Foreign.Class (read)
+
 import Editor.Models.Chapter (Chapter)
-import Editor.Models.Entry (Entry)
-import Network.HTTP.Affjax.Response (class Respondable)
-
+  
 import Prelude
-import Control.Monad.Aff (Aff)
-import Network.HTTP.Affjax (AJAX, Affjax, AffjaxResponse, get, post)
-import Data.Foreign (F)
+import Data.Argonaut.Core (Json)
+import Data.Maybe (Maybe(..), maybe)
+import Data.Either (Either)
+import Data.Foreign (unsafeFromForeign, writeObject)
+import Data.Foreign.Class (class AsForeign, class IsForeign, read, write, (.=))
+import Data.Foreign.Null (writeNull)
+import Control.Monad.Except (runExcept, withExcept)
+import Network.HTTP.Affjax (Affjax, URL, get, post)
 
-getChapters :: forall e. Aff (ajax :: AJAX | e) (AffjaxResponse (F (Array Chapter)))
-getChapters = do 
-    affjaxResponse <- get chaptersEndpoint
-    pure $ affjaxResponse { response = read affjaxResponse.response }
+---- REQUESTS ----
+
+getChapters :: forall e. Affjax e (Either String (Array Chapter))
+getChapters = getRequest chaptersEndpoint
+
+postChapters :: forall e. String -> Affjax e (Either String (Array Chapter))
+postChapters secretKey = postRequest chaptersEndpoint secretKey (Nothing :: Maybe String)
 
 ---- REQUEST HELPERS ----
 
--- postRequest :: forall a e r. (EncodeJson a, Respondable r) => String -> String -> a -> Affjax e r
--- postRequest endpoint secretKey postData = post endpoint payload
---   where 
---     payload = 
---         "secretKey" := secretKey
---         ~> "data" := postData
+getRequest :: forall e r. (IsForeign r) => URL -> Affjax e (Either String r)
+getRequest endpoint = do
+    affjaxResponse <- get endpoint
+    pure $ affjaxResponse { response = runExcept $ withExcept show $ read affjaxResponse.response }
+
+postRequest :: forall a e r. (AsForeign a, IsForeign r) => URL -> String -> Maybe a -> Affjax e (Either String r)
+postRequest endpoint secretKey postData = do
+    affjaxResponse <- post endpoint (unsafeFromForeign payload :: Json)
+    pure $ affjaxResponse { response = runExcept $ withExcept show $ read affjaxResponse.response }
+  where 
+    payload = writeObject
+        [ "secretKey" .= secretKey
+        , "data" .= maybe writeNull write postData
+        ]
 
 ---- ENDPOINTS ----
 
