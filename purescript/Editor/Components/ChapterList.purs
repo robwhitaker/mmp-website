@@ -1,17 +1,15 @@
 module Editor.Components.ChapterList where
 
-import Editor.Models.Chapter
-import Control.Monad.Aff (Aff)
-import Data.Array (elemIndex, sort, updateAt, (!!))
-import Data.Either (either)
-import Data.Eq (class Eq)
-import Data.Maybe (maybe)
-import Data.Newtype (unwrap, wrap)
+import Editor.Models.Chapter (Chapter(..))
 import Editor.Utils.Requests (postChapters)
-import Network.HTTP.Affjax (AJAX)
 
 import Prelude
-import Data.Maybe (Maybe(..))
+import Data.Newtype (over)
+import Data.Either (either)
+import Data.Array (mapWithIndex, sort, updateAt, (!!))
+import Data.Maybe (Maybe(..), fromMaybe)
+import Control.Monad.Aff (Aff)
+import Network.HTTP.Affjax (AJAX)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
@@ -21,10 +19,13 @@ type State = Array Chapter
 
 data Direction = Up | Down
 derive instance eqDirection :: Eq Direction
+fromDirection :: Direction -> Int
+fromDirection Up = -1
+fromDirection Down = 1
 
 data Query a 
     = Initialize a
-    | MoveChapter Chapter Direction a
+    | MoveChapter Int Direction a
     | SyncChapter Chapter a
     | EditChapterMetadata Chapter a
     | DeleteChapter Chapter a
@@ -49,13 +50,13 @@ chapterList =
 
         render :: State -> H.ComponentHTML Query
         render state = 
-            HH.div_ $ map chapterToHtml state
+            HH.div_ $ mapWithIndex chapterToHtml state
                 where
-                    chapterToHtml ch@(Chapter chR@{title}) = 
+                    chapterToHtml chapterIndex ch@(Chapter chR@{title}) = 
                         HH.div_
                             [ HH.h2_ [HH.text title]
-                            , HH.button [ HE.onClick $ HE.input_ (MoveChapter ch Up)] [ HH.text "Move Up" ]
-                            , HH.button [ HE.onClick $ HE.input_ (MoveChapter ch Down)] [ HH.text "Move Down" ]
+                            , HH.button [ HE.onClick $ HE.input_ (MoveChapter chapterIndex Up)] [ HH.text "Move Up" ]
+                            , HH.button [ HE.onClick $ HE.input_ (MoveChapter chapterIndex Down)] [ HH.text "Move Down" ]
                             , HH.text $ show $ chR.order
                             ]
 
@@ -66,16 +67,14 @@ chapterList =
                 H.put $ sort $ either (const []) id chs.response
                 pure next
             
-            MoveChapter chapter direction next -> do
-                let swapOffset = if direction == Up then -1 else 1
-                H.modify \chs -> maybe chs id do
-                    i <- elemIndex chapter chs
-                    let j = i + swapOffset
-                    baseElem <- map unwrap $ chs !! i
-                    swapElem <- map unwrap $ chs !! j
-                    newChs <- updateAt i (wrap $ swapElem { order = baseElem.order }) chs
-                                >>= updateAt j (wrap $ baseElem { order = swapElem.order })
-                    pure newChs
+            MoveChapter baseIndex direction next -> do
+                let swapIndex = baseIndex + fromDirection direction
+                H.modify \chapters -> fromMaybe chapters do
+                    baseElem <- chapters !! baseIndex
+                    swapElem <- chapters !! swapIndex
+                    newChapters <- updateAt baseIndex swapElem chapters 
+                               >>= updateAt swapIndex baseElem
+                    pure $ mapWithIndex (\index -> over Chapter (_ { order = index })) newChapters
                 pure next
 
             SyncChapter chater next -> do
