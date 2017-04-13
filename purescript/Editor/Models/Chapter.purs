@@ -1,5 +1,6 @@
 module Editor.Models.Chapter where
   
+import Data.Newtype (class Newtype)
 import Editor.Data.ForeignDateTime (fromDateTime, toDateTime)
 import Editor.Models.Entry (Entry)
 
@@ -45,11 +46,16 @@ empty = Chapter
 
 derive instance genericChapter :: Generic Chapter
 
+derive instance newtypeChapter :: Newtype Chapter _
+
 instance showChapter :: Show Chapter where
     show = gShow
 
 instance eqChapter :: Eq Chapter where
     eq = gEq
+
+instance ordChapter :: Ord Chapter where
+    compare (Chapter ch1) (Chapter ch2) = compare ch1.order ch2.order
 
 instance chapterIsForeign :: IsForeign Chapter where
     read value = do

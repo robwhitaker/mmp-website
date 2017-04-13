@@ -1,5 +1,6 @@
 module Editor.Models.Entry where
 
+import Data.Newtype (class Newtype)
 import Editor.Data.ForeignDateTime (fromDateTime, toDateTime)
 
 import Prelude
@@ -41,11 +42,16 @@ empty = Entry
 
 derive instance genericEntry :: Generic Entry
 
+derive instance newtypeEntry :: Newtype Entry _
+
 instance showEntry :: Show Entry where
     show = gShow
 
 instance eqEntry :: Eq Entry where
     eq = gEq
+
+instance ordEntry :: Ord Entry where
+    compare (Entry e1) (Entry e2) = compare e1.order e2.order
 
 instance entryIsForeign :: IsForeign Entry where
     read value = do
