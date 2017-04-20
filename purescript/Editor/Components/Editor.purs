@@ -1,6 +1,14 @@
 module Editor.Components.Editor where
 
 import Editor.Components.ChapterList as ChapterList
+import Editor.Components.MetadataEditor as MetadataEditor
+import Editor.Models.Chapter (Chapter(..))
+import Halogen.Component.ChildPath (cp2)
+
+import Data.Either.Nested (Either2)
+import Halogen.Component.ChildPath (cp1)
+
+import Data.Functor.Coproduct.Nested (Coproduct2)
 import Data.Tuple (Tuple(..))
 import Halogen (Action)
 
@@ -13,21 +21,23 @@ import Halogen.HTML.Properties as HP
 
 data ActiveComponent 
     = ChapterList (Array (Tuple String (Action ChapterList.Query)))
+    | MetadataEditor Chapter (Array (Tuple String (Action MetadataEditor.Query)))
 
 type State = 
     { activeComponent :: ActiveComponent }
 
 data Query a 
     = HandleChapterList ChapterList.Message a
+    | HandleMetadataEditor MetadataEditor.Message a
     | SendChapterListAction (Action ChapterList.Query) a
+    | SendMetadataEditorAction (Action MetadataEditor.Query) a
 
 type Input = Unit
 
 type Message = Void
 
-data Slot = ChapterListSlot
-derive instance eqButtonSlot :: Eq Slot
-derive instance ordButtonSlot :: Ord Slot
+type ChildQuery = Coproduct2 ChapterList.Query MetadataEditor.Query
+type ChildSlot = Either2 Unit Unit
 
 editor :: forall eff. H.Component HH.HTML Query Input Message (ChapterList.ChapterListAff eff)
 editor =
@@ -41,36 +51,64 @@ editor =
         initialState :: State
         initialState = { activeComponent : ChapterList [] }
 
-        render :: State -> H.ParentHTML Query ChapterList.Query Slot (ChapterList.ChapterListAff eff)
+        render :: State -> H.ParentHTML Query ChildQuery ChildSlot (ChapterList.ChapterListAff eff)
         render state =
             HH.div_
                 [ topBar 
-                , HH.slot ChapterListSlot ChapterList.chapterList unit (HE.input HandleChapterList)
+                , case state.activeComponent of
+                    ChapterList _ -> 
+                        HH.slot' cp1 unit ChapterList.chapterList unit (HE.input HandleChapterList)
+                    MetadataEditor chapter _ -> 
+                        HH.slot' cp2 unit MetadataEditor.metadataEditor chapter (HE.input HandleMetadataEditor)
                 , HH.p_
                     [ HH.text ("Button has been toggled " <> "!!!wow!!!" <> " time(s)") ]
                 ]
           where
-                topBar :: H.ParentHTML Query ChapterList.Query Slot (ChapterList.ChapterListAff eff)
+                topBar :: H.ParentHTML Query ChildQuery ChildSlot (ChapterList.ChapterListAff eff)
                 topBar = 
                     HH.div_ $ 
                         [ HH.h1_ [ HH.text "Chapter List Editor" ] ] <>
                         case state.activeComponent of
                             ChapterList options ->
                                 map (optionBtn SendChapterListAction) options
-                
+                            MetadataEditor _ options -> 
+                                map (optionBtn2 SendMetadataEditorAction) options
+                                
                 optionBtn toQuery (Tuple label action) = 
                     HH.button
                         [ HE.onClick (HE.input_ $ toQuery action) ]
                         [ HH.text label ]
 
-        eval :: Query ~> H.ParentDSL State Query ChapterList.Query Slot Void (ChapterList.ChapterListAff eff)
+                optionBtn2 toQuery (Tuple label action) = 
+                    HH.button
+                        [ HE.onClick (HE.input_ $ toQuery action) ]
+                        [ HH.text label ]
+
+        eval :: Query ~> H.ParentDSL State Query ChildQuery ChildSlot Void (ChapterList.ChapterListAff eff)
         eval = case _ of
             HandleChapterList (ChapterList.OptionChange options) next -> do
                 H.modify \state -> state { activeComponent = ChapterList options }
                 pure next
-            HandleChapterList _ next -> pure next
+            HandleChapterList (ChapterList.EditChapter chapter) next -> do
+                H.modify \state -> state { activeComponent = MetadataEditor chapter [] }
+                pure next
+
+            HandleMetadataEditor (MetadataEditor.OptionChange options) next -> do
+                H.modify \state -> 
+                    case state.activeComponent of
+                        MetadataEditor chapter _ ->
+                            state { activeComponent = MetadataEditor chapter options }
+                        _ -> state
+                pure next
+            HandleMetadataEditor MetadataEditor.BackToChapterList next -> do
+                H.modify \state -> state { activeComponent = ChapterList [] }
+                pure next
 
             SendChapterListAction action next -> do
-                H.query ChapterListSlot $ H.action action
+                H.query' cp1 unit $ H.action action
+                pure next
+
+            SendMetadataEditorAction action next -> do
+                H.query' cp2 unit $ H.action action
                 pure next
 

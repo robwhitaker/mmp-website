@@ -69,6 +69,7 @@ chapterList =
                     chapterToHtml chapterIndex ch@(Chapter chR@{title}) = 
                         HH.div_
                             [ HH.h2_ [HH.text title]
+                            , HH.button [ HE.onClick $ HE.input_ (EditChapterMetadata ch)] [ HH.text "Edit" ]
                             , HH.button [ HE.onClick $ HE.input_ (MoveChapter chapterIndex Up)] [ HH.text "Move Up" ]
                             , HH.button [ HE.onClick $ HE.input_ (MoveChapter chapterIndex Down)] [ HH.text "Move Down" ]
                             , HH.button [ HE.onClick $ HE.input_ (DeleteChapter chapterIndex)] [ HH.text "X" ]
