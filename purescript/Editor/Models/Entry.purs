@@ -2,6 +2,7 @@ module Editor.Models.Entry where
 
 import Data.Newtype (class Newtype)
 import Editor.Data.ForeignDateTime (fromDateTime, toDateTime)
+import Halogen.HTML.Properties.ARIA (level)
 
 import Prelude
 import Data.Generic (class Generic, gShow, gEq)
@@ -16,6 +17,7 @@ import Data.Foreign.NullOrUndefined(unNullOrUndefined, readNullOrUndefined)
 newtype Entry = Entry
     { id                :: Maybe Int
     , chapterId         :: Int
+    , level             :: Int
     , order             :: Int
     , isInteractive     :: Boolean
     , interactiveUrl    :: String
@@ -30,6 +32,7 @@ empty :: Entry
 empty = Entry
     { id : Nothing
     , chapterId : -1
+    , level : -1
     , order : -1
     , isInteractive : false
     , interactiveUrl : ""
@@ -57,6 +60,7 @@ instance entryIsForeign :: IsForeign Entry where
     read value = do
         id' <- readNullOrUndefined (readProp "id") value
         chapterId <- readProp "chapterId" value
+        level <- readProp "level" value
         order <- readProp "order" value
         isInteractive <- readProp "isInteractive" value
         interactiveUrl <- readProp "interactiveUrl" value
@@ -68,6 +72,7 @@ instance entryIsForeign :: IsForeign Entry where
         pure $ Entry
             { id : unNullOrUndefined id'
             , chapterId : chapterId
+            , level : level
             , order : order
             , isInteractive : isInteractive
             , interactiveUrl : interactiveUrl
