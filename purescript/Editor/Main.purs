@@ -12,16 +12,17 @@ import Control.Monad.Except (runExcept)
 import Data.Array (length)
 import Data.Foreign (Foreign, ForeignError(..))
 import Data.Foreign.Class (read, readProp, write)
+import Data.JSDate (LOCALE)
 import Data.List.NonEmpty (NonEmptyList(..))
 import Editor.Components.ChapterList (chapterList)
 import Editor.Components.Editor (editor)
 import Editor.Models.Chapter (Chapter(..))
 import Editor.Utils.Requests (getChapters, postChapters)
-import Halogen (liftAff) 
+import Halogen (liftAff)
 import Halogen.VDom.Driver (runUI)
 import Network.HTTP.Affjax (AJAX)
 
-main :: Eff (HA.HalogenEffects (console :: CONSOLE, ajax :: AJAX)) Unit
+main :: Eff (HA.HalogenEffects (console :: CONSOLE, ajax :: AJAX, locale :: LOCALE)) Unit
 main = HA.runHalogenAff do
     body <- HA.awaitBody
     runUI editor unit body

@@ -44,8 +44,12 @@ data Message
     = EditChapter Chapter
     | OptionChange (Array (Tuple String (Action Query)))
 
-type ChapterListAff eff = Aff (ajax :: AJAX | eff)
-type ChapterListComponent eff = H.Component HH.HTML Query Input Message (ChapterListAff eff)
+type AppEffects eff = Aff 
+    ( ajax :: AJAX 
+    | eff
+    )
+
+type ChapterListComponent eff = H.Component HH.HTML Query Input Message (AppEffects eff)
 
 chapterList :: forall eff. ChapterListComponent eff
 chapterList =
@@ -76,7 +80,7 @@ chapterList =
                             , HH.text $ show $ chR.order
                             ]
 
-        eval :: Query ~> H.ComponentDSL State Query Message (ChapterListAff eff)
+        eval :: Query ~> H.ComponentDSL State Query Message (AppEffects eff)
         eval = case _ of
             Initialize next -> do
                 chs <- H.liftAff $ postChapters ""

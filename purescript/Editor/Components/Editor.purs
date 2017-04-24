@@ -2,8 +2,11 @@ module Editor.Components.Editor where
 
 import Editor.Components.ChapterList as ChapterList
 import Editor.Components.MetadataEditor as MetadataEditor
+import Control.Monad.Aff (Aff)
+import Data.JSDate (LOCALE)
 import Editor.Models.Chapter (Chapter(..))
 import Halogen.Component.ChildPath (cp2)
+import Network.HTTP.Affjax (AJAX)
 
 import Data.Either.Nested (Either2)
 import Halogen.Component.ChildPath (cp1)
@@ -39,7 +42,13 @@ type Message = Void
 type ChildQuery = Coproduct2 ChapterList.Query MetadataEditor.Query
 type ChildSlot = Either2 Unit Unit
 
-editor :: forall eff. H.Component HH.HTML Query Input Message (ChapterList.ChapterListAff eff)
+type AppEffects eff = Aff
+    ( ajax :: AJAX
+    , locale :: LOCALE
+    | eff
+    )
+
+editor :: forall eff. H.Component HH.HTML Query Input Message (AppEffects eff)
 editor =
     H.parentComponent
       { initialState: const initialState
@@ -51,7 +60,7 @@ editor =
         initialState :: State
         initialState = { activeComponent : ChapterList [] }
 
-        render :: State -> H.ParentHTML Query ChildQuery ChildSlot (ChapterList.ChapterListAff eff)
+        render :: State -> H.ParentHTML Query ChildQuery ChildSlot (AppEffects eff)
         render state =
             HH.div_
                 [ topBar 
@@ -64,7 +73,7 @@ editor =
                     [ HH.text ("Button has been toggled " <> "!!!wow!!!" <> " time(s)") ]
                 ]
           where
-                topBar :: H.ParentHTML Query ChildQuery ChildSlot (ChapterList.ChapterListAff eff)
+                topBar :: H.ParentHTML Query ChildQuery ChildSlot (AppEffects eff)
                 topBar = 
                     HH.div_ $ 
                         [ HH.h1_ [ HH.text "Chapter List Editor" ] ] <>
@@ -84,7 +93,7 @@ editor =
                         [ HE.onClick (HE.input_ $ toQuery action) ]
                         [ HH.text label ]
 
-        eval :: Query ~> H.ParentDSL State Query ChildQuery ChildSlot Void (ChapterList.ChapterListAff eff)
+        eval :: Query ~> H.ParentDSL State Query ChildQuery ChildSlot Void (AppEffects eff)
         eval = case _ of
             HandleChapterList (ChapterList.OptionChange options) next -> do
                 H.modify \state -> state { activeComponent = ChapterList options }
