@@ -10,10 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160118035618) do
-
-  # These are extensions that must be enabled in order to support this database
-  enable_extension "plpgsql"
+ActiveRecord::Schema.define(version: 20170313224708) do
 
   create_table "chapters", force: :cascade do |t|
     t.integer  "order"
@@ -24,6 +21,9 @@ ActiveRecord::Schema.define(version: 20160118035618) do
     t.text     "authors_note"
     t.datetime "created_at",   null: false
     t.datetime "updated_at",   null: false
+    t.boolean  "interactive"
+    t.string   "gamedata"
+    t.string   "jssource"
   end
 
   create_table "entries", force: :cascade do |t|
@@ -36,6 +36,9 @@ ActiveRecord::Schema.define(version: 20160118035618) do
     t.text     "authors_note"
     t.datetime "created_at",   null: false
     t.datetime "updated_at",   null: false
+    t.boolean  "interactive"
+    t.string   "gamedata"
+    t.string   "jssource"
   end
 
 end
