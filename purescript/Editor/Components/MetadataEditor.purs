@@ -5,12 +5,12 @@ import Control.Bind (join)
 import Control.Monad.Aff (Aff)
 import Control.Monad.Eff (Eff)
 import Control.Plus ((<|>))
-import Data.Array (mapWithIndex, modifyAt, sort, (!!))
+import Data.Array (length, mapWithIndex, modifyAt, range, sort, (!!))
 import Data.DateTime (DateTime(..), adjust)
 import Data.JSDate (LOCALE, fromDateTime, getTimezoneOffset)
 import Data.Maybe (Maybe(..), fromMaybe, isJust, isNothing, maybe)
-import Data.Newtype (over, unwrap)
-import Data.Time.Duration (Minutes(..))
+import Data.Newtype (over, unwrap, wrap)
+import Data.Time.Duration (Days(..), Minutes(..))
 import Data.Traversable (for)
 import Editor.Data.DateTime.Utils (parseISO8601, formatISO8601)
 import Editor.Models.Chapter (Chapter(..))
@@ -87,6 +87,7 @@ metadataEditor =
                 [ HH.h1_ [ HH.text chapter.title ]
                 , HH.div_ [ HH.text chapter.stylesheet ]
                 , HH.div_ [ HH.text chapter.content ]
+                , HH.button [ HE.onClick $ HE.input_ (PropagateReleaseDate Nothing)] [ HH.text "Propagate release date" ]
                 , HH.div_ 
                     [ HH.input
                         [ HP.type_ HP.InputCheckbox
@@ -137,6 +138,7 @@ metadataEditor =
                     HH.div_ 
                         [ HH.h1_ [ HH.text entry.title ]
                         , HH.div_ [ HH.text entry.content ]
+                        , HH.button [ HE.onClick $ HE.input_ (PropagateReleaseDate $ Just index)] [ HH.text "Propagate release date" ]
                         , HH.div_ 
                             [ HH.input
                                 [ HP.type_ HP.InputCheckbox
@@ -205,16 +207,31 @@ metadataEditor =
                     pure next
 
                 PropagateReleaseDate maybeIndex next -> do
-                    chapter <- H.get >>= pure <<< unwrap <<< _.chapter
-                    let maybeStartDate = maybe chapter.releaseDate (\i -> do
-                            entry <- chapter.entries !! i
-                            (unwrap entry).releaseDate
-                        ) maybeIndex
-                    case maybeStartDate of
-                        Just startDate -> do
-                            pure next
-                        Nothing ->
-                            pure next
+                    let index = fromMaybe (-1) maybeIndex
+                    numEntries <- H.get >>= pure <<< length <<< _.entries <<< unwrap <<< _.chapter
+                    for (range (index+1) (numEntries-1)) \i ->
+                        H.modify \state -> fromMaybe state do
+                            let entries = _.entries $ unwrap $ state.chapter
+                                lastEntryData = case entries !! (i-1) of
+                                    Just (Entry entry) -> 
+                                        { releaseDate : entry.releaseDate
+                                        , level : entry.level 
+                                        }
+                                    Nothing -> 
+                                        { releaseDate : (unwrap state.chapter).releaseDate
+                                        , level : 0 
+                                        }
+                            newEntries <- modifyAt i (\(Entry entry) ->
+                                    if entry.level > lastEntryData.level 
+                                        then Entry $ entry { releaseDate = lastEntryData.releaseDate }
+                                        else fromMaybe (Entry entry) do
+                                            newReleaseDate <- map (adjust (Days 7.0)) lastEntryData.releaseDate
+                                            pure $ Entry $ entry { releaseDate = newReleaseDate }
+                                ) entries
+                            pure $ state { chapter = over Chapter (_ { entries = newEntries }) state.chapter }
+                    pure next
+
+                    
                 
                 UpdateChapter formField next -> do
                     H.modify \state -> state { chapter = over Chapter (updateField formField) state.chapter }
@@ -247,7 +264,7 @@ metadataEditor =
                 stripLocale (Just dt) = do
                     offset <- getTimezoneOffset (fromDateTime dt)
                     pure $ adjust (Minutes (-offset)) dt
-                
+
                 localizeState fn = do
                     chapter <- H.get >>= pure <<< (_.chapter >>> unwrap)
                     chapterLocaleDate <- liftEff $ fn chapter.releaseDate
