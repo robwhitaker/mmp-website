@@ -2,15 +2,42 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <meta name="google-signin-client_id" content="361874213844-33mf5b41pp4p0q38q26u8go81cod0h7f.apps.googleusercontent.com">
   <title>Editor</title>
+  <meta name="google-signin-client_id" content="361874213844-33mf5b41pp4p0q38q26u8go81cod0h7f.apps.googleusercontent.com">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
   <!--<link rel="stylesheet" href="/static/css/editor.css">-->
-  <script src="https://apis.google.com/js/platform.js" async defer></script>
+  <script src="https://apis.google.com/js/platform.js?onload=initAuth" async defer></script>
 </head>
 <body>
-  <div class="g-signin2" data-onsuccess="onSignIn" data-scope="profile email https://www.googleapis.com/auth/drive.readonly"></div>
+  
 <script>
+  var cId = "361874213844-33mf5b41pp4p0q38q26u8go81cod0h7f.apps.googleusercontent.com"
+  var s = "profile email https://www.googleapis.com/auth/drive.readonly";
+  var rType = "id_token permission";
+  var googleLogin = function(scope, responseType) {
+    return function(success,error) {
+        gapi.auth2.authorize(
+            { scope: scope
+            , response_type: responseType
+            }, function(response) {
+                if (response.error) {
+                    error(response.error);
+                    return;
+                }
+                success(
+                    { accessToken: response.access_token
+                    , idToken: response.id_token
+                    }
+                );
+            });
+        };
+}
+  function initAuth() {
+    console.log("huzzah!");
+    gapi.load('auth2', function() {
+        gapi.auth2.init();
+    });
+  }
   function signOut() {
     var auth2 = gapi.auth2.getAuthInstance();
     auth2.signOut().then(function () {
