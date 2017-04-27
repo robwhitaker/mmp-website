@@ -8,7 +8,8 @@ import Control.Monad.Eff.Console (CONSOLE)
 import Data.JSDate (LOCALE)
 import Data.Maybe (isJust, isNothing)
 import Editor.Models.Chapter (Chapter(..))
-import Editor.Utils.GoogleAuth (GoogleData, authorize)
+import Editor.Utils.GoogleAuth (GAPI, GoogleAuthData, googleLogin, initPicker, showPicker, load, initAuth2, awaitGapi)
+import Halogen (lifecycleParentComponent)
 import Halogen.Component.ChildPath (cp2)
 import Network.HTTP.Affjax (AJAX)
 
@@ -32,7 +33,7 @@ data ActiveComponent
 
 type State = 
     { activeComponent :: ActiveComponent
-    , googleAuth :: Maybe GoogleData 
+    , googleAuth :: Maybe GoogleAuthData 
     }
 
 data Query a 
@@ -40,6 +41,7 @@ data Query a
     | HandleMetadataEditor MetadataEditor.Message a
     | SendChapterListAction (Action ChapterList.Query) a
     | SendMetadataEditorAction (Action MetadataEditor.Query) a
+    | Initialize a
     | Login a
 
 type Input = Unit
@@ -53,16 +55,19 @@ type AppEffects eff = Aff
     ( ajax :: AJAX
     , locale :: LOCALE
     , console :: CONSOLE
+    , gapi :: GAPI
     | eff
     )
 
 editor :: forall eff. H.Component HH.HTML Query Input Message (AppEffects eff)
 editor =
-    H.parentComponent
+    H.lifecycleParentComponent
       { initialState: const initialState
       , render
       , eval
       , receiver: const Nothing
+      , initializer: Just (H.action Initialize)
+      , finalizer: Nothing
       }
   where
         initialState :: State
@@ -112,6 +117,15 @@ editor =
 
         eval :: Query ~> H.ParentDSL State Query ChildQuery ChildSlot Void (AppEffects eff)
         eval = case _ of
+            Initialize next -> do
+                -- setup Google auth and file picker
+                H.liftAff do 
+                    awaitGapi
+                    load "auth2"
+                    load "picker"
+                    initAuth2 "361874213844-33mf5b41pp4p0q38q26u8go81cod0h7f.apps.googleusercontent.com"
+                pure next
+
             HandleChapterList (ChapterList.OptionChange options) next -> do
                 H.modify \state -> state { activeComponent = ChapterList options }
                 pure next
@@ -139,7 +153,15 @@ editor =
                 pure next
 
             Login next -> do
-                result <- H.liftAff $ authorize "profile email https://www.googleapis.com/auth/drive.readonly" "id_token permission"
-                H.liftAff $ log "Logged in..."
+                result <- H.liftAff do
+                    result <- googleLogin "361874213844-33mf5b41pp4p0q38q26u8go81cod0h7f.apps.googleusercontent.com" 
+                                          ["profile", "email", "https://www.googleapis.com/auth/drive.readonly"]
+                                          ["id_token", "permission"]
+                    log "Logged in..."
+                    picker <- initPicker result.accessToken
+                    log "Picker?"
+                    fId <- showPicker picker
+                    log $ show fId
+                    pure result
                 H.modify \state -> state { googleAuth = Just result }
                 pure next

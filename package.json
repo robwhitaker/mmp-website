@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Elm, Sinatra, SQLite3 (dev), PostgreSQL (prod)",
   "main": "index.js",
-  "dependencies": {},
+  "dependencies": {
+    "google-client-api": "^1.0.4"
+  },
   "devDependencies": {
     "elm": "^0.18.0",
     "gulp": "^3.9.1",
@@ -21,7 +23,7 @@
     "yargs": "^5.0.0"
   },
   "scripts": {
-    "editor": "pulp build -m Editor.Main -I purescript -t public/static/build/js/editor.min.js"
+    "editor": "pulp browserify -m Editor.Main -I purescript -t public/static/build/js/editor.min.js"
   },
   "repository": {
     "type": "git",

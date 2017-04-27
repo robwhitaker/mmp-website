@@ -17,12 +17,13 @@ import Data.List.NonEmpty (NonEmptyList(..))
 import Editor.Components.ChapterList (chapterList)
 import Editor.Components.Editor (editor)
 import Editor.Models.Chapter (Chapter(..))
+import Editor.Utils.GoogleAuth (GAPI)
 import Editor.Utils.Requests (getChapters, postChapters)
 import Halogen (liftAff)
 import Halogen.VDom.Driver (runUI)
 import Network.HTTP.Affjax (AJAX)
 
-main :: Eff (HA.HalogenEffects (console :: CONSOLE, ajax :: AJAX, locale :: LOCALE)) Unit
+main :: Eff (HA.HalogenEffects (console :: CONSOLE, ajax :: AJAX, locale :: LOCALE, gapi :: GAPI)) Unit
 main = HA.runHalogenAff do
     body <- HA.awaitBody
     runUI editor unit body
