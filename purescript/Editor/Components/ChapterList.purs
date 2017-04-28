@@ -1,9 +1,13 @@
 module Editor.Components.ChapterList where
 
+import Control.Monad.Aff (attempt)
+import Control.Monad.Aff.Console (CONSOLE, log)
+import Control.Monad.Reader (ReaderT(..), ask)
 import Data.Array (deleteAt)
 import Data.Tuple (Tuple(..))
 import Editor.Models.Chapter (Chapter(..))
-import Editor.Utils.Requests (postChapters)
+import Editor.Utils.GoogleAuth (GAPI, GoogleServices, showPicker)
+import Editor.Utils.Requests (postChapters, getChapterHtmlFromGDocs)
 import Halogen.Query (Action)
 
 import Prelude
@@ -34,6 +38,7 @@ data Query a
     | MoveChapter Int Direction a
     | SyncChapter Chapter a
     | EditChapterMetadata Chapter a
+    | NewChapter a
     | DeleteChapter Int a
     | Save a
     | Cancel a
@@ -44,10 +49,14 @@ data Message
     = EditChapter Chapter
     | OptionChange (Array (Tuple String (Action Query)))
 
-type AppEffects eff = Aff 
+type AppEffects eff = ReaderT GoogleServices (Aff 
     ( ajax :: AJAX 
+    , gapi :: GAPI
+    , console :: CONSOLE
     | eff
-    )
+    ))
+
+
 
 type ChapterListComponent eff = H.Component HH.HTML Query Input Message (AppEffects eff)
 
@@ -110,6 +119,18 @@ chapterList =
                 H.raise $ EditChapter chapter
                 pure next
 
+            NewChapter next -> do
+                googleServices <- ask
+                newChapterText <- H.liftAff do
+                    chapterId <- map (fromMaybe "") $ showPicker googleServices.filePicker
+                    log chapterId
+                    log googleServices.accessToken
+                    chapterResponse <- getChapterHtmlFromGDocs googleServices.accessToken chapterId
+                    pure chapterResponse.response
+                H.liftAff $ log newChapterText
+                pure next
+
+
             DeleteChapter index next -> do
                 H.modify \(state@{ chapters }) -> state { chapters = 
                         mapWithIndex (\i -> over Chapter (_ { order = i })) $ fromMaybe chapters $ deleteAt index chapters 
@@ -137,6 +158,6 @@ chapterList =
                                 ]
                         else
                             H.raise $ OptionChange
-                                [ Tuple "New Chapter" Cancel ] --temp until NewChapter query exists
+                                [ Tuple "New Chapter" NewChapter ] 
                     
 

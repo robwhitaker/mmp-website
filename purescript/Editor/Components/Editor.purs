@@ -5,10 +5,12 @@ import Editor.Components.MetadataEditor as MetadataEditor
 import Control.Monad.Aff (Aff)
 import Control.Monad.Aff.Console (log)
 import Control.Monad.Eff.Console (CONSOLE)
+import Control.Monad.Reader.Trans (runReaderT)
 import Data.JSDate (LOCALE)
 import Data.Maybe (isJust, isNothing)
+import Data.Tuple (fst, snd)
 import Editor.Models.Chapter (Chapter(..))
-import Editor.Utils.GoogleAuth (GAPI, GoogleAuthData, googleLogin, initPicker, showPicker, load, initAuth2, awaitGapi)
+import Editor.Utils.GoogleAuth (FilePicker, GAPI, GoogleAuthData, GoogleServices, awaitGapi, googleLogin, initAuth2, initPicker, load, showPicker)
 import Halogen (lifecycleParentComponent)
 import Halogen.Component.ChildPath (cp2)
 import Network.HTTP.Affjax (AJAX)
@@ -33,7 +35,7 @@ data ActiveComponent
 
 type State = 
     { activeComponent :: ActiveComponent
-    , googleAuth :: Maybe GoogleAuthData 
+    , googleServices :: Maybe GoogleServices
     }
 
 data Query a 
@@ -71,19 +73,20 @@ editor =
       }
   where
         initialState :: State
-        initialState = { activeComponent : ChapterList [], googleAuth : Nothing }
+        initialState = { activeComponent : ChapterList [], googleServices : Nothing }
 
         render :: State -> H.ParentHTML Query ChildQuery ChildSlot (AppEffects eff)
         render state =
             HH.div_
                 [ topBar 
-                , if isJust state.googleAuth
-                    then case state.activeComponent of
-                        ChapterList _ -> 
-                            HH.slot' cp1 unit ChapterList.chapterList unit (HE.input HandleChapterList)
-                        MetadataEditor chapter _ -> 
-                            HH.slot' cp2 unit MetadataEditor.metadataEditor chapter (HE.input HandleMetadataEditor)
-                    else HH.text "Not logged in."
+                , case state.googleServices of
+                    Just googleServices ->
+                        case state.activeComponent of
+                            ChapterList _ -> 
+                                HH.slot' cp1 unit (H.hoist (flip runReaderT googleServices) ChapterList.chapterList) unit (HE.input HandleChapterList)
+                            MetadataEditor chapter _ -> 
+                                HH.slot' cp2 unit MetadataEditor.metadataEditor chapter (HE.input HandleMetadataEditor)
+                    Nothing -> HH.text "Not logged in."
                 ]
           where
                 topBar :: H.ParentHTML Query ChildQuery ChildSlot (AppEffects eff)
@@ -95,7 +98,7 @@ editor =
                                 map (optionBtn SendChapterListAction) options
                             MetadataEditor _ options -> 
                                 map (optionBtn2 SendMetadataEditorAction) options) <>
-                        (if isNothing state.googleAuth
+                        (if isNothing state.googleServices
                             then 
                                 [ HH.button
                                     [ HE.onClick (HE.input_ Login) ]
@@ -160,8 +163,6 @@ editor =
                     log "Logged in..."
                     picker <- initPicker result.accessToken
                     log "Picker?"
-                    fId <- showPicker picker
-                    log $ show fId
-                    pure result
-                H.modify \state -> state { googleAuth = Just result }
+                    pure $ Tuple result picker
+                H.modify (_ { googleServices = Just { accessToken : (fst result).accessToken, idToken : (fst result).idToken, filePicker : snd result }})
                 pure next

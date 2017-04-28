@@ -14,6 +14,13 @@ type GoogleAuthData =
     { accessToken :: String
     , idToken :: String
     }
+
+type GoogleServices = 
+    { accessToken :: String
+    , idToken :: String
+    , filePicker :: FilePicker
+    }
+    
 type FileId = String
 type ClientId = String
 type Scope = Array String

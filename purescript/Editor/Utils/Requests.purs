@@ -1,15 +1,15 @@
 module Editor.Utils.Requests where
 
-import Editor.Models.Chapter (Chapter)
-  
 import Prelude
+import Control.Monad.Except (runExcept, withExcept)
 import Data.Argonaut.Core (Json)
-import Data.Maybe (Maybe(..), maybe)
 import Data.Either (Either)
-import Data.Foreign (unsafeFromForeign, writeObject)
+import Data.Foreign (readString, unsafeFromForeign, writeObject)
 import Data.Foreign.Class (class AsForeign, class IsForeign, read, write, (.=))
 import Data.Foreign.Null (writeNull)
-import Control.Monad.Except (runExcept, withExcept)
+import Data.Maybe (Maybe(..), maybe)
+import Data.String (joinWith)
+import Editor.Models.Chapter (Chapter)
 import Network.HTTP.Affjax (Affjax, URL, get, post)
 
 ---- REQUESTS ----
@@ -19,6 +19,10 @@ getChapters = getRequest chaptersEndpoint
 
 postChapters :: forall e. String -> Affjax e (Either String (Array Chapter))
 postChapters secretKey = postRequest chaptersEndpoint secretKey (Nothing :: Maybe String)
+
+getChapterHtmlFromGDocs :: forall e. String -> String -> Affjax e String
+getChapterHtmlFromGDocs accessToken fileId = do 
+    get $ joinWith "" ["https://www.googleapis.com/drive/v3/files/", fileId, "/export?access_token=", accessToken, "&mimeType=text/html"]
 
 ---- REQUEST HELPERS ----
 
