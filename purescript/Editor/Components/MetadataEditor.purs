@@ -15,6 +15,7 @@ import Data.Traversable (for)
 import Editor.Data.DateTime.Utils (parseISO8601, formatISO8601)
 import Editor.Models.Chapter (Chapter(..))
 import Editor.Models.Entry (Entry(..))
+import Editor.Utils.Parser (stripTags)
 import Halogen (AttrName(..))
 import Halogen.HTML.Events (onValueChange)
 import Halogen.Query (liftEff)
@@ -84,7 +85,7 @@ metadataEditor =
         render :: State -> H.ComponentHTML Query
         render state = 
             HH.div_ $
-                [ HH.h1_ [ HH.text chapter.title ]
+                [ HH.h1_ [ HH.text $ stripTags chapter.title ]
                 , HH.div_ [ HH.text chapter.stylesheet ]
                 , HH.div_ [ HH.text chapter.content ]
                 , HH.button [ HE.onClick $ HE.input_ (PropagateReleaseDate Nothing)] [ HH.text "Propagate release date" ]
@@ -136,7 +137,7 @@ metadataEditor =
                 entryToHtml :: Int -> Entry -> H.ComponentHTML Query
                 entryToHtml index (Entry entry) = 
                     HH.div_ 
-                        [ HH.h1_ [ HH.text entry.title ]
+                        [ HH.h1_ [ HH.text $ stripTags entry.title ]
                         , HH.div_ [ HH.text entry.content ]
                         , HH.button [ HE.onClick $ HE.input_ (PropagateReleaseDate $ Just index)] [ HH.text "Propagate release date" ]
                         , HH.div_ 

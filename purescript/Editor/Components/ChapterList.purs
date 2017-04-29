@@ -2,11 +2,15 @@ module Editor.Components.ChapterList where
 
 import Control.Monad.Aff (attempt)
 import Control.Monad.Aff.Console (CONSOLE, log)
+import Control.Monad.Eff.Exception (error)
+import Control.Monad.Error.Class (throwError)
+import Control.Monad.Except (runExcept)
 import Control.Monad.Reader (ReaderT(..), ask)
 import Data.Array (deleteAt)
 import Data.Tuple (Tuple(..))
 import Editor.Models.Chapter (Chapter(..))
 import Editor.Utils.GoogleAuth (GAPI, GoogleServices, showPicker)
+import Editor.Utils.Parser (getHeadingGroups, getTagContents, parseChapter, stripTags)
 import Editor.Utils.Requests (postChapters, getChapterHtmlFromGDocs)
 import Halogen.Query (Action)
 
@@ -81,7 +85,7 @@ chapterList =
                 where
                     chapterToHtml chapterIndex ch@(Chapter chR@{title}) = 
                         HH.div_
-                            [ HH.h2_ [HH.text title]
+                            [ HH.h2_ [HH.text $ stripTags title]
                             , HH.button [ HE.onClick $ HE.input_ (EditChapterMetadata ch)] [ HH.text "Edit" ]
                             , HH.button [ HE.onClick $ HE.input_ (MoveChapter chapterIndex Up)] [ HH.text "Move Up" ]
                             , HH.button [ HE.onClick $ HE.input_ (MoveChapter chapterIndex Down)] [ HH.text "Move Down" ]
@@ -121,13 +125,14 @@ chapterList =
 
             NewChapter next -> do
                 googleServices <- ask
-                newChapterText <- H.liftAff do
+                newChapter <- H.liftAff do
                     chapterId <- map (fromMaybe "") $ showPicker googleServices.filePicker
                     log chapterId
                     log googleServices.accessToken
                     chapterResponse <- getChapterHtmlFromGDocs googleServices.accessToken chapterId
-                    pure chapterResponse.response
-                H.liftAff $ log newChapterText
+                    log chapterResponse.response
+                    either (\err -> throwError $ error $ "Failed to parse chapter: " <> show err) pure $ runExcept $ parseChapter chapterResponse.response
+                H.raise $ EditChapter newChapter
                 pure next
 
 
