@@ -17,6 +17,7 @@ import Data.Foreign.NullOrUndefined(unNullOrUndefined, readNullOrUndefined)
 
 newtype Chapter = Chapter
     { id                :: Maybe Int
+    , docId             :: String
     , order             :: Int
     , isInteractive     :: Boolean
     , interactiveUrl    :: String
@@ -32,6 +33,7 @@ newtype Chapter = Chapter
 empty :: Chapter
 empty = Chapter
     { id : Nothing
+    , docId : ""
     , order : -1
     , isInteractive : false
     , interactiveUrl : ""
@@ -60,6 +62,7 @@ instance ordChapter :: Ord Chapter where
 instance chapterIsForeign :: IsForeign Chapter where
     read value = do
         id' <- readNullOrUndefined (readProp "id") value
+        docId <- readProp "docId" value
         order <- readProp "order" value
         isInteractive <- readProp "isInteractive" value
         interactiveUrl <- readProp "interactiveUrl" value
@@ -72,6 +75,7 @@ instance chapterIsForeign :: IsForeign Chapter where
         entries <- readProp "entries" value >>= readArray >>= traverse read
         pure $ Chapter 
             { id : unNullOrUndefined id'
+            , docId : docId
             , order : order
             , isInteractive : isInteractive
             , interactiveUrl : interactiveUrl

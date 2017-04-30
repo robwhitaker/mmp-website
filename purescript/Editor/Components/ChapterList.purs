@@ -7,6 +7,7 @@ import Control.Monad.Error.Class (throwError)
 import Control.Monad.Except (runExcept)
 import Control.Monad.Reader (ReaderT(..), ask)
 import Data.Array (deleteAt)
+import Data.Newtype (unwrap)
 import Data.Tuple (Tuple(..))
 import Editor.Models.Chapter (Chapter(..))
 import Editor.Utils.GoogleAuth (GAPI, GoogleServices, showPicker)
@@ -52,6 +53,7 @@ type Input = Unit
 data Message
     = EditChapter Chapter
     | OptionChange (Array (Tuple String (Action Query)))
+    | GoToChapterSync Chapter Chapter
 
 type AppEffects eff = ReaderT GoogleServices (Aff 
     ( ajax :: AJAX 
@@ -87,6 +89,7 @@ chapterList =
                         HH.div_
                             [ HH.h2_ [HH.text $ stripTags title]
                             , HH.button [ HE.onClick $ HE.input_ (EditChapterMetadata ch)] [ HH.text "Edit" ]
+                            , HH.button [ HE.onClick $ HE.input_ (SyncChapter ch)] [ HH.text "Sync" ]
                             , HH.button [ HE.onClick $ HE.input_ (MoveChapter chapterIndex Up)] [ HH.text "Move Up" ]
                             , HH.button [ HE.onClick $ HE.input_ (MoveChapter chapterIndex Down)] [ HH.text "Move Down" ]
                             , HH.button [ HE.onClick $ HE.input_ (DeleteChapter chapterIndex)] [ HH.text "X" ]
@@ -117,6 +120,14 @@ chapterList =
                 pure next
 
             SyncChapter chapter next -> do
+                -- TODO: this is just copied from NewChapter and should be made reusable
+                googleServices <- ask
+                newChapter <- H.liftAff do
+                    chapterResponse <- getChapterHtmlFromGDocs googleServices.accessToken (unwrap chapter).docId
+                    log chapterResponse.response
+                    either (\err -> throwError $ error $ "Failed to parse chapter: " <> show err) pure $ runExcept $ parseChapter chapterResponse.response
+                    
+                H.raise $ GoToChapterSync chapter newChapter
                 pure next
 
             EditChapterMetadata chapter next -> do
