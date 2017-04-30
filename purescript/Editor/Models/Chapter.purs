@@ -92,6 +92,7 @@ instance chapterAsForeign :: AsForeign Chapter where
     write (Chapter chapter) = 
         writeObject
             [ "id" .= maybe writeNull toForeign chapter.id
+            , "docId" .= chapter.docId
             , "order" .= chapter.order
             , "isInteractive" .= chapter.isInteractive
             , "interactiveUrl" .= chapter.interactiveUrl
