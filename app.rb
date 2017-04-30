@@ -109,7 +109,7 @@ post '/api/chapters/crupdate' do
   content_type :json
 
   payload = JSON.parse(request.body.read)
-  data = adjust_time_zones(payload["data"])
+  data = payload["data"]
   log(payload)
 
   if authorized? payload["secretKey"]
@@ -173,27 +173,6 @@ def authorized?(string)
   else
     true
   end
-end
-
-def adjust_time_zone(date_string)
-  release_date = Time.parse(date_string)
-
-  if release_date.dst?
-    adjusted_release_date = release_date.strftime('%Y-%m-%d %H:%M:%S') + ' -0400'
-  else
-    adjusted_release_date = release_date.strftime('%Y-%m-%d %H:%M:%S') + ' -0500'
-  end
-end
-
-def adjust_time_zones(data)
-  adjusted_data = data
-  adjusted_data["releaseDate"] = adjust_time_zone(data["releaseDate"])
-
-  data["entries_attributes"].each_with_index do |entry, index|
-    adjusted_data["entries_attributes"][index]["releaseDate"] = adjust_time_zone(entry["releaseDate"])
-  end
-
-  adjusted_data
 end
 
 def with_entries(chapter, type = 'all')
