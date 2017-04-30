@@ -66,14 +66,6 @@ get '/extras/halloween2015/play' do
   send_file File.join(settings.public_folder, '/extras/halloween2015/index.html')
 end
 
-get '/api/chapters/:id' do |id|
-  content_type :json
-
-  chapter = Chapter.includes(:entries).find(id)
-  success_response
-  json with_entries(chapter)
-end
-
 get '/api/chapters' do # public chapters
   content_type :json
   success_response
@@ -148,12 +140,12 @@ private
 
 def success_response
   status 200
-  body '{ "data": 1 }'
+  body '1'
 end
 
 def failure_response
   status 418
-  body '{ "data": 0 }'
+  body '0'
 end
 
 def log(payload)
