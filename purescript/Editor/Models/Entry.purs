@@ -59,7 +59,7 @@ instance ordEntry :: Ord Entry where
 
 instance entryIsForeign :: IsForeign Entry where
     read value = do
-        id' <- readNullOrUndefined (readProp "id") value
+        id' <- readProp "id" value
         chapterId <- readProp "chapterId" value
         level <- readProp "level" value
         order <- readProp "order" value
@@ -68,10 +68,10 @@ instance entryIsForeign :: IsForeign Entry where
         interactiveData <- readProp "interactiveData" value
         title <- readProp "title" value
         content <- readProp "content" value
-        releaseDate <- readNullOrUndefined (\v -> prop "releaseDate" v >>= read >>= pure <<< toDateTime) value
+        releaseDate <- prop "releaseDate" value >>= readNullOrUndefined (\v -> read v >>= pure <<< toDateTime)
         authorsNote <- readProp "authorsNote" value
         pure $ Entry
-            { id : unNullOrUndefined id'
+            { id : Just id'
             , chapterId : chapterId
             , level : level
             , order : order

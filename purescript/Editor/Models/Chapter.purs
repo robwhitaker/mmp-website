@@ -1,5 +1,6 @@
 module Editor.Models.Chapter where
   
+import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Editor.Data.ForeignDateTime (fromDateTime, toDateTime)
 import Editor.Models.Entry (Entry)
@@ -61,7 +62,7 @@ instance ordChapter :: Ord Chapter where
 
 instance chapterIsForeign :: IsForeign Chapter where
     read value = do
-        id' <- readNullOrUndefined (readProp "id") value
+        id' <- readProp "id" value
         docId <- readProp "docId" value
         order <- readProp "order" value
         isInteractive <- readProp "isInteractive" value
@@ -70,11 +71,11 @@ instance chapterIsForeign :: IsForeign Chapter where
         stylesheet <- readProp "stylesheet" value
         title <- readProp "title" value
         content <- readProp "content" value
-        releaseDate <- readNullOrUndefined (\v -> prop "releaseDate" v >>= read >>= pure <<< toDateTime) value
+        releaseDate <- prop "releaseDate" value >>= readNullOrUndefined (\v -> read v >>= pure <<< toDateTime)
         authorsNote <- readProp "authorsNote" value
         entries <- readProp "entries" value >>= readArray >>= traverse read
         pure $ Chapter 
-            { id : unNullOrUndefined id'
+            { id : Just id'
             , docId : docId
             , order : order
             , isInteractive : isInteractive

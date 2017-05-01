@@ -103,7 +103,10 @@ chapterList =
         eval = case _ of
             Initialize next -> do
                 chs <- H.liftAff $ postChapters ""
-                H.liftAff $ log $ show $ chs.response
+                H.liftAff do
+                    log $ "---------------------------"
+                    log $ show $ chs.response
+                    log $ "---------------------------"
                 H.put $ either (const initialState) (\chapters ->
                     { chapters : chapters
                     , chaptersOriginal : chapters
