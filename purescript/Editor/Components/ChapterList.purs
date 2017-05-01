@@ -6,13 +6,16 @@ import Control.Monad.Eff.Exception (error)
 import Control.Monad.Error.Class (throwError)
 import Control.Monad.Except (runExcept)
 import Control.Monad.Reader (ReaderT(..), ask)
-import Data.Array (deleteAt)
+import Data.Array (catMaybes, deleteAt, length)
+import Data.List (find)
+import Data.Maybe (Maybe(..))
 import Data.Newtype (unwrap)
+import Data.Traversable (for, sequence)
 import Data.Tuple (Tuple(..))
 import Editor.Models.Chapter (Chapter(..))
 import Editor.Utils.GoogleAuth (GAPI, GoogleServices, showPicker)
 import Editor.Utils.Parser (getHeadingGroups, getTagContents, parseChapter, stripTags)
-import Editor.Utils.Requests (postChapters, getChapterHtmlFromGDocs)
+import Editor.Utils.Requests (crupdate, deleteChapter, getChapterHtmlFromGDocs, postChapters)
 import Halogen.Query (Action)
 
 import Prelude
@@ -85,9 +88,9 @@ chapterList =
             HH.div_ $ mapWithIndex chapterToHtml state.chapters
                     <> [ HH.br_, HH.text $ if state.chapters == state.chaptersOriginal then "Saved." else "Unsaved.", HH.br_ ]
                 where
-                    chapterToHtml chapterIndex ch@(Chapter chR@{title}) = 
+                    chapterToHtml chapterIndex ch@(Chapter chR@{id,title}) = 
                         HH.div_
-                            [ HH.h2_ [HH.text $ stripTags title]
+                            [ HH.h2_ [HH.text $ stripTags title <> show id] 
                             , HH.button [ HE.onClick $ HE.input_ (EditChapterMetadata ch)] [ HH.text "Edit" ]
                             , HH.button [ HE.onClick $ HE.input_ (SyncChapter ch)] [ HH.text "Sync" ]
                             , HH.button [ HE.onClick $ HE.input_ (MoveChapter chapterIndex Up)] [ HH.text "Move Up" ]
@@ -100,8 +103,9 @@ chapterList =
         eval = case _ of
             Initialize next -> do
                 chs <- H.liftAff $ postChapters ""
+                H.liftAff $ log $ show $ chs.response
                 H.put $ either (const initialState) (\chapters ->
-                    { chapters : mapWithIndex (\index -> over Chapter (_ { order = index })) $ sort chapters
+                    { chapters : chapters
                     , chaptersOriginal : chapters
                     }
                 ) chs.response
@@ -135,15 +139,13 @@ chapterList =
                 pure next
 
             NewChapter next -> do
+                state <- H.get
                 googleServices <- ask
                 newChapter <- H.liftAff do
                     chapterId <- map (fromMaybe "") $ showPicker googleServices.filePicker
-                    log chapterId
-                    log googleServices.accessToken
                     chapterResponse <- getChapterHtmlFromGDocs googleServices.accessToken chapterId
-                    log chapterResponse.response
                     either (\err -> throwError $ error $ "Failed to parse chapter: " <> show err) pure $ runExcept $ parseChapter chapterResponse.response
-                H.raise $ EditChapter newChapter
+                H.raise $ EditChapter $ over Chapter (_ { order = length state.chaptersOriginal }) newChapter
                 pure next
 
 
@@ -155,9 +157,25 @@ chapterList =
                 pure next
             
             Save next -> do
-                H.modify \(state@{ chapters, chaptersOriginal }) -> state { chaptersOriginal = chapters }
+                state <- H.get
+                H.liftAff $ sequence $ catMaybes $ flip map state.chaptersOriginal \(Chapter oldChapter) -> do
+                    case find (unwrap >>> _.id >>> (==) oldChapter.id) state.chapters of
+                        Nothing -> Just $ deleteChapter "" (fromMaybe (-1) oldChapter.id)
+                        Just newChapter -> 
+                            if Chapter oldChapter == newChapter then
+                                Nothing
+                            else
+                                Just $ crupdate "" newChapter
+                -- TODO: Copied from Initialize, can this be called / put into a function?
+                chs <- H.liftAff $ postChapters ""
+                H.put $ either (const initialState) (\chapters ->
+                    { chapters : chapters
+                    , chaptersOriginal : chapters
+                    }
+                ) chs.response
                 updateOptions
                 pure next
+                
             
             Cancel next -> do
                 H.modify \(state@{ chapters, chaptersOriginal }) -> state { chapters = chaptersOriginal }

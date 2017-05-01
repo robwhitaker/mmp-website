@@ -1,5 +1,6 @@
 module Editor.Models.Entry where
 
+import Data.Maybe (fromMaybe)
 import Data.Newtype (class Newtype)
 import Editor.Data.ForeignDateTime (fromDateTime, toDateTime)
 import Halogen.HTML.Properties.ARIA (level)
@@ -88,6 +89,7 @@ instance entryAsForeign :: AsForeign Entry where
         writeObject
             [ "id" .= maybe writeNull toForeign entry.id
             , "chapterId" .= entry.chapterId
+            , "level" .= entry.level
             , "order" .= entry.order
             , "isInteractive" .= entry.isInteractive
             , "interactiveUrl" .= entry.interactiveUrl

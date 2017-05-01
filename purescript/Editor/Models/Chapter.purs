@@ -102,6 +102,6 @@ instance chapterAsForeign :: AsForeign Chapter where
             , "content" .= chapter.content
             , "releaseDate" .= maybe writeNull (write <<< fromDateTime) chapter.releaseDate
             , "authorsNote" .= chapter.authorsNote
-            , "entries" .= chapter.entries
+            , "entries_attributes" .= chapter.entries
             ]
 

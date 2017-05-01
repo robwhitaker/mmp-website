@@ -3,10 +3,12 @@ module Editor.Components.MetadataEditor where
 import Editor.Models.Chapter as Chapter
 import Control.Bind (join)
 import Control.Monad.Aff (Aff)
+import Control.Monad.Aff.Console (CONSOLE, log)
 import Control.Monad.Eff (Eff)
 import Control.Plus ((<|>))
 import Data.Array (length, mapWithIndex, modifyAt, range, sort, (!!))
 import Data.DateTime (DateTime(..), adjust)
+import Data.Formatter.Internal (repeat)
 import Data.JSDate (LOCALE, fromDateTime, getTimezoneOffset)
 import Data.Maybe (Maybe(..), fromMaybe, isJust, isNothing, maybe)
 import Data.Newtype (over, unwrap, wrap)
@@ -16,9 +18,11 @@ import Editor.Data.DateTime.Utils (parseISO8601, formatISO8601)
 import Editor.Models.Chapter (Chapter(..))
 import Editor.Models.Entry (Entry(..))
 import Editor.Utils.Parser (stripTags)
+import Editor.Utils.Requests (crupdate)
 import Halogen (AttrName(..))
 import Halogen.HTML.Events (onValueChange)
 import Halogen.Query (liftEff)
+import Network.HTTP.Affjax (AJAX)
 
 import Prelude
 import Data.Tuple (Tuple(..))
@@ -64,7 +68,9 @@ data Message
 type Input = Chapter
 
 type AppEffects eff = Aff 
-    ( locale :: LOCALE 
+    ( locale :: LOCALE
+    , console :: CONSOLE 
+    , ajax :: AJAX
     | eff 
     )
 
@@ -137,7 +143,7 @@ metadataEditor =
                 entryToHtml :: Int -> Entry -> H.ComponentHTML Query
                 entryToHtml index (Entry entry) = 
                     HH.div_ 
-                        [ HH.h1_ [ HH.text $ stripTags entry.title ]
+                        [ HH.h1_ [ HH.text $ repeat ">" entry.level <> stripTags entry.title ]
                         , HH.div_ [ HH.text entry.content ]
                         , HH.button [ HE.onClick $ HE.input_ (PropagateReleaseDate $ Just index)] [ HH.text "Propagate release date" ]
                         , HH.div_ 
@@ -201,6 +207,9 @@ metadataEditor =
 
                 Save next -> do
                     localizeState stripLocale
+                    state <- H.get
+                    H.liftAff $ crupdate "" state.chapter >>= _.response >>> show >>> log
+                    H.raise BackToChapterList
                     pure next
 
                 Cancel next -> do
@@ -254,13 +263,13 @@ metadataEditor =
                         AuthorsNote authorsNote -> state { authorsNote = authorsNote }
                         ReleaseDate releaseDate -> state { releaseDate = parseISO8601 releaseDate <|> state.releaseDate  }
                 
-                applyLocale :: Maybe DateTime -> Eff (locale :: LOCALE | eff) (Maybe DateTime)
+                applyLocale :: forall e. Maybe DateTime -> Eff (locale :: LOCALE | e) (Maybe DateTime)
                 applyLocale Nothing = pure Nothing
                 applyLocale (Just dt) = do
                     offset <- getTimezoneOffset (fromDateTime dt)
                     pure $ adjust (Minutes offset) dt
 
-                stripLocale :: Maybe DateTime -> Eff (locale :: LOCALE | eff) (Maybe DateTime)
+                stripLocale :: forall e. Maybe DateTime -> Eff (locale :: LOCALE | e) (Maybe DateTime)
                 stripLocale Nothing = pure Nothing
                 stripLocale (Just dt) = do
                     offset <- getTimezoneOffset (fromDateTime dt)

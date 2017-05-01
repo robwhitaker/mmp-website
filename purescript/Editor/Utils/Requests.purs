@@ -20,6 +20,12 @@ getChapters = getRequest chaptersEndpoint
 postChapters :: forall e. String -> Affjax e (Either String (Array Chapter))
 postChapters secretKey = postRequest chaptersEndpoint secretKey (Nothing :: Maybe String)
 
+crupdate :: forall e. String -> Chapter -> Affjax e (Either String Int)
+crupdate secretKey chapter = postRequest chapterUpdateEndpoint secretKey (Just chapter)
+
+deleteChapter :: forall e. String -> Int -> Affjax e (Either String Int)
+deleteChapter secretKey chapterId = postRequest chapterDeleteEndpoint secretKey (Just chapterId)
+
 getChapterHtmlFromGDocs :: forall e. String -> String -> Affjax e String
 getChapterHtmlFromGDocs accessToken fileId = do 
     get $ joinWith "" ["https://www.googleapis.com/drive/v3/files/", fileId, "/export?access_token=", accessToken, "&mimeType=text/html"]
