@@ -147,8 +147,11 @@ chapterList =
                 newChapter <- H.liftAff do
                     chapterId <- map (fromMaybe "") $ showPicker googleServices.filePicker
                     chapterResponse <- getChapterHtmlFromGDocs googleServices.accessToken chapterId
-                    either (\err -> throwError $ error $ "Failed to parse chapter: " <> show err) pure $ runExcept $ parseChapter chapterResponse.response
-                H.raise $ EditChapter $ over Chapter (_ { order = length state.chaptersOriginal }) newChapter
+                    either 
+                        (\err -> throwError $ error $ "Failed to parse chapter: " <> show err) 
+                        (pure <<< over Chapter (_ { order = length state.chaptersOriginal, docId = chapterId })) 
+                        (runExcept $ parseChapter chapterResponse.response)
+                H.raise $ EditChapter newChapter
                 pure next
 
 
