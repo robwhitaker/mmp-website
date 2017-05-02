@@ -1,5 +1,6 @@
 class Entry < ActiveRecord::Base
   belongs_to :chapter, foreign_key: 'chapterId'
+  default_scope { order(order: :asc) }
   after_initialize :init
 
   def init
