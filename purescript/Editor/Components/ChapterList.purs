@@ -132,7 +132,10 @@ chapterList =
                 newChapter <- H.liftAff do
                     chapterResponse <- getChapterHtmlFromGDocs googleServices.accessToken (unwrap chapter).docId
                     log chapterResponse.response
-                    either (\err -> throwError $ error $ "Failed to parse chapter: " <> show err) pure $ runExcept $ parseChapter chapterResponse.response
+                    either 
+                        (\err -> throwError $ error $ "Failed to parse chapter: " <> show err) 
+                        (pure <<< over Chapter (_ { order = (unwrap chapter).order, docId = (unwrap chapter).docId }))
+                        (runExcept $ parseChapter chapterResponse.response)
                     
                 H.raise $ GoToChapterSync chapter newChapter
                 pure next
