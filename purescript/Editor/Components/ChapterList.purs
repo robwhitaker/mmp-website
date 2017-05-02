@@ -175,8 +175,8 @@ chapterList =
                     if state.chapters /= state.chaptersOriginal 
                         then 
                             H.raise $ OptionChange
-                                [ Tuple "Save"   Save
-                                , Tuple "Cancel" Cancel
+                                [ Tuple "Cancel" Cancel
+                                , Tuple "Save"   Save
                                 ]
                         else
                             H.raise $ OptionChange

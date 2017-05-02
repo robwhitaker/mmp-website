@@ -95,8 +95,8 @@ chapterSync chapterOriginal chapter =
         eval = case _ of
             Initialize next -> do
                 H.raise $ OptionChange
-                    [ Tuple "Continue" Continue 
-                    , Tuple "Cancel" Cancel                       
+                    [ Tuple "Cancel" Cancel                       
+                    , Tuple "Continue" Continue 
                     ]
                 pure next
 

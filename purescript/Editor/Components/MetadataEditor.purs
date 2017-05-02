@@ -189,8 +189,8 @@ metadataEditor =
                 Initialize next -> do
                     localizeState applyLocale
                     H.raise $ OptionChange
-                        [ Tuple "Save"   Save
-                        , Tuple "Cancel" Cancel
+                        [ Tuple "Cancel" Cancel
+                        , Tuple "Save"   Save
                         ]
                     pure next
 

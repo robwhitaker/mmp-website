@@ -3,10 +3,12 @@ module Editor.Components.Editor where
 import Editor.Components.ChapterList as ChapterList
 import Editor.Components.ChapterSync as ChapterSync
 import Editor.Components.MetadataEditor as MetadataEditor
+import Control.Alt ((<$>))
 import Control.Monad.Aff (Aff)
 import Control.Monad.Aff.Console (log)
 import Control.Monad.Eff.Console (CONSOLE)
 import Control.Monad.Reader.Trans (runReaderT)
+import Data.Bifunctor (rmap)
 import Data.Either.Nested (Either3)
 import Data.Functor.Coproduct.Nested (Coproduct3)
 import Data.JSDate (LOCALE)
@@ -16,6 +18,8 @@ import Editor.Models.Chapter (Chapter(..))
 import Editor.Utils.GoogleAuth (FilePicker, GAPI, GoogleAuthData, GoogleServices, awaitGapi, googleLogin, initAuth2, initPicker, load, showPicker)
 import Halogen (lifecycleParentComponent)
 import Halogen.Component.ChildPath (cp2, cp3)
+import Halogen.HTML (i)
+import Halogen.HTML.Properties (id_)
 import Network.HTTP.Affjax (AJAX)
 
 import Data.Either.Nested (Either2)
@@ -84,7 +88,34 @@ editor =
         render :: State -> H.ParentHTML Query ChildQuery ChildSlot (AppEffects eff)
         render state =
             HH.div_
-                [ topBar 
+                [ HH.div
+                    [ HP.id_ "top-bar" ] $ 
+                    [ HH.h1_ $ case state.activeComponent of
+                        ChapterList _ -> [ HH.text "Midnight Murder Party Editor" ]
+                        _ -> [ HH.i 
+                                [ HP.class_ (H.ClassName "fa fa-chevron-left")
+                                , HP.attr (H.AttrName "aria-hidden") "true" 
+                                , HE.onClick (HE.input_ $ HandleMetadataEditor MetadataEditor.GoToChapterList) --TODO: Reusing this route is janky
+                                ] []
+                             , HH.text "Midnight Murder Party Editor"
+                             ]
+                    ] <>
+                    (case state.activeComponent of
+                        ChapterList options ->
+                            renderOption <$> mapOptions SendChapterListAction options
+                        MetadataEditor _ options -> 
+                            renderOption <$> mapOptions SendMetadataEditorAction options
+                        ChapterSync _ _ options -> 
+                            renderOption <$> mapOptions SendChapterSyncAction options) <>
+                    (if isNothing state.googleServices
+                        then 
+                            [ HH.button
+                                [ HE.onClick (HE.input_ Login) ]
+                                [ HH.text "Login" ] 
+                            ]
+                        else
+                            []) 
+                , HH.div [ HP.id_ "top-bar-spacer" ] []
                 , case state.googleServices of
                     Just googleServices ->
                         case state.activeComponent of
@@ -96,40 +127,13 @@ editor =
                                 HH.slot' cp3 unit (ChapterSync.chapterSync chapterOriginal chapterNew) unit (HE.input HandleChapterSync)
                     Nothing -> HH.text "Not logged in."
                 ]
-          where
-                topBar :: H.ParentHTML Query ChildQuery ChildSlot (AppEffects eff)
-                topBar = 
-                    HH.div_ $ 
-                        [ HH.h1_ [ HH.text "Chapter List Editor" ] ] <>
-                        (case state.activeComponent of
-                            ChapterList options ->
-                                map (optionBtn SendChapterListAction) options
-                            MetadataEditor _ options -> 
-                                map (optionBtn2 SendMetadataEditorAction) options
-                            ChapterSync _ _ options -> 
-                                map (optionBtn3 SendChapterSyncAction) options) <>
-                        (if isNothing state.googleServices
-                            then 
-                                [ HH.button
-                                    [ HE.onClick (HE.input_ Login) ]
-                                    [ HH.text "Login" ] 
-                                ]
-                            else
-                                [])
-                        
-                optionBtn toQuery (Tuple label action) = 
-                    HH.button
-                        [ HE.onClick (HE.input_ $ toQuery action) ]
-                        [ HH.text label ]
+          where                
+                mapOptions :: forall a b. (a -> b) -> Array (Tuple String a) -> Array (Tuple String b)
+                mapOptions f = map (rmap f) 
 
-                optionBtn2 toQuery (Tuple label action) = 
+                renderOption (Tuple label action) = 
                     HH.button
-                        [ HE.onClick (HE.input_ $ toQuery action) ]
-                        [ HH.text label ]
-                
-                optionBtn3 toQuery (Tuple label action) = 
-                    HH.button
-                        [ HE.onClick (HE.input_ $ toQuery action) ]
+                        [ HE.onClick (HE.input_ action) ]
                         [ HH.text label ]
 
         eval :: Query ~> H.ParentDSL State Query ChildQuery ChildSlot Void (AppEffects eff)
