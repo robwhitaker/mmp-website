@@ -101,8 +101,8 @@ chapterList =
             Initialize next -> do
                 chs <- H.liftAff $ postChapters ""
                 H.put $ either (const initialState) (\chapters ->
-                    { chapters : chapters
-                    , chaptersOriginal : chapters
+                    { chapters : sort chapters # map \(Chapter chapter) -> Chapter chapter { entries = sort chapter.entries }
+                    , chaptersOriginal : sort chapters # map \(Chapter chapter) -> Chapter chapter { entries = sort chapter.entries }
                     }
                 ) chs.response
                 updateOptions

@@ -99,10 +99,11 @@ chapterSync chapterOriginal chapter =
                     , Tuple "Cancel" Cancel                       
                     ]
                 pure next
+
             Continue next -> do
                 state <- H.get
                 let newChapter = copyCommonMetadata (unwrap state.chapterOriginal) (unwrap state.chapter)
-                let entriesWithChapterId = map (map $ \(Entry entry) -> 
+                let entriesWithChapterId = map (map \(Entry entry) -> 
                         entry { chapterId = fromMaybe (-1) newChapter.id }
                     ) state.entries
                 let paddedEntryArrays = normalizeArrays (map (map unwrap) state.entriesOriginal) entriesWithChapterId

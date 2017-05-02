@@ -12,6 +12,7 @@ import Data.Formatter.Internal (repeat)
 import Data.JSDate (LOCALE, fromDateTime, getTimezoneOffset)
 import Data.Maybe (Maybe(..), fromMaybe, isJust, isNothing, maybe)
 import Data.Newtype (over, unwrap, wrap)
+import Data.String (take)
 import Data.Time.Duration (Days(..), Minutes(..))
 import Data.Traversable (for)
 import Editor.Data.DateTime.Utils (parseISO8601, formatISO8601)
@@ -85,7 +86,7 @@ metadataEditor =
             HH.div_ $
                 [ HH.h1_ [ HH.text $ stripTags chapter.title ]
                 , HH.div_ [ HH.text chapter.stylesheet ]
-                , HH.div_ [ HH.text chapter.content ]
+                , HH.div_ [ HH.text $ take 100 chapter.content ]
                 , HH.button [ HE.onClick $ HE.input_ (PropagateReleaseDate Nothing)] [ HH.text "Propagate release date" ]
                 , HH.div_ 
                     [ HH.input
@@ -135,8 +136,8 @@ metadataEditor =
                 entryToHtml :: Int -> Entry -> H.ComponentHTML Query
                 entryToHtml index (Entry entry) = 
                     HH.div_ 
-                        [ HH.h1_ [ HH.text $ repeat ">" entry.level <> stripTags entry.title ]
-                        , HH.div_ [ HH.text entry.content ]
+                        [ HH.h1_ [ HH.text $ repeat ">" entry.level <> stripTags entry.title, HH.text ", ", HH.text $ show entry.order ]
+                        , HH.div_ [ HH.text $ take 100 entry.content ]
                         , HH.button [ HE.onClick $ HE.input_ (PropagateReleaseDate $ Just index)] [ HH.text "Propagate release date" ]
                         , HH.div_ 
                             [ HH.input
@@ -201,7 +202,7 @@ metadataEditor =
                     localizeState stripLocale
                     state <- H.get
                     -- TODO: failed Aff needs handling here because otherwise it could duplicate the stripLocale
-                    H.liftAff $ crupdate "" state.chapter >>= _.response >>> show >>> log
+                    H.liftAff $ crupdate "" state.chapter
                     H.raise GoToChapterList
                     pure next
 
