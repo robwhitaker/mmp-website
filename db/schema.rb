@@ -13,32 +13,32 @@
 ActiveRecord::Schema.define(version: 20170313224708) do
 
   create_table "chapters", force: :cascade do |t|
-    t.integer  "order"
-    t.text     "stylesheet"
-    t.string   "title"
-    t.text     "content"
+    t.integer "order"
+    t.text "stylesheet"
+    t.string "title"
+    t.text "content"
     t.datetime "release_date"
-    t.text     "authors_note"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
-    t.boolean  "interactive"
-    t.string   "gamedata"
-    t.string   "jssource"
+    t.text "authors_note"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "interactive"
+    t.string "gamedata"
+    t.string "jssource"
   end
 
   create_table "entries", force: :cascade do |t|
-    t.integer  "chapter_id"
-    t.integer  "level"
-    t.integer  "order"
-    t.string   "title"
-    t.text     "content"
+    t.integer "chapter_id"
+    t.integer "level"
+    t.integer "order"
+    t.string "title"
+    t.text "content"
     t.datetime "release_date"
-    t.text     "authors_note"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
-    t.boolean  "interactive"
-    t.string   "gamedata"
-    t.string   "jssource"
+    t.text "authors_note"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "interactive"
+    t.string "gamedata"
+    t.string "jssource"
   end
 
 end
