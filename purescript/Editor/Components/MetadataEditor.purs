@@ -17,6 +17,7 @@ import Data.Traversable (for)
 import Editor.Data.DateTime.Utils (parseISO8601, formatISO8601)
 import Editor.Models.Chapter (Chapter(..))
 import Editor.Models.Entry (Entry(..))
+import Editor.Utils.ModelHelpers (CommonMetadata)
 import Editor.Utils.Parser (stripTags)
 import Editor.Utils.Requests (crupdate)
 import Halogen (AttrName(..))
@@ -52,18 +53,9 @@ data FormField
     | AuthorsNote String
     | ReleaseDate String
 
-type CommonFormField r = 
-    { isInteractive :: Boolean
-    , interactiveUrl :: String
-    , interactiveData :: String
-    , authorsNote :: String
-    , releaseDate :: Maybe DateTime
-    | r
-    }
-
 data Message 
     = OptionChange (Array (Tuple String (H.Action Query)))
-    | BackToChapterList
+    | GoToChapterList
 
 type Input = Chapter
 
@@ -208,12 +200,13 @@ metadataEditor =
                 Save next -> do
                     localizeState stripLocale
                     state <- H.get
+                    -- TODO: failed Aff needs handling here because otherwise it could duplicate the stripLocale
                     H.liftAff $ crupdate "" state.chapter >>= _.response >>> show >>> log
-                    H.raise BackToChapterList
+                    H.raise GoToChapterList
                     pure next
 
                 Cancel next -> do
-                    H.raise BackToChapterList
+                    H.raise GoToChapterList
                     pure next
 
                 PropagateReleaseDate maybeIndex next -> do
@@ -241,8 +234,6 @@ metadataEditor =
                             pure $ state { chapter = over Chapter (_ { entries = newEntries }) state.chapter }
                     pure next
 
-                    
-                
                 UpdateChapter formField next -> do
                     H.modify \state -> state { chapter = over Chapter (updateField formField) state.chapter }
                     pure next
@@ -254,7 +245,7 @@ metadataEditor =
                     pure next
 
           where
-                updateField :: forall r. FormField -> CommonFormField r -> CommonFormField r
+                updateField :: forall r. FormField -> CommonMetadata r -> CommonMetadata r
                 updateField fieldData state = 
                     case fieldData of
                         IsInteractive isInteractive -> state { isInteractive = isInteractive }

@@ -8,6 +8,7 @@ import Halogen.HTML.Properties as HP
 import Control.Alt (map, (<$>), (<|>))
 import Control.Monad.Aff (Aff)
 import Control.Monad.Aff.Console (CONSOLE, log)
+import Control.MonadPlus (class Plus)
 import Data.Array (catMaybes, length, mapWithIndex, replicate, updateAt, zipWith, (!!))
 import Data.Bifunctor (lmap, rmap)
 import Data.DateTime (DateTime(..))
@@ -18,6 +19,8 @@ import Data.Newtype (over, unwrap)
 import Data.Tuple (Tuple(..), fst, snd)
 import Editor.Models.Chapter (Chapter(..))
 import Editor.Models.Entry (Entry(..), empty)
+import Editor.Utils.Array (normalizeArrays)
+import Editor.Utils.ModelHelpers (copyCommonMetadata)
 import Editor.Utils.Parser (stripTags)
 import Halogen (Action)
 
@@ -45,8 +48,8 @@ data Query a
 type Input = Unit
 
 data Message 
-    = EditChapter Chapter
-    | BackToChapterList
+    = GoToMetadataEditor Chapter
+    | GoToChapterList
     | OptionChange (Array (Tuple String (Action Query)))
 
 type AppEffects eff = Aff
@@ -105,17 +108,17 @@ chapterSync chapterOriginal chapter =
                 pure next
             Continue next -> do
                 state <- H.get
-                let newChapter = transferMetadata (unwrap state.chapterOriginal) (unwrap state.chapter)
+                let newChapter = copyCommonMetadata (unwrap state.chapterOriginal) (unwrap state.chapter)
                 let entriesWithChapterId = map (map $ \(Entry entry) -> 
                         entry { chapterId = fromMaybe (-1) newChapter.id }
                     ) state.entries
                 let paddedEntryArrays = normalizeArrays (map (map unwrap) state.entriesOriginal) entriesWithChapterId
-                let newEntries = catMaybes $ zipWith (\old new -> map Entry $ transferMetadata <$> old <*> new <|> new) (fst paddedEntryArrays) (snd paddedEntryArrays)
-                H.raise $ EditChapter $ Chapter newChapter { entries = newEntries }
+                let newEntries = catMaybes $ zipWith (\old new -> map Entry $ copyCommonMetadata <$> old <*> new <|> new) (fst paddedEntryArrays) (snd paddedEntryArrays)
+                H.raise $ GoToMetadataEditor $ Chapter newChapter { entries = newEntries }
                 pure next
 
             Cancel next -> do
-                H.raise BackToChapterList
+                H.raise GoToChapterList
                 pure next
 
             MoveEntry baseIndex direction next -> do
@@ -136,31 +139,3 @@ chapterSync chapterOriginal chapter =
                             fromMaybe entriesOriginal $ updateAt index Nothing entriesOriginal 
                         }
                 pure next
-          
-        transferMetadata :: forall r. Metadata r -> Metadata r -> Metadata r
-        transferMetadata base new =
-            new 
-                { id = base.id
-                , isInteractive = base.isInteractive
-                , interactiveUrl = base.interactiveUrl
-                , interactiveData = base.interactiveData
-                , authorsNote = base.authorsNote
-                , releaseDate = base.releaseDate
-                }
-
-        normalizeArrays :: forall a. Array (Maybe a) -> Array (Maybe a) -> Tuple (Array (Maybe a)) (Array (Maybe a))
-        normalizeArrays a1 a2 =
-            Tuple (a1 <> replicate (length a2 - length a1) Nothing)
-                  (a2 <> replicate (length a1 - length a2) Nothing)
-
--- TODO: this is almost the same as MetadataEditor's FormFields type, can it be shared?
-type Metadata r = 
-    { id :: Maybe Int
-    , isInteractive :: Boolean
-    , interactiveUrl :: String
-    , interactiveData :: String
-    , authorsNote :: String
-    , releaseDate :: Maybe DateTime
-    | r
-    }
-

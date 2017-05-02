@@ -146,7 +146,7 @@ editor =
             HandleChapterList (ChapterList.OptionChange options) next -> do
                 H.modify \state -> state { activeComponent = ChapterList options }
                 pure next
-            HandleChapterList (ChapterList.EditChapter chapter) next -> do
+            HandleChapterList (ChapterList.GoToMetadataEditor chapter) next -> do
                 H.modify \state -> state { activeComponent = MetadataEditor chapter [] }
                 pure next
             HandleChapterList (ChapterList.GoToChapterSync chapterOriginal chapterNew) next -> do
@@ -160,7 +160,7 @@ editor =
                             state { activeComponent = MetadataEditor chapter options }
                         _ -> state
                 pure next
-            HandleMetadataEditor MetadataEditor.BackToChapterList next -> do
+            HandleMetadataEditor MetadataEditor.GoToChapterList next -> do
                 H.modify \state -> state { activeComponent = ChapterList [] }
                 pure next
 
@@ -171,10 +171,10 @@ editor =
                             state { activeComponent = ChapterSync chapterOriginal chapterNew options }
                         _ -> state
                 pure next
-            HandleChapterSync ChapterSync.BackToChapterList next -> do
+            HandleChapterSync ChapterSync.GoToChapterList next -> do
                 H.modify \state -> state { activeComponent = ChapterList [] }
                 pure next
-            HandleChapterSync (ChapterSync.EditChapter chapter) next -> do
+            HandleChapterSync (ChapterSync.GoToMetadataEditor chapter) next -> do
                 H.modify \state -> state { activeComponent = MetadataEditor chapter [] }
                 pure next            
 
@@ -195,9 +195,7 @@ editor =
                     result <- googleLogin "361874213844-33mf5b41pp4p0q38q26u8go81cod0h7f.apps.googleusercontent.com" 
                                           ["profile", "email", "https://www.googleapis.com/auth/drive.readonly"]
                                           ["id_token", "permission"]
-                    log "Logged in..."
                     picker <- initPicker result.accessToken
-                    log "Picker?"
                     pure $ Tuple result picker
                 H.modify (_ { googleServices = Just { accessToken : (fst result).accessToken, idToken : (fst result).idToken, filePicker : snd result }})
                 pure next

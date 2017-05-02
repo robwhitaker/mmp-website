@@ -17,6 +17,7 @@ import Editor.Utils.GoogleAuth (GAPI, GoogleServices, showPicker)
 import Editor.Utils.Parser (getHeadingGroups, getTagContents, parseChapter, stripTags)
 import Editor.Utils.Requests (crupdate, deleteChapter, getChapterHtmlFromGDocs, postChapters)
 import Halogen.Query (Action)
+import Editor.Utils.Array (swap)
 
 import Prelude
 import Data.Newtype (over)
@@ -35,15 +36,9 @@ type State =
     , chaptersOriginal :: Array Chapter
     }
 
-data Direction = Up | Down
-derive instance eqDirection :: Eq Direction
-fromDirection :: Direction -> Int
-fromDirection Up = -1
-fromDirection Down = 1
-
 data Query a 
     = Initialize a
-    | MoveChapter Int Direction a
+    | MoveChapter Int Int a
     | SyncChapter Chapter a
     | EditChapterMetadata Chapter a
     | ChangeChapterSource Chapter a
@@ -55,7 +50,7 @@ data Query a
 type Input = Unit
 
 data Message
-    = EditChapter Chapter
+    = GoToMetadataEditor Chapter
     | OptionChange (Array (Tuple String (Action Query)))
     | GoToChapterSync Chapter Chapter
 
@@ -95,8 +90,8 @@ chapterList =
                             , HH.button [ HE.onClick $ HE.input_ (EditChapterMetadata ch)] [ HH.text "Edit" ]
                             , HH.button [ HE.onClick $ HE.input_ (SyncChapter ch)] [ HH.text "Sync" ]
                             , HH.button [ HE.onClick $ HE.input_ (ChangeChapterSource ch)] [ HH.text "Change Source" ]
-                            , HH.button [ HE.onClick $ HE.input_ (MoveChapter chapterIndex Up)] [ HH.text "Move Up" ]
-                            , HH.button [ HE.onClick $ HE.input_ (MoveChapter chapterIndex Down)] [ HH.text "Move Down" ]
+                            , HH.button [ HE.onClick $ HE.input_ (MoveChapter chapterIndex (chapterIndex - 1))] [ HH.text "Move Up" ]
+                            , HH.button [ HE.onClick $ HE.input_ (MoveChapter chapterIndex (chapterIndex + 1))] [ HH.text "Move Down" ]
                             , HH.button [ HE.onClick $ HE.input_ (DeleteChapter chapterIndex)] [ HH.text "X" ]
                             , HH.text $ show $ chR.order
                             ]
@@ -105,10 +100,6 @@ chapterList =
         eval = case _ of
             Initialize next -> do
                 chs <- H.liftAff $ postChapters ""
-                H.liftAff do
-                    log $ "---------------------------"
-                    log $ show $ chs.response
-                    log $ "---------------------------"
                 H.put $ either (const initialState) (\chapters ->
                     { chapters : chapters
                     , chaptersOriginal : chapters
@@ -117,13 +108,9 @@ chapterList =
                 updateOptions
                 pure next
             
-            MoveChapter baseIndex direction next -> do
-                let swapIndex = baseIndex + fromDirection direction
+            MoveChapter baseIndex swapIndex next -> do
                 H.modify \(state@{ chapters }) -> fromMaybe state do
-                    baseElem <- chapters !! baseIndex
-                    swapElem <- chapters !! swapIndex
-                    newChapters <- updateAt baseIndex swapElem chapters 
-                               >>= updateAt swapIndex baseElem
+                    newChapters <- swap baseIndex swapIndex chapters
                     pure $ state { chapters = mapWithIndex (\index -> over Chapter (_ { order = index })) newChapters }
                 updateOptions
                 pure next
@@ -143,7 +130,7 @@ chapterList =
                 pure next
 
             EditChapterMetadata chapter next -> do
-                H.raise $ EditChapter chapter
+                H.raise $ GoToMetadataEditor chapter
                 pure next
 
             NewChapter next -> do
@@ -152,7 +139,7 @@ chapterList =
                 newChapter <- H.liftAff do
                     chapterId <- map (fromMaybe "") $ showPicker googleServices.filePicker
                     retrieveChapter googleServices.accessToken chapterId (length state.chaptersOriginal)
-                H.raise $ EditChapter newChapter
+                H.raise $ GoToMetadataEditor newChapter
                 pure next
 
 
