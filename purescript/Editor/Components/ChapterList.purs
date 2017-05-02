@@ -46,6 +46,7 @@ data Query a
     | MoveChapter Int Direction a
     | SyncChapter Chapter a
     | EditChapterMetadata Chapter a
+    | ChangeChapterSource Chapter a
     | NewChapter a
     | DeleteChapter Int a
     | Save a
@@ -93,6 +94,7 @@ chapterList =
                             [ HH.h2_ [HH.text $ stripTags title <> show id] 
                             , HH.button [ HE.onClick $ HE.input_ (EditChapterMetadata ch)] [ HH.text "Edit" ]
                             , HH.button [ HE.onClick $ HE.input_ (SyncChapter ch)] [ HH.text "Sync" ]
+                            , HH.button [ HE.onClick $ HE.input_ (ChangeChapterSource ch)] [ HH.text "Change Source" ]
                             , HH.button [ HE.onClick $ HE.input_ (MoveChapter chapterIndex Up)] [ HH.text "Move Up" ]
                             , HH.button [ HE.onClick $ HE.input_ (MoveChapter chapterIndex Down)] [ HH.text "Move Down" ]
                             , HH.button [ HE.onClick $ HE.input_ (DeleteChapter chapterIndex)] [ HH.text "X" ]
@@ -127,16 +129,16 @@ chapterList =
                 pure next
 
             SyncChapter chapter next -> do
-                -- TODO: this is just copied from NewChapter and should be made reusable
+                googleServices <- ask
+                newChapter <- H.liftAff $ retrieveChapter googleServices.accessToken (unwrap chapter).docId (unwrap chapter).order                    
+                H.raise $ GoToChapterSync chapter newChapter
+                pure next
+            
+            ChangeChapterSource chapter next -> do
                 googleServices <- ask
                 newChapter <- H.liftAff do
-                    chapterResponse <- getChapterHtmlFromGDocs googleServices.accessToken (unwrap chapter).docId
-                    log chapterResponse.response
-                    either 
-                        (\err -> throwError $ error $ "Failed to parse chapter: " <> show err) 
-                        (pure <<< over Chapter (_ { order = (unwrap chapter).order, docId = (unwrap chapter).docId }))
-                        (runExcept $ parseChapter chapterResponse.response)
-                    
+                    newChapterId <- map (fromMaybe "") $ showPicker googleServices.filePicker
+                    retrieveChapter googleServices.accessToken newChapterId (unwrap chapter).order
                 H.raise $ GoToChapterSync chapter newChapter
                 pure next
 
@@ -149,11 +151,7 @@ chapterList =
                 googleServices <- ask
                 newChapter <- H.liftAff do
                     chapterId <- map (fromMaybe "") $ showPicker googleServices.filePicker
-                    chapterResponse <- getChapterHtmlFromGDocs googleServices.accessToken chapterId
-                    either 
-                        (\err -> throwError $ error $ "Failed to parse chapter: " <> show err) 
-                        (pure <<< over Chapter (_ { order = length state.chaptersOriginal, docId = chapterId })) 
-                        (runExcept $ parseChapter chapterResponse.response)
+                    retrieveChapter googleServices.accessToken chapterId (length state.chaptersOriginal)
                 H.raise $ EditChapter newChapter
                 pure next
 
@@ -202,5 +200,15 @@ chapterList =
                         else
                             H.raise $ OptionChange
                                 [ Tuple "New Chapter" NewChapter ] 
-                    
+
+                retrieveChapter :: forall e. String -> String -> Int -> Aff (ajax :: AJAX | e) Chapter
+                retrieveChapter accessToken docId order = do
+                    chapterResponse <- getChapterHtmlFromGDocs accessToken docId
+                    either 
+                        (\err -> throwError $ error $ "Failed to parse chapter: " <> show err) 
+                        (pure <<< over Chapter (_ { order = order, docId = docId })) 
+                        (runExcept $ parseChapter chapterResponse.response)
+
+                
+
 
