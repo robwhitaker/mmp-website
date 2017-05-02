@@ -1,5 +1,6 @@
 class Chapter < ActiveRecord::Base
   has_many :entries, foreign_key: 'chapterId'
+  default_scope { order(order: :asc) }
   accepts_nested_attributes_for :entries
   after_initialize :init
 

@@ -184,9 +184,9 @@ def all_chapters_with_entries(type = 'all')
   chapters_with_entries = []
 
   if type == 'released'
-    chapters = Chapter.order(order: :asc).where('releaseDate <= ?', DateTime.now)
+    chapters = Chapter.where('release_date <= ?', DateTime.now)
   else
-    chapters = Chapter.order(order: :asc)
+    chapters = Chapter.all
   end
 
   chapters.each do |chapter|
@@ -199,7 +199,7 @@ end
 def next_release_date
   all_content = []
 
-  Chapter.order(order: :asc).each do |chapter|
+  Chapter.all.each do |chapter|
     entries = chapter.entries
     chapter = chapter.as_json.deep_symbolize_keys
     chapter[:level] = 0
@@ -215,8 +215,8 @@ end
 def released_content
   released_content = []
 
-  Chapter.order(order: :asc).where('releaseDate <= ?', DateTime.now).each do |chapter|
-    entries = chapter.entries.select { |entry| entry.releaseDate <= DateTime.now }
+  Chapter.where('release_date <= ?', DateTime.now).each do |chapter|
+    entries = chapter.entries.select { |entry| entry.release_date <= DateTime.now }
     chapter = chapter.as_json.deep_symbolize_keys
     chapter[:level] = 0
 
