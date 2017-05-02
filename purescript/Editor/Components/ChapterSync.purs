@@ -19,7 +19,7 @@ import Data.Newtype (over, unwrap)
 import Data.Tuple (Tuple(..), fst, snd)
 import Editor.Models.Chapter (Chapter(..))
 import Editor.Models.Entry (Entry(..), empty)
-import Editor.Utils.Array (normalizeArrays)
+import Editor.Utils.Array (normalizeArrays, swap)
 import Editor.Utils.ModelHelpers (copyCommonMetadata)
 import Editor.Utils.Parser (stripTags)
 import Halogen (Action)
@@ -31,18 +31,11 @@ type State =
     , entries :: Array (Maybe Entry)
     }
 
--- TODO: Copied from ChapterList, should be moved into own module and reused
-data Direction = Up | Down
-derive instance eqDirection :: Eq Direction
-fromDirection :: Direction -> Int
-fromDirection Up = -1
-fromDirection Down = 1
-
 data Query a 
     = Initialize a
     | Continue a
     | Cancel a
-    | MoveEntry Int Direction a
+    | MoveEntry Int Int a
     | DeleteEntry Int a
 
 type Input = Unit
@@ -85,8 +78,8 @@ chapterSync chapterOriginal chapter =
                         HH.tr [HP.attr (H.AttrName "style") "border: 1px solid black;"]
                             [ HH.td [HP.attr (H.AttrName "style") "border: 1px solid black;"] 
                                 [ HH.text $ maybe "Nothing" (unwrap >>> _.title) old
-                                , HH.button [ HE.onClick $ HE.input_ (MoveEntry i Up)] [ HH.text "Move Up" ]
-                                , HH.button [ HE.onClick $ HE.input_ (MoveEntry i Down)] [ HH.text "Move Down" ]
+                                , HH.button [ HE.onClick $ HE.input_ (MoveEntry i (i-1))] [ HH.text "Move Up" ]
+                                , HH.button [ HE.onClick $ HE.input_ (MoveEntry i (i+1))] [ HH.text "Move Down" ]
                                 , HH.button [ HE.onClick $ HE.input_ (DeleteEntry i)] [ HH.text "X" ] 
                                 ]
                             , HH.td [HP.attr (H.AttrName "style") "border: 1px solid black;"] 
@@ -121,14 +114,9 @@ chapterSync chapterOriginal chapter =
                 H.raise GoToChapterList
                 pure next
 
-            MoveEntry baseIndex direction next -> do
-                -- TODO: mostly copied from ChapterList, can this be abstracted?
-                let swapIndex = baseIndex + fromDirection direction
+            MoveEntry baseIndex swapIndex next -> do
                 H.modify \(state@{ entriesOriginal }) -> fromMaybe state do
-                    baseElem <- entriesOriginal !! baseIndex
-                    swapElem <- entriesOriginal !! swapIndex
-                    newEntries <- updateAt baseIndex swapElem entriesOriginal 
-                               >>= updateAt swapIndex baseElem
+                    newEntries <- swap baseIndex swapIndex entriesOriginal
                     pure $ state { entriesOriginal = newEntries }
                 pure next
 

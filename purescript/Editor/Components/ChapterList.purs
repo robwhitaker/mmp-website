@@ -160,13 +160,7 @@ chapterList =
                                 Nothing
                             else
                                 Just $ crupdate "" newChapter
-                -- TODO: Copied from Initialize, can this be called / put into a function?
-                chs <- H.liftAff $ postChapters ""
-                H.put $ either (const initialState) (\chapters ->
-                    { chapters : chapters
-                    , chaptersOriginal : chapters
-                    }
-                ) chs.response
+                H.modify (_ { chaptersOriginal = state.chapters })
                 updateOptions
                 pure next
                 
