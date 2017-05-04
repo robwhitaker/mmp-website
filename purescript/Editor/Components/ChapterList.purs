@@ -6,18 +6,19 @@ import Control.Monad.Eff.Exception (error)
 import Control.Monad.Error.Class (throwError)
 import Control.Monad.Except (runExcept)
 import Control.Monad.Reader (ReaderT(..), ask)
-import Data.Array (catMaybes, deleteAt, length)
+import Data.Array (catMaybes, concat, deleteAt, length)
 import Data.List (find)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (unwrap)
 import Data.Traversable (for, sequence)
 import Data.Tuple (Tuple(..))
 import Editor.Models.Chapter (Chapter(..))
+import Editor.Utils.Array (swap)
 import Editor.Utils.GoogleAuth (GAPI, GoogleServices, showPicker)
 import Editor.Utils.Parser (getHeadingGroups, getTagContents, parseChapter, stripTags)
 import Editor.Utils.Requests (crupdate, deleteChapter, getChapterHtmlFromGDocs, postChapters)
+import Halogen.HTML.Properties (class_, id_)
 import Halogen.Query (Action)
-import Editor.Utils.Array (swap)
 
 import Prelude
 import Data.Newtype (over)
@@ -81,19 +82,56 @@ chapterList =
 
         render :: State -> H.ComponentHTML Query
         render state = 
-            HH.div_ $ mapWithIndex chapterToHtml state.chapters
-                    <> [ HH.br_, HH.text $ if state.chapters == state.chaptersOriginal then "Saved." else "Unsaved.", HH.br_ ]
+            HH.div 
+                [ HP.id_ "chapter-list" ] 
+                [ HH.div [ HP.class_ (H.ClassName "left-col") ] $ mapWithIndex chapterToHtml state.chapters
+                , HH.div 
+                    [ HP.class_ (H.ClassName "right-col") ] 
+                    [ HH.h2_ [ HH.text "Cool Sidebar" ] ] 
+                ]
+                
+                    
                 where
-                    chapterToHtml chapterIndex ch@(Chapter chR@{id,title}) = 
-                        HH.div_
-                            [ HH.h2_ [HH.text $ stripTags title <> show id] 
-                            , HH.button [ HE.onClick $ HE.input_ (EditChapterMetadata ch)] [ HH.text "Edit" ]
-                            , HH.button [ HE.onClick $ HE.input_ (SyncChapter ch)] [ HH.text "Sync" ]
-                            , HH.button [ HE.onClick $ HE.input_ (ChangeChapterSource ch)] [ HH.text "Change Source" ]
-                            , HH.button [ HE.onClick $ HE.input_ (MoveChapter chapterIndex (chapterIndex - 1))] [ HH.text "Move Up" ]
-                            , HH.button [ HE.onClick $ HE.input_ (MoveChapter chapterIndex (chapterIndex + 1))] [ HH.text "Move Down" ]
-                            , HH.button [ HE.onClick $ HE.input_ (DeleteChapter chapterIndex)] [ HH.text "X" ]
-                            , HH.text $ show $ chR.order
+                    chapterToHtml chapterIndex ch@(Chapter chR@{id,title,docId}) = 
+                        HH.div
+                            [ HP.class_ $ H.ClassName "chapter-tile" ]
+                            [ HH.h2_ 
+                                [ HH.a 
+                                    [ HP.href $ "https://docs.google.com/document/d/" <> docId <> "/edit"
+                                    , HP.target "_blank" 
+                                    ] 
+                                    [ HH.text $ stripTags title ] 
+                                ] 
+                            , HH.div 
+                                [ HP.class_ $ H.ClassName "chapter-controls" ]
+                                [ HH.i [ HP.class_ (H.ClassName "fa fa-pencil-square-o")
+                                       , HP.attr (H.AttrName "aria-hidden") "true"
+                                       , HE.onClick $ HE.input_ (EditChapterMetadata ch)
+                                       ] []
+                                , HH.i [ HP.class_ (H.ClassName "fa fa-refresh")
+                                       , HP.attr (H.AttrName "aria-hidden") "true"
+                                       , HE.onClick $ HE.input_ (SyncChapter ch)
+                                       ] []
+                                , HH.i [ HP.class_ (H.ClassName "fa fa-download")
+                                       , HP.attr (H.AttrName "aria-hidden") "true"
+                                       , HE.onClick $ HE.input_ (ChangeChapterSource ch)
+                                       ] []
+                                , HH.i [ HP.class_ (H.ClassName "fa fa-arrow-up")
+                                       , HP.attr (H.AttrName "aria-hidden") "true"
+                                       , HE.onClick $ HE.input_ (MoveChapter chapterIndex (chapterIndex - 1))
+                                       ] []
+                                , HH.i [ HP.class_ (H.ClassName "fa fa-arrow-down")
+                                       , HP.attr (H.AttrName "aria-hidden") "true"
+                                       , HE.onClick $ HE.input_ (MoveChapter chapterIndex (chapterIndex + 1))
+                                       ] []
+                                , HH.i [ HP.class_ (H.ClassName "fa fa-trash")
+                                       , HP.attr (H.AttrName "aria-hidden") "true"
+                                       , HE.onClick $ HE.input_ (DeleteChapter chapterIndex)
+                                       ] []
+                                ]
+                            , HH.div 
+                                [ HP.class_ $ H.ClassName "chapter-data" ]
+                                [ HH.text "Chapter data like release date and such goes here..." ]
                             ]
 
         eval :: Query ~> H.ComponentDSL State Query Message (AppEffects eff)

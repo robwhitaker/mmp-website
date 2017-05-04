@@ -6,7 +6,7 @@
 }
 
 html, body {
-    background: #eee;
+    background: #ededed;
     color: #333;
     font-family: 'Roboto Slab';
     font-weight: 300;
@@ -67,4 +67,64 @@ h1, h2, h3, h4, h5, h6 {
 
 #top-bar button:hover {
     background-color: #44bfb3;
+}
+
+#chapter-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    max-width: 1500px;
+    margin: 1em auto;
+}
+
+#chapter-list .left-col {
+    width: 65%;
+}
+
+#chapter-list .right-col {
+    width: 32%;
+}
+
+#chapter-list .chapter-tile {
+    padding: 0.5em 1em;
+    box-shadow: 0px 2px 2px #ccc;
+    margin: 1em 0;
+    background-color: white;
+}
+
+#chapter-list .chapter-tile .chapter-data {
+    clear: both;
+}
+
+#chapter-list .chapter-tile h2 { 
+    display: inline-block;
+}
+
+#chapter-list .chapter-tile .chapter-controls {
+    white-space: nowrap;
+    float: right;
+    color: #009688;
+    margin-top: 5px;
+}
+
+#chapter-list .chapter-tile .chapter-controls i {
+    margin: 0 0.2em;
+    cursor: pointer;
+}
+    
+#chapter-list .chapter-tile .chapter-controls i:hover {
+    text-shadow: 0px 1px #333;
+}
+
+#chapter-list .chapter-tile a {
+    font-weight: 400;
+}
+
+a {
+    color: #009688;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
 }
