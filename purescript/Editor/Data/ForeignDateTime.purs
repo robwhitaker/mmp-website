@@ -1,6 +1,7 @@
 module Editor.Data.ForeignDateTime where
 
 import Editor.Data.DateTime.Utils
+import Data.Generic (class Generic)
 
 import Prelude
 import Data.Array (replicate)
@@ -18,6 +19,8 @@ import Data.Time (Time(..), hour, millisecond)
 import Data.Traversable (traverse)
 
 newtype ForeignDateTime = ForeignDateTime DateTime
+
+derive instance genericForeignDateTime :: Generic ForeignDateTime
 
 instance foreignDateTimeIsForeign :: IsForeign ForeignDateTime where
     read value = do

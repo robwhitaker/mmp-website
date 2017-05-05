@@ -2,13 +2,19 @@ module Editor.Data.DateTime.Utils where
 
 import Prelude
 import Data.DateTime
+import Data.JSDate as JSDate
+import Control.Comonad (extract)
+import Control.Monad.Eff (Eff)
 import Data.Array (replicate)
+import Data.DateTime.Locale (LocalDateTime, LocalValue(..), Locale(..))
 import Data.Either (Either(..), either)
 import Data.Enum (class BoundedEnum, fromEnum, toEnum)
 import Data.Int (fromString)
+import Data.JSDate (LOCALE, getTimezoneOffset)
 import Data.Maybe (Maybe(..))
 import Data.String (joinWith, length, take)
 import Data.String.Regex (parseFlags, regex, split)
+import Data.Time.Duration (Minutes(..))
 import Data.Traversable (traverse)
 
 datetime :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> Maybe DateTime
@@ -45,3 +51,10 @@ formatISO8601 dt =
         format :: forall a. (BoundedEnum a) => Int -> a -> String
         format n = pad n <<< show <<< fromEnum
 
+applyLocale :: forall eff. DateTime -> Eff (locale :: LOCALE | eff) LocalDateTime
+applyLocale dt = do
+    timezoneOffset <- getTimezoneOffset (JSDate.fromDateTime dt)
+    pure $ LocalValue (Locale Nothing (Minutes timezoneOffset)) dt
+
+removeLocale :: LocalDateTime -> DateTime
+removeLocale = extract

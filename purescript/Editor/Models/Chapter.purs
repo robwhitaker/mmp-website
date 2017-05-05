@@ -1,9 +1,13 @@
 module Editor.Models.Chapter where
   
+import Control.Monad.Eff (Eff)
+import Data.DateTime.Locale (LocalDateTime, LocalValue(..))
+import Data.JSDate (LOCALE)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
-import Editor.Data.ForeignDateTime (fromDateTime, toDateTime)
-import Editor.Models.Entry (Entry)
+import Editor.Data.ForeignDateTime (ForeignDateTime(..), fromDateTime, toDateTime)
+import Editor.Models.Entry (Entry, LocalEntry, ServerEntry, fromServerEntry, toServerEntry, Entry)
+import Editor.Data.DateTime.Utils
 
 import Prelude
 import Data.Maybe (Maybe(..), maybe)
@@ -16,7 +20,7 @@ import Data.Foreign.Index (prop)
 import Data.Foreign.Null (writeNull)
 import Data.Foreign.NullOrUndefined(unNullOrUndefined, readNullOrUndefined)
 
-newtype Chapter = Chapter
+newtype Chapter dateTime entry = Chapter
     { id                :: Maybe Int
     , docId             :: String
     , order             :: Int
@@ -26,12 +30,12 @@ newtype Chapter = Chapter
     , stylesheet        :: String
     , title             :: String
     , content           :: String
-    , releaseDate       :: Maybe DateTime
+    , releaseDate       :: Maybe dateTime
     , authorsNote       :: String
-    , entries           :: Array Entry
+    , entries           :: Array entry
     }
 
-empty :: Chapter
+empty :: forall dateTime entry. Chapter dateTime entry
 empty = Chapter
     { id : Nothing
     , docId : ""
@@ -47,20 +51,24 @@ empty = Chapter
     , entries : []      
     }
 
-derive instance genericChapter :: Generic Chapter
+type LocalChapter = Chapter LocalDateTime LocalEntry
 
-derive instance newtypeChapter :: Newtype Chapter _
+derive instance genericLocalChapter :: Generic (Chapter (LocalValue DateTime) (Entry (LocalValue DateTime)))
 
-instance showChapter :: Show Chapter where
+derive instance newtypeLocalChapter :: Newtype (Chapter (LocalValue DateTime) (Entry (LocalValue DateTime))) _
+
+instance showLocalChapter :: Show (Chapter (LocalValue DateTime) (Entry (LocalValue DateTime))) where
     show = gShow
 
-instance eqChapter :: Eq Chapter where
+instance eqLocalChapter :: Eq (Chapter (LocalValue DateTime) (Entry (LocalValue DateTime))) where
     eq = gEq
 
-instance ordChapter :: Ord Chapter where
+instance ordLocalChapter :: Ord (Chapter (LocalValue DateTime) (Entry (LocalValue DateTime))) where
     compare (Chapter ch1) (Chapter ch2) = compare ch1.order ch2.order
 
-instance chapterIsForeign :: IsForeign Chapter where
+type ServerChapter = Chapter ForeignDateTime ServerEntry
+
+instance chapterIsForeign :: IsForeign (Chapter ForeignDateTime (Entry ForeignDateTime)) where
     read value = do
         id' <- readProp "id" value
         docId <- readProp "docId" value
@@ -71,7 +79,7 @@ instance chapterIsForeign :: IsForeign Chapter where
         stylesheet <- readProp "stylesheet" value
         title <- readProp "title" value
         content <- readProp "content" value
-        releaseDate <- prop "releaseDate" value >>= readNullOrUndefined (\v -> read v >>= pure <<< toDateTime)
+        releaseDate <- prop "releaseDate" value >>= readNullOrUndefined read
         authorsNote <- readProp "authorsNote" value
         entries <- readProp "entries" value >>= readArray >>= traverse read
         pure $ Chapter 
@@ -89,7 +97,7 @@ instance chapterIsForeign :: IsForeign Chapter where
             , entries : entries
             }
 
-instance chapterAsForeign :: AsForeign Chapter where
+instance chapterAsForeign :: AsForeign (Chapter ForeignDateTime (Entry ForeignDateTime)) where
     write (Chapter chapter) = 
         writeObject
             [ "id" .= maybe writeNull toForeign chapter.id
@@ -101,8 +109,24 @@ instance chapterAsForeign :: AsForeign Chapter where
             , "stylesheet" .= chapter.stylesheet
             , "title" .= chapter.title
             , "content" .= chapter.content
-            , "releaseDate" .= maybe writeNull (write <<< fromDateTime) chapter.releaseDate
+            , "releaseDate" .= maybe writeNull write chapter.releaseDate
             , "authorsNote" .= chapter.authorsNote
             , "entries_attributes" .= chapter.entries
             ]
+
+fromServerChapter :: forall eff. ServerChapter -> Eff (locale :: LOCALE | eff) LocalChapter
+fromServerChapter (Chapter chapter) = do
+    localReleaseDate <- case chapter.releaseDate of
+        Nothing -> pure Nothing
+        Just releaseDate -> map Just $ applyLocale $ toDateTime releaseDate
+    localEntries <- traverse fromServerEntry chapter.entries
+    pure $ Chapter chapter { releaseDate = localReleaseDate, entries = localEntries }
+            
+
+toServerChapter :: LocalChapter -> ServerChapter
+toServerChapter (Chapter chapter) =
+    Chapter chapter 
+        { releaseDate = map (removeLocale >>> fromDateTime) chapter.releaseDate
+        , entries = map toServerEntry chapter.entries 
+        }
 
