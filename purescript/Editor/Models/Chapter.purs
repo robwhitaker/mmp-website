@@ -51,25 +51,20 @@ empty = Chapter
     , entries : []      
     }
 
-type LocalChapter = Chapter LocalDateTime LocalEntry
+derive instance genericChapter :: (Generic releaseDate, Generic entry) => Generic (Chapter releaseDate entry)
+derive instance newtypeChapter :: Newtype (Chapter releaseDate entry) _
 
-derive instance genericLocalChapter :: Generic (Chapter (LocalValue DateTime) (Entry (LocalValue DateTime)))
-
-derive instance newtypeLocalChapter :: Newtype (Chapter (LocalValue DateTime) (Entry (LocalValue DateTime))) _
-
-instance showLocalChapter :: Show (Chapter (LocalValue DateTime) (Entry (LocalValue DateTime))) where
+instance showChapter :: (Generic releaseDate, Generic entry) => Show (Chapter releaseDate entry) where
     show = gShow
 
-instance eqLocalChapter :: Eq (Chapter (LocalValue DateTime) (Entry (LocalValue DateTime))) where
+instance eqChapter :: (Generic releaseDate, Generic entry) => Eq (Chapter releaseDate entry) where
     eq = gEq
 
-instance ordLocalChapter :: Ord (Chapter (LocalValue DateTime) (Entry (LocalValue DateTime))) where
+instance ordChapter :: (Generic releaseDate, Generic entry) => Ord (Chapter releaseDate entry) where
     compare (Chapter ch1) (Chapter ch2) = compare ch1.order ch2.order
 
+type LocalChapter = Chapter LocalDateTime LocalEntry
 type LocalOptionalEntryChapter = Chapter LocalDateTime (Maybe LocalEntry)
-
-derive instance newtypeLocalOptionalEntryChapter :: Newtype (Chapter (LocalValue DateTime) (Maybe (Entry (LocalValue DateTime)))) _
-
 type ServerChapter = Chapter ForeignDateTime ServerEntry
 
 instance chapterIsForeign :: IsForeign (Chapter ForeignDateTime (Entry ForeignDateTime)) where

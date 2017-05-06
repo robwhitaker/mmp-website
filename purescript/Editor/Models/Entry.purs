@@ -54,7 +54,6 @@ empty = Entry
 type LocalEntry = Entry LocalDateTime
 
 derive instance genericLocalEntry :: Generic (Entry (LocalValue DateTime))
-
 derive instance newtypeLocalEntry :: Newtype (Entry (LocalValue DateTime)) _
 
 instance showLocalEntry :: Show (Entry (LocalValue DateTime)) where
