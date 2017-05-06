@@ -66,6 +66,10 @@ instance eqLocalChapter :: Eq (Chapter (LocalValue DateTime) (Entry (LocalValue 
 instance ordLocalChapter :: Ord (Chapter (LocalValue DateTime) (Entry (LocalValue DateTime))) where
     compare (Chapter ch1) (Chapter ch2) = compare ch1.order ch2.order
 
+type LocalOptionalEntryChapter = Chapter LocalDateTime (Maybe LocalEntry)
+
+derive instance newtypeLocalOptionalEntryChapter :: Newtype (Chapter (LocalValue DateTime) (Maybe (Entry (LocalValue DateTime)))) _
+
 type ServerChapter = Chapter ForeignDateTime ServerEntry
 
 instance chapterIsForeign :: IsForeign (Chapter ForeignDateTime (Entry ForeignDateTime)) where

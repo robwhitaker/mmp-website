@@ -2,11 +2,12 @@ module Editor.Components.MetadataEditor where
 
 import Editor.Models.Chapter as Chapter
 import Control.Bind (join)
+import Control.Comonad (extract)
 import Control.Monad.Aff (Aff)
 import Control.Monad.Aff.Console (CONSOLE, log)
 import Control.Monad.Eff (Eff)
 import Control.Plus ((<|>))
-import Data.Array (length, mapWithIndex, modifyAt, range, sort, (!!))
+import Data.Array (length, mapWithIndex, modifyAt, range, sort, updateAt, (!!))
 import Data.DateTime (DateTime(..), adjust)
 import Data.Formatter.Internal (repeat)
 import Data.JSDate (LOCALE, fromDateTime, getTimezoneOffset)
@@ -14,10 +15,10 @@ import Data.Maybe (Maybe(..), fromMaybe, isJust, isNothing, maybe)
 import Data.Newtype (over, unwrap, wrap)
 import Data.String (take)
 import Data.Time.Duration (Days(..), Minutes(..))
-import Data.Traversable (for)
-import Editor.Data.DateTime.Utils (parseISO8601, formatISO8601)
-import Editor.Models.Chapter (Chapter(..))
-import Editor.Models.Entry (Entry(..))
+import Data.Traversable (for, traverse)
+import Editor.Data.DateTime.Utils (dateTimeWithLocale, formatISO8601, localAdjust, parseISO8601, parseLocalDateTime, removeLocale)
+import Editor.Models.Chapter (Chapter(..), LocalChapter, toServerChapter)
+import Editor.Models.Entry (Entry(..), LocalEntry)
 import Editor.Utils.ModelHelpers (CommonMetadata)
 import Editor.Utils.Parser (stripTags)
 import Editor.Utils.Requests (crupdate)
@@ -34,13 +35,13 @@ import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 
 type State =
-    { chapter :: Chapter
-    , chapterOriginal :: Chapter
+    { chapter :: LocalChapter
+    , chapterOriginal :: LocalChapter
     }
 
 data Query a 
     = Initialize a
-    | LoadChapter Chapter a
+    | LoadChapter LocalChapter a
     | Save a
     | Cancel a
     | PropagateReleaseDate (Maybe Int) a
@@ -58,7 +59,7 @@ data Message
     = OptionChange (Array (Tuple String (H.Action Query)))
     | GoToChapterList
 
-type Input = Chapter
+type Input = LocalChapter
 
 type AppEffects eff = Aff 
     ( locale :: LOCALE
@@ -78,7 +79,7 @@ metadataEditor =
       , finalizer: Nothing
       }
   where
-        initialState :: Chapter -> State
+        initialState :: LocalChapter -> State
         initialState chapter = { chapter : chapter, chapterOriginal : chapter }
 
         render :: State -> H.ComponentHTML Query
@@ -124,16 +125,16 @@ metadataEditor =
                     ]
                 , HH.div_
                     [ HH.input 
-                        [ HP.value (maybe "" formatISO8601 chapter.releaseDate) 
+                        [ HP.value (maybe "" formatISO8601 $ join $ map dateTimeWithLocale chapter.releaseDate) 
                         , HE.onValueChange (HE.input $ UpdateChapter <<< ReleaseDate)
                         ]
-                    , HH.text $ maybe "" formatISO8601 chapter.releaseDate 
+                    , HH.text $ maybe "" formatISO8601 $ join $ map dateTimeWithLocale chapter.releaseDate 
                     ]
                 , HH.hr_
                 ] <> mapWithIndex entryToHtml chapter.entries
           where 
                 chapter = unwrap state.chapter
-                entryToHtml :: Int -> Entry -> H.ComponentHTML Query
+                entryToHtml :: Int -> LocalEntry -> H.ComponentHTML Query
                 entryToHtml index (Entry entry) = 
                     HH.div_ 
                         [ HH.h1_ [ HH.text $ repeat ">" entry.level <> stripTags entry.title, HH.text ", ", HH.text $ show entry.order ]
@@ -175,10 +176,10 @@ metadataEditor =
                             ]
                         , HH.div_
                             [ HH.input 
-                                [ HP.value (maybe "" formatISO8601 entry.releaseDate) 
+                                [ HP.value (maybe "" formatISO8601 $ join $ map dateTimeWithLocale entry.releaseDate) 
                                 , HE.onValueChange (HE.input $ UpdateEntry index <<< ReleaseDate)
                                 ]
-                            , HH.text $ maybe "" formatISO8601 entry.releaseDate
+                            , HH.text $ maybe "" formatISO8601 $ join $ map dateTimeWithLocale entry.releaseDate
                             ]
                         , HH.hr_    
                         ]
@@ -187,7 +188,6 @@ metadataEditor =
         eval =
             case _ of
                 Initialize next -> do
-                    localizeState applyLocale
                     H.raise $ OptionChange
                         [ Tuple "Cancel" Cancel
                         , Tuple "Save"   Save
@@ -199,10 +199,9 @@ metadataEditor =
                     pure next
 
                 Save next -> do
-                    localizeState stripLocale
                     state <- H.get
                     -- TODO: failed Aff needs handling here because otherwise it could duplicate the stripLocale
-                    H.liftAff $ crupdate "" state.chapter
+                    H.liftAff $ crupdate "" $ toServerChapter state.chapter
                     H.raise GoToChapterList
                     pure next
 
@@ -229,53 +228,42 @@ metadataEditor =
                                     if entry.level > lastEntryData.level 
                                         then Entry $ entry { releaseDate = lastEntryData.releaseDate }
                                         else fromMaybe (Entry entry) do
-                                            newReleaseDate <- map (adjust (Days 7.0)) lastEntryData.releaseDate
+                                            newReleaseDate <- map (localAdjust (Days 7.0)) lastEntryData.releaseDate
                                             pure $ Entry $ entry { releaseDate = newReleaseDate }
                                 ) entries
                             pure $ state { chapter = over Chapter (_ { entries = newEntries }) state.chapter }
                     pure next
 
                 UpdateChapter formField next -> do
-                    H.modify \state -> state { chapter = over Chapter (updateField formField) state.chapter }
+                    state <- H.get
+                    newChapter <- H.liftEff $ updateField formField $ unwrap state.chapter
+                    H.modify _ { chapter = Chapter newChapter }
                     pure next
 
                 UpdateEntry index formField next -> do
-                    H.modify \state -> fromMaybe state do
-                        newEntries <- modifyAt index (over Entry (updateField formField)) (unwrap state.chapter).entries
-                        pure $ state { chapter = over Chapter (_ { entries = newEntries}) state.chapter }
-                    pure next
+                    state <- H.get
+                    let entries = (unwrap state.chapter).entries
+                    let maybeEntry = entries !! index
+                    case maybeEntry of
+                        Nothing -> pure next
+                        Just e@(Entry entry) -> do
+                            newEntry <- H.liftEff $ updateField formField entry
+                            H.modify \s -> fromMaybe s do
+                                newEntries <- updateAt index (Entry newEntry) entries
+                                pure $ s { chapter = over Chapter (_ { entries = newEntries}) state.chapter }
+                            pure next
 
           where
-                updateField :: forall r. FormField -> CommonMetadata r -> CommonMetadata r
+                updateField :: forall r e. FormField -> CommonMetadata r -> Eff (locale :: LOCALE | e) (CommonMetadata r)
                 updateField fieldData state = 
                     case fieldData of
-                        IsInteractive isInteractive -> state { isInteractive = isInteractive }
-                        InteractiveUrl interactiveUrl -> state { interactiveUrl = interactiveUrl }
-                        InteractiveData interactiveData -> state { interactiveData = interactiveData }
-                        AuthorsNote authorsNote -> state { authorsNote = authorsNote }
-                        ReleaseDate releaseDate -> state { releaseDate = parseISO8601 releaseDate <|> state.releaseDate  }
+                        IsInteractive isInteractive -> pure $ state { isInteractive = isInteractive }
+                        InteractiveUrl interactiveUrl -> pure $ state { interactiveUrl = interactiveUrl }
+                        InteractiveData interactiveData -> pure $ state { interactiveData = interactiveData }
+                        AuthorsNote authorsNote -> pure $ state { authorsNote = authorsNote }
+                        ReleaseDate releaseDate -> do
+                            rd <- parseLocalDateTime releaseDate
+                            pure $ state { releaseDate = rd <|> state.releaseDate  }
                 
-                applyLocale :: forall e. Maybe DateTime -> Eff (locale :: LOCALE | e) (Maybe DateTime)
-                applyLocale Nothing = pure Nothing
-                applyLocale (Just dt) = do
-                    offset <- getTimezoneOffset (fromDateTime dt)
-                    pure $ adjust (Minutes offset) dt
-
-                stripLocale :: forall e. Maybe DateTime -> Eff (locale :: LOCALE | e) (Maybe DateTime)
-                stripLocale Nothing = pure Nothing
-                stripLocale (Just dt) = do
-                    offset <- getTimezoneOffset (fromDateTime dt)
-                    pure $ adjust (Minutes (-offset)) dt
-
-                localizeState fn = do
-                    chapter <- H.get >>= pure <<< (_.chapter >>> unwrap)
-                    chapterLocaleDate <- liftEff $ fn chapter.releaseDate
-                    entriesWithLocaleDates <- liftEff $ for chapter.entries \(Entry entry) -> do
-                        newDate <- fn entry.releaseDate
-                        pure $ Entry $ entry { releaseDate = newDate }
-                    H.modify \state ->
-                        state { chapter = Chapter $ chapter { releaseDate = chapterLocaleDate
-                                                            , entries = entriesWithLocaleDates 
-                                                            } 
-                              }
+                
 

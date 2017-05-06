@@ -9,18 +9,18 @@ import Data.Foreign.Class (class AsForeign, class IsForeign, read, write, (.=))
 import Data.Foreign.Null (writeNull)
 import Data.Maybe (Maybe(..), maybe)
 import Data.String (joinWith)
-import Editor.Models.Chapter (Chapter)
+import Editor.Models.Chapter (Chapter, ServerChapter)
 import Network.HTTP.Affjax (Affjax, URL, get, post)
 
 ---- REQUESTS ----
 
-getChapters :: forall e. Affjax e (Either String (Array Chapter))
+getChapters :: forall e. Affjax e (Either String (Array ServerChapter))
 getChapters = getRequest chaptersEndpoint
 
-postChapters :: forall e. String -> Affjax e (Either String (Array Chapter))
+postChapters :: forall e. String -> Affjax e (Either String (Array ServerChapter))
 postChapters secretKey = postRequest chaptersEndpoint secretKey (Nothing :: Maybe String)
 
-crupdate :: forall e. String -> Chapter -> Affjax e (Either String Int)
+crupdate :: forall e. String -> ServerChapter -> Affjax e (Either String Int)
 crupdate secretKey chapter = postRequest chapterUpdateEndpoint secretKey (Just chapter)
 
 deleteChapter :: forall e. String -> Int -> Affjax e (Either String Int)

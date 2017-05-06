@@ -14,7 +14,7 @@ import Data.Functor.Coproduct.Nested (Coproduct3)
 import Data.JSDate (LOCALE)
 import Data.Maybe (isJust, isNothing)
 import Data.Tuple (fst, snd)
-import Editor.Models.Chapter (Chapter(..))
+import Editor.Models.Chapter (Chapter(..), LocalChapter)
 import Editor.Utils.GoogleAuth (FilePicker, GAPI, GoogleAuthData, GoogleServices, awaitGapi, googleLogin, initAuth2, initPicker, load, showPicker)
 import Halogen (lifecycleParentComponent)
 import Halogen.Component.ChildPath (cp2, cp3)
@@ -38,8 +38,8 @@ import Halogen.HTML.Properties as HP
 
 data ActiveComponent 
     = ChapterList (Array (Tuple String (Action ChapterList.Query)))
-    | MetadataEditor Chapter (Array (Tuple String (Action MetadataEditor.Query)))
-    | ChapterSync Chapter Chapter (Array (Tuple String (Action ChapterSync.Query)))
+    | MetadataEditor LocalChapter (Array (Tuple String (Action MetadataEditor.Query)))
+    | ChapterSync LocalChapter LocalChapter (Array (Tuple String (Action ChapterSync.Query)))
 
 type State = 
     { activeComponent :: ActiveComponent

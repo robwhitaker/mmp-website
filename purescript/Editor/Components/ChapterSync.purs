@@ -12,23 +12,22 @@ import Control.MonadPlus (class Plus)
 import Data.Array (catMaybes, length, mapWithIndex, replicate, updateAt, zipWith, (!!))
 import Data.Bifunctor (lmap, rmap)
 import Data.DateTime (DateTime(..))
+import Data.DateTime.Locale (LocalDateTime, LocalValue(..))
 import Data.Eq (class Eq)
 import Data.Maybe (Maybe(..), fromJust, fromMaybe, isJust, maybe)
 import Data.Monoid (class Monoid)
-import Data.Newtype (over, unwrap)
+import Data.Newtype (class Newtype, over, unwrap)
 import Data.Tuple (Tuple(..), fst, snd)
-import Editor.Models.Chapter (Chapter(..))
-import Editor.Models.Entry (Entry(..), empty)
+import Editor.Models.Chapter (Chapter(..), LocalChapter, LocalOptionalEntryChapter)
+import Editor.Models.Entry (Entry(..), LocalEntry, empty)
 import Editor.Utils.Array (normalizeArrays, swap)
 import Editor.Utils.ModelHelpers (copyCommonMetadata)
 import Editor.Utils.Parser (stripTags)
 import Halogen (Action)
 
 type State =
-    { chapterOriginal :: Chapter
-    , entriesOriginal :: Array (Maybe Entry)
-    , chapter :: Chapter
-    , entries :: Array (Maybe Entry)
+    { chapterOriginal :: LocalOptionalEntryChapter
+    , chapter :: LocalOptionalEntryChapter
     }
 
 data Query a 
@@ -41,7 +40,7 @@ data Query a
 type Input = Unit
 
 data Message 
-    = GoToMetadataEditor Chapter
+    = GoToMetadataEditor LocalChapter
     | GoToChapterList
     | OptionChange (Array (Tuple String (Action Query)))
 
@@ -50,7 +49,7 @@ type AppEffects eff = Aff
     | eff
     )
 
-chapterSync :: forall eff. Chapter -> Chapter -> H.Component HH.HTML Query Input Message (AppEffects eff)
+chapterSync :: forall eff. LocalChapter -> LocalChapter -> H.Component HH.HTML Query Input Message (AppEffects eff)
 chapterSync chapterOriginal chapter = 
     H.lifecycleComponent
         { initialState: const initialState
@@ -62,15 +61,14 @@ chapterSync chapterOriginal chapter =
         }
   where
         initialState = 
-            { chapterOriginal 
-            , entriesOriginal: map Just (unwrap chapterOriginal).entries
-            , chapter
-            , entries: map Just (unwrap chapter).entries
+            { chapterOriginal : over Chapter (_ { entries = fst paddedEntries }) chapterOriginal
+            , chapter : over Chapter (_ { entries = snd paddedEntries }) chapter
             }
+          where paddedEntries = normalizeArrays (map Just (unwrap chapterOriginal).entries) (map Just (unwrap chapter).entries)
 
         render :: State -> H.ComponentHTML Query
         render state =
-            HH.div_
+            HH.div_ 
                 [ HH.h1_ [ HH.text $ stripTags (unwrap state.chapter).title ]
                 , HH.table [ HP.attr (H.AttrName "style") "border: 1px solid black;" ] $ 
                     [ HH.tr [ HP.attr (H.AttrName "style") "border: 1px solid black;" ] [ HH.td [HP.attr (H.AttrName "style") "border: 1px solid black;"] [ HH.text "Old Chapter" ], HH.td [HP.attr (H.AttrName "style") "border: 1px solid black;"] [ HH.text "New Chapter" ] ] ] <>
@@ -86,10 +84,8 @@ chapterSync chapterOriginal chapter =
                                 [ HH.text $ maybe "Nothing" (unwrap >>> _.title) new
                                 ]
                             ]                    
-                    ) (fst paddedEntries) (snd paddedEntries))
+                    ) (unwrap state.chapterOriginal).entries (unwrap state.chapter).entries)
                 ]
-          where
-                paddedEntries = normalizeArrays state.entriesOriginal state.entries
 
         eval :: Query ~> H.ComponentDSL State Query Message (AppEffects eff)
         eval = case _ of
@@ -105,9 +101,10 @@ chapterSync chapterOriginal chapter =
                 let newChapter = copyCommonMetadata (unwrap state.chapterOriginal) (unwrap state.chapter)
                 let entriesWithChapterId = map (map \(Entry entry) -> 
                         entry { chapterId = fromMaybe (-1) newChapter.id }
-                    ) state.entries
-                let paddedEntryArrays = normalizeArrays (map (map unwrap) state.entriesOriginal) entriesWithChapterId
-                let newEntries = catMaybes $ zipWith (\old new -> map Entry $ copyCommonMetadata <$> old <*> new <|> new) (fst paddedEntryArrays) (snd paddedEntryArrays)
+                    ) (unwrap state.chapter).entries
+                let newEntries = catMaybes $ zipWith (\old new -> map Entry $ copyCommonMetadata <$> old <*> new <|> new) 
+                                                     (map (map unwrap) (unwrap state.chapterOriginal).entries)
+                                                     entriesWithChapterId
                 H.raise $ GoToMetadataEditor $ Chapter newChapter { entries = newEntries }
                 pure next
 
@@ -116,15 +113,16 @@ chapterSync chapterOriginal chapter =
                 pure next
 
             MoveEntry baseIndex swapIndex next -> do
-                H.modify \(state@{ entriesOriginal }) -> fromMaybe state do
-                    newEntries <- swap baseIndex swapIndex entriesOriginal
-                    pure $ state { entriesOriginal = newEntries }
+                H.modify \(state@{ chapterOriginal }) -> fromMaybe state do
+                    newEntries <- swap baseIndex swapIndex (unwrap chapterOriginal).entries
+                    pure $ state { chapterOriginal = over Chapter (_ { entries = newEntries }) chapterOriginal }
                 pure next
 
             DeleteEntry index next -> do 
-                H.modify \(state@{ entriesOriginal }) -> 
-                    state 
-                        { entriesOriginal = 
-                            fromMaybe entriesOriginal $ updateAt index Nothing entriesOriginal 
+                H.modify \(state@{ chapterOriginal }) -> fromMaybe state do
+                    newEntries <- updateAt index Nothing (unwrap chapterOriginal).entries
+                    pure $ state 
+                        { chapterOriginal = 
+                            over Chapter (_ { entries = newEntries }) chapterOriginal
                         }
                 pure next

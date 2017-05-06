@@ -1,8 +1,8 @@
 module Editor.Utils.ModelHelpers where
   
-import Prelude (($))
-import Data.DateTime (DateTime())
+import Data.DateTime.Locale (LocalDateTime)
 import Data.Maybe (Maybe)
+import Prelude (($))
 
 type CommonMetadata r = 
     { id :: Maybe Int
@@ -10,7 +10,7 @@ type CommonMetadata r =
     , interactiveUrl :: String
     , interactiveData :: String
     , authorsNote :: String
-    , releaseDate :: Maybe DateTime
+    , releaseDate :: Maybe LocalDateTime
     | r
     }
 
@@ -30,3 +30,4 @@ type EntryMetadata r = CommonMetadata (chapterId :: Int | r)
 copyEntryMetadata :: forall r. EntryMetadata r -> EntryMetadata r -> EntryMetadata r
 copyEntryMetadata base new = 
     copyCommonMetadata base $ new { chapterId = base.chapterId }
+

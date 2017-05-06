@@ -22,12 +22,12 @@ import Data.String.Regex.Flags (RegexFlags(..), global, ignoreCase, noFlags)
 import Data.String.Regex.Unsafe (unsafeRegex)
 import Data.Traversable (for, sequence)
 import Data.Tuple (Tuple(..))
-import Editor.Models.Chapter (Chapter(..))
-import Editor.Models.Entry (Entry(..))
+import Editor.Models.Chapter (Chapter(..), LocalChapter)
+import Editor.Models.Entry (Entry(..), LocalEntry)
 
 type ChapterParser = Except (Array ChapterParseError)
 
-parseChapter :: String -> ChapterParser Chapter
+parseChapter :: String -> ChapterParser LocalChapter
 parseChapter srcStr = do
     stylesheet <- getTagContents "style" srcStr <|> pure ""
     headingGroups <- getHeadingGroups srcStr
@@ -37,13 +37,13 @@ parseChapter srcStr = do
     entries <- for (zip entryDataArray $ range 0 (length entryDataArray)) \(Tuple { heading, content } i) -> do
         level <- getHeadingLevel heading
         withExcept (const $ pure BadEntryHeadingLevel) $ guard (level > 0) :: ChapterParser Unit
-        pure $ Entry $ (unwrap Entry.empty) 
+        pure $ Entry $ (unwrap (Entry.empty :: LocalEntry)) 
             { level = level
             , order = i
             , title = heading
             , content = content
             }
-    pure $ Chapter $ (unwrap Chapter.empty)
+    pure $ Chapter $ (unwrap (Chapter.empty :: LocalChapter))
         { stylesheet = stylesheet
         , title = chapterData.heading
         , content = chapterData.content
@@ -103,3 +103,4 @@ derive instance genericChapterParseError :: Generic ChapterParseError
 derive instance eqChapterParseError :: Eq ChapterParseError
 instance showChapterParseError :: Show ChapterParseError where
     show = gShow
+

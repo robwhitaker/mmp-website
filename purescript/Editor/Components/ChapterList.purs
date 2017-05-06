@@ -7,12 +7,14 @@ import Control.Monad.Error.Class (throwError)
 import Control.Monad.Except (runExcept)
 import Control.Monad.Reader (ReaderT(..), ask)
 import Data.Array (catMaybes, concat, deleteAt, length)
+import Data.JSDate (LOCALE)
 import Data.List (find)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (unwrap)
-import Data.Traversable (for, sequence)
+import Data.Traversable (for, sequence, traverse)
 import Data.Tuple (Tuple(..))
-import Editor.Models.Chapter (Chapter(..))
+import Editor.Models.Chapter as Chapter
+import Editor.Models.Chapter (Chapter(..), LocalChapter, ServerChapter, fromServerChapter, toServerChapter)
 import Editor.Utils.Array (swap)
 import Editor.Utils.GoogleAuth (GAPI, GoogleServices, showPicker)
 import Editor.Utils.Parser (getHeadingGroups, getTagContents, parseChapter, stripTags)
@@ -33,16 +35,16 @@ import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 
 type State = 
-    { chapters :: Array Chapter
-    , chaptersOriginal :: Array Chapter
+    { chapters :: Array LocalChapter
+    , chaptersOriginal :: Array LocalChapter
     }
 
 data Query a 
     = Initialize a
     | MoveChapter Int Int a
-    | SyncChapter Chapter a
-    | EditChapterMetadata Chapter a
-    | ChangeChapterSource Chapter a
+    | SyncChapter LocalChapter a
+    | EditChapterMetadata LocalChapter a
+    | ChangeChapterSource LocalChapter a
     | NewChapter a
     | DeleteChapter Int a
     | Save a
@@ -51,14 +53,15 @@ data Query a
 type Input = Unit
 
 data Message
-    = GoToMetadataEditor Chapter
+    = GoToMetadataEditor LocalChapter
     | OptionChange (Array (Tuple String (Action Query)))
-    | GoToChapterSync Chapter Chapter
+    | GoToChapterSync LocalChapter LocalChapter
 
 type AppEffects eff = ReaderT GoogleServices (Aff 
     ( ajax :: AJAX 
     , gapi :: GAPI
     , console :: CONSOLE
+    , locale :: LOCALE
     | eff
     ))
 
@@ -138,11 +141,12 @@ chapterList =
         eval = case _ of
             Initialize next -> do
                 chs <- H.liftAff $ postChapters ""
-                H.put $ either (const initialState) (\chapters ->
-                    { chapters : sort chapters # map \(Chapter chapter) -> Chapter chapter { entries = sort chapter.entries }
-                    , chaptersOriginal : sort chapters # map \(Chapter chapter) -> Chapter chapter { entries = sort chapter.entries }
-                    }
-                ) chs.response
+                localChs <- H.liftEff $ 
+                    either 
+                        (const $ pure []) 
+                        (traverse fromServerChapter >>> map sort >>> map (map \(Chapter chapter) -> Chapter chapter { entries = sort chapter.entries }))
+                        chs.response    
+                H.put { chapters : localChs, chaptersOriginal : localChs }
                 updateOptions
                 pure next
             
@@ -197,7 +201,7 @@ chapterList =
                             if Chapter oldChapter == newChapter then
                                 Nothing
                             else
-                                Just $ crupdate "" newChapter
+                                Just $ crupdate "" $ toServerChapter newChapter
                 H.modify (_ { chaptersOriginal = state.chapters })
                 updateOptions
                 pure next
@@ -220,12 +224,12 @@ chapterList =
                             H.raise $ OptionChange
                                 [ Tuple "New Chapter" NewChapter ] 
 
-                retrieveChapter :: forall e. String -> String -> Int -> Aff (ajax :: AJAX | e) Chapter
+                retrieveChapter :: forall e. String -> String -> Int -> Aff (ajax :: AJAX | e) LocalChapter
                 retrieveChapter accessToken docId order = do
                     chapterResponse <- getChapterHtmlFromGDocs accessToken docId
                     either 
                         (\err -> throwError $ error $ "Failed to parse chapter: " <> show err) 
-                        (pure <<< over Chapter (_ { order = order, docId = docId })) 
+                        (pure <<< over Chapter (_ { order = order, docId = docId }))
                         (runExcept $ parseChapter chapterResponse.response)
 
                 
