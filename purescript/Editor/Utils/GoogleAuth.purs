@@ -2,10 +2,8 @@ module Editor.Utils.GoogleAuth where
 
 import Prelude
 import Control.Monad.Aff (Aff)
-import Control.Monad.Eff (Eff)
-import Data.Foreign.Null (Null(..))
-import Data.Foreign.Undefined (Undefined(..))
-import Data.Function.Uncurried (Fn2, Fn3, runFn2, runFn3)
+import Control.Monad.Eff (kind Effect)
+import Data.Function.Uncurried (Fn3, runFn3)
 import Data.Maybe (Maybe)
 import Data.Nullable (Nullable, toMaybe)
 import Data.String (joinWith)
@@ -28,9 +26,9 @@ type ResponseType = Array String
 type ServiceLabel = String
 type AccessToken = String
 
-foreign import data GAPI :: !
-foreign import data FilePicker :: *
-foreign import data Gapi :: *
+foreign import data GAPI :: Effect
+foreign import data FilePicker :: Type
+foreign import data Gapi :: Type
 
 foreign import awaitGapi :: forall eff. Aff (gapi :: GAPI | eff) Gapi
 

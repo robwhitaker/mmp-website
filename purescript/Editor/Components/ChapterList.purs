@@ -194,7 +194,7 @@ chapterList =
             
             Save next -> do
                 state <- H.get
-                H.liftAff $ sequence $ catMaybes $ flip map state.chaptersOriginal \(Chapter oldChapter) -> do
+                _ <- H.liftAff $ sequence $ catMaybes $ flip map state.chaptersOriginal \(Chapter oldChapter) -> do
                     case find (unwrap >>> _.id >>> (==) oldChapter.id) state.chapters of
                         Nothing -> Just $ deleteChapter "" (fromMaybe (-1) oldChapter.id)
                         Just newChapter -> 

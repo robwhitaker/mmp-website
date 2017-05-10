@@ -124,16 +124,25 @@ gulp.task('build:countdown-elm', function() {
 });
 
 var sources = [
-  "purescript/Editor/Main.purs",
+  "purescript/**/*.purs",
   "bower_components/purescript-*/src/**/*.purs",
 ];
+
+gulp.task('build:ps-deps', function() {
+    return purescript.compile({ src: sources[1] });
+});
 
 gulp.task('build:editor-ps', function() {
     return purescript.compile({ src: sources });
 });
 
 gulp.task('build:editor', ['build:editor-ps'], function() {
-    return purescript.bundle({ src: "output/**/*.js", output: "public/static/build/js/editor.js" });
+    return purescript.bundle(
+        { src: "output/**/*.js"
+        , module: "Editor.Main"
+        , main: "Editor.Main"
+        , output: "public/static/build/js/editor.js" 
+        });
 });
 
 gulp.task('build:reader', ['build:reader-html','build:reader-css','build:reader-js'], function() {

@@ -201,7 +201,7 @@ metadataEditor =
                 Save next -> do
                     state <- H.get
                     -- TODO: failed Aff needs handling here because otherwise it could duplicate the stripLocale
-                    H.liftAff $ crupdate "" $ toServerChapter state.chapter
+                    _ <- H.liftAff $ crupdate "" $ toServerChapter state.chapter
                     H.raise GoToChapterList
                     pure next
 
@@ -212,7 +212,7 @@ metadataEditor =
                 PropagateReleaseDate maybeIndex next -> do
                     let index = fromMaybe (-1) maybeIndex
                     numEntries <- H.get >>= pure <<< length <<< _.entries <<< unwrap <<< _.chapter
-                    for (range (index+1) (numEntries-1)) \i ->
+                    _ <- for (range (index+1) (numEntries-1)) \i ->
                         H.modify \state -> fromMaybe state do
                             let entries = _.entries $ unwrap $ state.chapter
                                 lastEntryData = case entries !! (i-1) of

@@ -4,12 +4,14 @@ import Prelude
 import Control.Monad.Except (runExcept, withExcept)
 import Data.Argonaut.Core (Json)
 import Data.Either (Either)
-import Data.Foreign (readString, unsafeFromForeign, writeObject)
-import Data.Foreign.Class (class AsForeign, class IsForeign, read, write, (.=))
-import Data.Foreign.Null (writeNull)
+import Data.Foreign (unsafeFromForeign)
+import Data.Foreign.Class (class Decode, class Encode, decode, encode)
+import Data.Foreign.Generic (defaultOptions, genericEncode)
+import Data.Foreign.NullOrUndefined (NullOrUndefined(..))
+import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..), maybe)
 import Data.String (joinWith)
-import Editor.Models.Chapter (Chapter, ServerChapter)
+import Editor.Models.Chapter (ServerChapter)
 import Network.HTTP.Affjax (Affjax, URL, get, post)
 
 ---- REQUESTS ----
@@ -32,20 +34,20 @@ getChapterHtmlFromGDocs accessToken fileId = do
 
 ---- REQUEST HELPERS ----
 
-getRequest :: forall e r. (IsForeign r) => URL -> Affjax e (Either String r)
+getRequest :: forall e r. Decode r => URL -> Affjax e (Either String r)
 getRequest endpoint = do
     affjaxResponse <- get endpoint
-    pure $ affjaxResponse { response = runExcept $ withExcept show $ read affjaxResponse.response }
+    pure $ affjaxResponse { response = runExcept $ withExcept show $ decode affjaxResponse.response }
 
-postRequest :: forall a e r. (AsForeign a, IsForeign r) => URL -> String -> Maybe a -> Affjax e (Either String r)
+postRequest :: forall a e r. Encode a => Decode r => URL -> String -> Maybe a -> Affjax e (Either String r)
 postRequest endpoint secretKey postData = do
-    affjaxResponse <- post endpoint (unsafeFromForeign payload :: Json)
-    pure $ affjaxResponse { response = runExcept $ withExcept show $ read affjaxResponse.response }
+    affjaxResponse <- post endpoint (unsafeFromForeign (encode payload) :: Json)
+    pure $ affjaxResponse { response = runExcept $ withExcept show $ decode affjaxResponse.response }
   where 
-    payload = writeObject
-        [ "secretKey" .= secretKey
-        , "data" .= maybe writeNull write postData
-        ]
+    payload = PostData
+        { secretKey : secretKey
+        , "data" : NullOrUndefined postData
+        }
 
 ---- ENDPOINTS ----
 
@@ -71,4 +73,15 @@ singleChapterEndpoint cId = chaptersEndpoint <> "/" <> show cId
 -- supports GET
 nextReleaseEndpoint :: String
 nextReleaseEndpoint = apiBase <> "/next"
+
+-- post data
+
+newtype PostData a = PostData
+    { secretKey :: String
+    , data :: a        
+    }
+
+derive instance genericPostData :: Generic (PostData a) _
+instance encodePostData :: Encode a => Encode (PostData a) where
+    encode = genericEncode defaultOptions
 

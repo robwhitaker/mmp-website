@@ -1,14 +1,18 @@
 "use strict";
 
-var gapi = null;
-
-require('google-client-api')().then(function(_gapi) {
-    gapi = _gapi;
-});
+(function() {
+    var loaderScript = document.createElement("script");
+    loaderScript.id = "loader-script";
+    loaderScript.src = "https://apis.google.com/js/platform.js?onload=gapiloaded";
+    loaderScript.async = true;
+    loaderScript.defer = true;
+    document.head.appendChild(loaderScript);
+})();
 
 exports.awaitGapi = function(success, error) {
     var check = function() { 
-        if(gapi)
+        var script = document.getElementById("loader-script");
+        if(typeof gapi !== "undefined" && !!script && script.getAttribute("gapi_processed") === "true")
             success(gapi);
         else
             window.requestAnimationFrame(check);
@@ -18,11 +22,11 @@ exports.awaitGapi = function(success, error) {
 
 exports.load = function(service) {
     return function(success, error) {
-        if(!gapi) {
+        if(typeof gapi === "undefined") {
             error("GAPI not loaded.");
             return;
         }
-        gapi.load(service, function() {
+        gapi.load(service, function() { 
             success();
         });
     }
@@ -30,7 +34,7 @@ exports.load = function(service) {
 
 exports.initAuth2 = function(clientId) {
     return function(success,error) {
-        if(!gapi) {
+        if(typeof gapi === "undefined") {
             error("GAPI not loaded.");
             return;
         }
@@ -95,3 +99,4 @@ exports._showPicker = function(picker) {
         picker.setVisible(true);
     }
 }
+

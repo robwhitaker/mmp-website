@@ -141,7 +141,7 @@ editor =
             Initialize next -> do
                 -- setup Google auth and file picker
                 H.liftAff do 
-                    awaitGapi
+                    _ <- awaitGapi
                     load "auth2"
                     load "picker"
                     initAuth2 "361874213844-33mf5b41pp4p0q38q26u8go81cod0h7f.apps.googleusercontent.com"
@@ -183,15 +183,15 @@ editor =
                 pure next            
 
             SendChapterListAction action next -> do
-                H.query' cp1 unit $ H.action action
+                _ <- H.query' cp1 unit $ H.action action
                 pure next
 
             SendMetadataEditorAction action next -> do
-                H.query' cp2 unit $ H.action action
+                _ <- H.query' cp2 unit $ H.action action
                 pure next
 
             SendChapterSyncAction action next -> do
-                H.query' cp3 unit $ H.action action
+                _ <- H.query' cp3 unit $ H.action action
                 pure next
 
             Login next -> do
