@@ -1,19 +1,31 @@
 module Editor.Components.ChapterList where
 
+import Prelude
+import Editor.Models.Chapter as Chapter
+import Halogen as H
+import Halogen.HTML as HH
+import Halogen.HTML.Events as HE
+import Halogen.HTML.Properties as HP
 import Control.Monad.Aff (attempt)
+import Control.Monad.Aff (Aff)
 import Control.Monad.Aff.Console (CONSOLE, log)
 import Control.Monad.Eff.Exception (error)
 import Control.Monad.Error.Class (throwError)
 import Control.Monad.Except (runExcept)
 import Control.Monad.Reader (ReaderT(..), ask)
+import Data.Argonaut (encodeJson)
+import Data.Argonaut.Core (jsonNull)
 import Data.Array (catMaybes, concat, deleteAt, length)
+import Data.Array (mapWithIndex, sort, updateAt, (!!))
+import Data.Either (either)
 import Data.JSDate (LOCALE)
 import Data.List (find)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), maybe)
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Newtype (unwrap)
+import Data.Newtype (over)
 import Data.Traversable (for, sequence, traverse)
 import Data.Tuple (Tuple(..))
-import Editor.Models.Chapter as Chapter
 import Editor.Models.Chapter (Chapter(..), LocalChapter, ServerChapter, fromServerChapter, toServerChapter)
 import Editor.Utils.Array (swap)
 import Editor.Utils.GoogleAuth (GAPI, GoogleServices, showPicker)
@@ -21,18 +33,7 @@ import Editor.Utils.Parser (getHeadingGroups, getTagContents, parseChapter, stri
 import Editor.Utils.Requests (crupdate, deleteChapter, getChapterHtmlFromGDocs, postChapters)
 import Halogen.HTML.Properties (class_, id_)
 import Halogen.Query (Action)
-
-import Prelude
-import Data.Newtype (over)
-import Data.Either (either)
-import Data.Array (mapWithIndex, sort, updateAt, (!!))
-import Data.Maybe (Maybe(..), fromMaybe)
-import Control.Monad.Aff (Aff)
 import Network.HTTP.Affjax (AJAX)
-import Halogen as H
-import Halogen.HTML as HH
-import Halogen.HTML.Events as HE
-import Halogen.HTML.Properties as HP
 
 type State = 
     { chapters :: Array LocalChapter

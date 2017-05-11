@@ -18,4 +18,3 @@ normalizeArrays :: forall f a. Plus f => Array (f a) -> Array (f a) -> Tuple (Ar
 normalizeArrays a1 a2 =
     Tuple (a1 <> replicate (length a2 - length a1) empty)
           (a2 <> replicate (length a1 - length a2) empty)
-

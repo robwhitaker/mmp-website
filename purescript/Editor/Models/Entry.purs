@@ -4,26 +4,22 @@ import Prelude
 import Control.Alternative (class Plus)
 import Control.Monad.Eff (Eff)
 import Control.Monad.Maybe.Trans (runMaybeT)
+import Data.Argonaut (class DecodeJson, class EncodeJson, fail, foldJsonNull, jsonEmptyObject, toObject, (.?), (:=), (~>))
+import Data.Argonaut.Decode.Class (decodeJson)
+import Data.Argonaut.Decode.Combinators ((.??))
 import Data.DateTime (DateTime)
 import Data.DateTime.Locale (LocalDateTime, LocalValue(..), Locale(..))
-import Data.Foreign.Class (class Decode, class Encode, decode)
-import Data.Foreign.Generic (defaultOptions, genericDecode, genericDecodeJSON, genericEncode)
-import Data.Foreign.Index (readProp, (!))
-import Data.Foreign.NullOrUndefined (NullOrUndefined(..), readNullOrUndefined, unNullOrUndefined)
-import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Eq (genericEq)
-import Data.Generic.Rep.Show (genericShow)
+import Data.Generic (class Generic, gEq, gShow)
 import Data.JSDate (LOCALE, getTimezoneOffset)
-import Data.Maybe (fromMaybe)
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (class Newtype, unwrap)
 import Data.Time.Duration (Minutes(..))
 import Editor.Data.DateTime.Utils (applyLocale, removeLocale)
-import Editor.Data.ForeignDateTime (ForeignDateTime(..), fromDateTime, toDateTime)
-import Halogen.HTML.Properties.ARIA (level)
+import Editor.Data.ISODateTime (ISODateTime(..), fromDateTime, toDateTime)
 
-newtype Entry f dateTime = Entry
-    { id                :: f Int
+newtype Entry dateTime = Entry
+    { id                :: Maybe Int
     , chapterId         :: Int
     , level             :: Int
     , order             :: Int
@@ -32,11 +28,11 @@ newtype Entry f dateTime = Entry
     , interactiveData   :: String
     , title             :: String
     , content           :: String
-    , releaseDate       :: f dateTime
+    , releaseDate       :: Maybe dateTime
     , authorsNote       :: String
     }
 
-empty :: LocalEntry
+empty :: forall a. Entry a
 empty = Entry
     { id : Nothing
     , chapterId : -1
@@ -51,40 +47,72 @@ empty = Entry
     , authorsNote : ""
     }
 
-type LocalEntry = Entry Maybe LocalDateTime
+type LocalEntry = Entry LocalDateTime
 
-derive instance genericLocalEntry :: Generic (Entry f dateTime) _
-derive instance newtypeLocalEntry :: Newtype (Entry f dateTime) _
+derive instance genericLocalEntry :: Generic dateTime => Generic (Entry dateTime)
+derive instance newtypeLocalEntry :: Newtype (Entry dateTime) _
 
-instance showLocalEntry :: Show (Entry Maybe (LocalValue DateTime)) where
-    show = genericShow
+instance showLocalEntry :: Show (Entry (LocalValue DateTime)) where show = gShow
+instance eqLocalEntry :: Eq (Entry (LocalValue DateTime)) where eq = gEq
+instance ordLocalEntry :: Ord (Entry (LocalValue DateTime)) where compare (Entry e1) (Entry e2) = compare e1.order e2.order
 
-instance eqLocalEntry :: Eq (Entry Maybe (LocalValue DateTime)) where
-    eq = genericEq
+type ServerEntry = Entry ISODateTime
 
-instance ordLocalEntry :: Ord (Entry Maybe (LocalValue DateTime)) where
-    compare (Entry e1) (Entry e2) = compare e1.order e2.order
+instance decodeJsonServerEntry :: DecodeJson (Entry ISODateTime) where
+    decodeJson json = case toObject json of
+        Nothing -> fail "Invalid entry JSON."
+        Just jobj -> do
+            id' <- jobj .?? "id"
+            chapterId <- jobj .? "chapterId"
+            level <- jobj .? "level"
+            order <- jobj .? "order"
+            isInteractive <- jobj .? "isInteractive"
+            interactiveUrl <- jobj .? "interactiveUrl"
+            interactiveData <- jobj .? "interactiveData"
+            title <- jobj .? "title"
+            content <- jobj .? "content"
+            releaseDate <- jobj .?? "releaseDate" >>= maybe (pure Nothing) (foldJsonNull (jobj .?? "releaseDate") (const $ pure Nothing))
+            authorsNote <- jobj .? "authorsNote"
+            pure $ Entry
+                { id : id'
+                , chapterId
+                , level
+                , order
+                , isInteractive
+                , interactiveUrl
+                , interactiveData
+                , title
+                , content
+                , releaseDate
+                , authorsNote
+                } 
 
-type ServerEntry = Entry NullOrUndefined ForeignDateTime
-
-instance serverEntryDecode :: Decode (Entry NullOrUndefined ForeignDateTime) where
-    decode = genericDecode defaultOptions
-
-instance serverEntryEncode :: Encode (Entry NullOrUndefined ForeignDateTime) where
-    encode = genericEncode defaultOptions
+instance encodeJsonServerEntry :: EncodeJson (Entry ISODateTime) where
+    encodeJson (Entry entry) = 
+        "id" := entry.id
+        ~> "chapterId" := entry.chapterId
+        ~> "level" := entry.level
+        ~> "order" := entry.order
+        ~> "isInteractive" := entry.isInteractive
+        ~> "interactiveUrl" := entry.interactiveUrl
+        ~> "interactiveData" := entry.interactiveData
+        ~> "title" := entry.title
+        ~> "content" := entry.content
+        ~> "releaseDate" := entry.releaseDate
+        ~> "authorsNote" := entry.authorsNote
+        ~> jsonEmptyObject
+        
 
 fromServerEntry :: forall eff. ServerEntry -> Eff (locale :: LOCALE | eff) LocalEntry
 fromServerEntry (Entry entry) =
-    case unNullOrUndefined entry.releaseDate of
-        Nothing -> pure (Entry entry { releaseDate = Nothing, id = unNullOrUndefined entry.id })
+    case entry.releaseDate of
+        Nothing -> pure (Entry entry { releaseDate = Nothing })
         Just releaseDate -> do
             localReleaseDate <- applyLocale $ toDateTime releaseDate
-            pure $ Entry entry { releaseDate = Just localReleaseDate, id = unNullOrUndefined entry.id }
+            pure $ Entry entry { releaseDate = Just localReleaseDate }
 
 toServerEntry :: LocalEntry -> ServerEntry
 toServerEntry (Entry entry) =
     Entry entry 
-        { releaseDate = NullOrUndefined $ map (removeLocale >>> fromDateTime) entry.releaseDate
-        , id = NullOrUndefined entry.id 
-        }
+        { releaseDate = map (removeLocale >>> fromDateTime) entry.releaseDate }
 

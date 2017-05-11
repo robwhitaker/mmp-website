@@ -15,12 +15,11 @@ import Data.Either (Either(..), either)
 import Data.Enum (class BoundedEnum, fromEnum, toEnum)
 import Data.Int (fromString)
 import Data.JSDate (LOCALE, getTimezoneOffset, isValid, parse, toDateTime)
-import Data.Maybe (Maybe(..), maybe)
+import Data.Maybe (Maybe(Nothing, Just))
 import Data.String (joinWith, length, take)
 import Data.String.Regex (parseFlags, regex, split)
 import Data.Time.Duration (class Duration, Minutes(..))
 import Data.Traversable (traverse)
-import Halogen (lift)
 
 datetime :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> Maybe DateTime
 datetime year month day hour minute second milli = 
