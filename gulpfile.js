@@ -136,7 +136,23 @@ gulp.task('build:editor-ps', function() {
     return purescript.compile({ src: sources });
 });
 
-gulp.task('build:editor', ['build:editor-ps'], function() {
+gulp.task('build:editor-html', function() {
+    return gulp.src(['public/static/html/editor.html'])
+        .pipe(injectConfig())
+        .pipe(gulp.dest('public'));
+});
+
+gulp.task('build:editor-css', function() {
+    gulp.src('public/static/css/editor.css')
+        .pipe(autoprefixer())
+        .pipe(minifyCSS())
+        .pipe(rename({
+            suffix: '.min'
+         }))
+        .pipe(gulp.dest('public/static/build/css'));
+});
+
+gulp.task('build:editor', ['build:editor-html','build:editor-css','build:editor-ps'], function() {
     return purescript.bundle(
         { src: "output/**/*.js"
         , module: "Editor.Main"

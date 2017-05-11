@@ -16,9 +16,7 @@ repl-temp-*
 ## Static artifacts
 /node_modules
 public/static/build
-public/reader.html
-public/renderer.html
-public/coming_soon.html
+public/*.html
 /elm/elm-stuff
 repl-temp-*
 Gemfile.lock
