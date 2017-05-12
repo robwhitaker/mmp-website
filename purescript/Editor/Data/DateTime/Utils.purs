@@ -6,6 +6,8 @@ import Data.JSDate as JSDate
 import Control.Comonad (extract)
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Class (liftEff)
+import Control.Monad.Eff.Console (log)
+import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.Maybe.Trans (MaybeT(..), runMaybeT)
 import Control.MonadPlus (empty)
 import Control.MonadZero (guard)
@@ -58,7 +60,7 @@ formatISO8601 dt =
 applyLocale :: forall eff. DateTime -> Eff (locale :: LOCALE | eff) LocalDateTime
 applyLocale dt = do
     timezoneOffset <- getTimezoneOffset (JSDate.fromDateTime dt)
-    pure $ LocalValue (Locale Nothing (Minutes timezoneOffset)) dt
+    pure $ LocalValue (Locale Nothing (Minutes (-timezoneOffset))) dt
 
 localAdjust :: forall d. Duration d => d -> LocalDateTime -> Maybe LocalDateTime
 localAdjust d (LocalValue timezoneOffset dt) = 
@@ -71,16 +73,10 @@ dateTimeWithLocale :: LocalDateTime -> Maybe DateTime
 dateTimeWithLocale (LocalValue (Locale _ timezoneOffset) dt) =
     adjust timezoneOffset dt
 
--- NOTE: I don't completely trust the `parse` function and the `getTimezoneOffset` functions to assume the same locale, 
---       since one is reading the string and the other is reading the parsed Date without the context of the string, but
---       it's probably okay for now
 parseLocalDateTime :: forall eff. String -> Eff (locale :: LOCALE | eff) (Maybe LocalDateTime)
 parseLocalDateTime dtStr = do
     parsedJSDate <- parse dtStr
     timezoneOffset <- getTimezoneOffset parsedJSDate
-    pure do
-        dt <- toDateTime parsedJSDate
-        utcDateTime <- adjust (Minutes (-timezoneOffset)) dt
-        pure $ LocalValue (Locale Nothing (Minutes timezoneOffset)) dt
+    pure $ toDateTime parsedJSDate >>= Just <<< LocalValue (Locale Nothing (Minutes (-timezoneOffset)))
 
 
