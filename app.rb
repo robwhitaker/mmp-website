@@ -9,16 +9,14 @@ require './config/environments'
 require './models/chapter'
 require './models/entry'
 
-set :server => :puma,
-    :show_exceptions => :after_handler,
-    :public_folder => 'public'
-environment = ''
+set :server => :puma
+set :public_folder => 'public'
 
-if File.file?('config/secrets.yml')
-  environment = YAML.load_file('config/secrets.yml')["rack_env"]
-else
-  environment = 'development'
-end
+environment = if File.file?('config/secrets.yml')
+                YAML.load_file('config/secrets.yml')["rack_env"]
+              else
+                'development'
+              end
 
 databases = YAML.load(ERB.new(File.read('config/database.yml')).result)
 ActiveRecord::Base.establish_connection(databases[environment])
