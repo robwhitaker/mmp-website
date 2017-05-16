@@ -51,9 +51,10 @@ parseChapter srcStr = do
         }
 
 stripTags :: String -> String
-stripTags = replace tagRegex ""
+stripTags = replace tagRegex "" >>> replace spaceRegex " "
   where
     tagRegex = unsafeRegex "<.*?>|</.*?>" (global <> ignoreCase)
+    spaceRegex = unsafeRegex "&[a-zA-Z0-9]*?;" (global <> ignoreCase)
 
 getTagContents :: String -> String -> ChapterParser String
 getTagContents tagName srcStr = do

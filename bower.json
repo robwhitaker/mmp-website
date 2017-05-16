@@ -13,7 +13,9 @@
     "purescript-datetime": "^3.0.0",
     "purescript-affjax": "^4.0.0",
     "purescript-formatters": "^1.0.0",
-    "purescript-argonaut": "^3.0.0"
+    "purescript-argonaut": "^3.0.0",
+    "purescript-now": "^3.0.0",
+    "purescript-stringutils": "^0.0.6"
   },
   "devDependencies": {}
 }

@@ -12,12 +12,14 @@ import Control.Monad.Maybe.Trans (MaybeT(..), runMaybeT)
 import Control.MonadPlus (empty)
 import Control.MonadZero (guard)
 import Data.Array (replicate, (!!))
+import Data.Date (weekday)
 import Data.DateTime.Locale (LocalValue(..), Locale(..), LocalDateTime)
 import Data.Either (Either(..), either)
 import Data.Enum (class BoundedEnum, fromEnum, toEnum)
+import Data.Formatter.DateTime (formatDateTime)
 import Data.Int (fromString)
 import Data.JSDate (LOCALE, getTimezoneOffset, isValid, parse, toDateTime)
-import Data.Maybe (Maybe(Nothing, Just))
+import Data.Maybe (Maybe(Nothing, Just), maybe)
 import Data.String (joinWith, length, take)
 import Data.String.Regex (parseFlags, regex, split)
 import Data.Time.Duration (class Duration, Minutes(..))
@@ -60,7 +62,7 @@ formatISO8601 dt =
 applyLocale :: forall eff. DateTime -> Eff (locale :: LOCALE | eff) LocalDateTime
 applyLocale dt = do
     timezoneOffset <- getTimezoneOffset (JSDate.fromDateTime dt)
-    pure $ LocalValue (Locale Nothing (Minutes (-timezoneOffset))) dt
+    pure $ LocalValue (Locale Nothing (Minutes timezoneOffset)) dt
 
 localAdjust :: forall d. Duration d => d -> LocalDateTime -> Maybe LocalDateTime
 localAdjust d (LocalValue timezoneOffset dt) = 
@@ -71,12 +73,19 @@ removeLocale = extract
 
 dateTimeWithLocale :: LocalDateTime -> Maybe DateTime
 dateTimeWithLocale (LocalValue (Locale _ timezoneOffset) dt) =
-    adjust timezoneOffset dt
+    adjust (-timezoneOffset) dt
 
 parseLocalDateTime :: forall eff. String -> Eff (locale :: LOCALE | eff) (Maybe LocalDateTime)
 parseLocalDateTime dtStr = do
     parsedJSDate <- parse dtStr
     timezoneOffset <- getTimezoneOffset parsedJSDate
-    pure $ toDateTime parsedJSDate >>= Just <<< LocalValue (Locale Nothing (Minutes (-timezoneOffset)))
+    pure $ toDateTime parsedJSDate >>= Just <<< LocalValue (Locale Nothing (Minutes timezoneOffset))
 
+formatReadable :: LocalDateTime -> String
+formatReadable dt = 
+    case map (formatDateTime "MMMM DD, YYYY HH:mm:ss") dt' of
+        Just (Right str) -> maybe "" show (map (date >>> weekday) dt') <> " " <> str
+        _ -> "DateTime: Failed to format."
+  where
+    dt' = dateTimeWithLocale dt
 

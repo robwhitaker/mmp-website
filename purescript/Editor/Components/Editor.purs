@@ -1,40 +1,38 @@
 module Editor.Components.Editor where
 
+import Prelude
 import Editor.Components.ChapterList as ChapterList
 import Editor.Components.ChapterSync as ChapterSync
 import Editor.Components.MetadataEditor as MetadataEditor
-import Control.Alt ((<$>))
-import Control.Monad.Aff (Aff)
-import Control.Monad.Aff.Console (log)
-import Control.Monad.Eff.Console (CONSOLE)
-import Control.Monad.Reader.Trans (runReaderT)
-import Data.Bifunctor (rmap)
-import Data.Either.Nested (Either3)
-import Data.Functor.Coproduct.Nested (Coproduct3)
-import Data.JSDate (LOCALE)
-import Data.Maybe (isJust, isNothing)
-import Data.Tuple (fst, snd)
-import Editor.Models.Chapter (Chapter(..), LocalChapter)
-import Editor.Utils.GoogleAuth (FilePicker, GAPI, GoogleAuthData, GoogleServices, awaitGapi, googleLogin, initAuth2, initPicker, load, showPicker)
-import Halogen (lifecycleParentComponent)
-import Halogen.Component.ChildPath (cp2, cp3)
-import Halogen.HTML (i)
-import Halogen.HTML.Properties (id_)
-import Network.HTTP.Affjax (AJAX)
-
-import Data.Either.Nested (Either2)
-import Halogen.Component.ChildPath (cp1)
-
-import Data.Functor.Coproduct.Nested (Coproduct2)
-import Data.Tuple (Tuple(..))
-import Halogen (Action)
-
-import Prelude
-import Data.Maybe (Maybe(..))
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Control.Alt ((<$>))
+import Control.Monad.Aff (Aff)
+import Control.Monad.Aff.Console (log)
+import Control.Monad.Eff.Console (CONSOLE)
+import Control.Monad.Eff.Now (NOW)
+import Control.Monad.Reader.Trans (runReaderT)
+import Data.Bifunctor (rmap)
+import Data.Either.Nested (Either3)
+import Data.Either.Nested (Either2)
+import Data.Functor.Coproduct.Nested (Coproduct3)
+import Data.Functor.Coproduct.Nested (Coproduct2)
+import Data.JSDate (LOCALE)
+import Data.Maybe (isJust, isNothing)
+import Data.Maybe (Maybe(..))
+import Data.Tuple (fst, snd)
+import Data.Tuple (Tuple(..))
+import Editor.Models.Chapter (Chapter(..), LocalChapter)
+import Editor.Utils.GoogleAuth (FilePicker, GAPI, GoogleAuthData, GoogleServices, awaitGapi, googleLogin, initAuth2, initPicker, load, showPicker)
+import Halogen (lifecycleParentComponent)
+import Halogen (Action)
+import Halogen.Component.ChildPath (cp2, cp3)
+import Halogen.Component.ChildPath (cp1)
+import Halogen.HTML (i)
+import Halogen.HTML.Properties (id_)
+import Network.HTTP.Affjax (AJAX)
 
 data ActiveComponent 
     = ChapterList (Array (Tuple String (Action ChapterList.Query)))
@@ -68,6 +66,7 @@ type AppEffects eff = Aff
     , locale :: LOCALE
     , console :: CONSOLE
     , gapi :: GAPI
+    , now :: NOW
     | eff
     )
 

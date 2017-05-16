@@ -7,6 +7,7 @@ import Halogen.Aff as HA
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Console (CONSOLE, log)
+import Control.Monad.Eff.Now (NOW)
 import Control.Monad.Except (runExcept)
 import Data.Array (length)
 import Data.Foreign (Foreign, ForeignError(..))
@@ -21,7 +22,7 @@ import Halogen (liftAff)
 import Halogen.VDom.Driver (runUI)
 import Network.HTTP.Affjax (AJAX)
 
-main :: Eff (HA.HalogenEffects (console :: CONSOLE, ajax :: AJAX, locale :: LOCALE, gapi :: GAPI)) Unit
+main :: Eff (HA.HalogenEffects (console :: CONSOLE, ajax :: AJAX, locale :: LOCALE, gapi :: GAPI, now :: NOW)) Unit
 main = HA.runHalogenAff do
     body <- HA.awaitBody
     runUI editor unit body 

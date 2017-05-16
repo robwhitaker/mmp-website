@@ -1,6 +1,7 @@
 module Editor.Components.ChapterList where
 
 import Prelude
+import Control.Monad.Eff.Console as Console
 import Editor.Models.Chapter as Chapter
 import Halogen as H
 import Halogen.HTML as HH
@@ -10,27 +11,40 @@ import Control.Monad.Aff (attempt)
 import Control.Monad.Aff (Aff)
 import Control.Monad.Aff.Console (CONSOLE, log)
 import Control.Monad.Eff.Exception (error)
+import Control.Monad.Eff.Now (NOW, nowDateTime)
+import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.Error.Class (throwError)
 import Control.Monad.Except (runExcept)
 import Control.Monad.Reader (ReaderT(..), ask)
+import Control.Plus ((<|>))
 import Data.Argonaut (encodeJson)
 import Data.Argonaut.Core (jsonNull)
-import Data.Array (catMaybes, concat, deleteAt, length)
+import Data.Array (catMaybes, concat, concatMap, deleteAt, drop, dropWhile, filter, groupBy, head, intercalate, last, length, sortWith, takeWhile, (!!), (:))
 import Data.Array (mapWithIndex, sort, updateAt, (!!))
+import Data.DateTime.Locale (LocalDateTime)
 import Data.Either (either)
+import Data.Int (round, toNumber)
 import Data.JSDate (LOCALE)
 import Data.List (find)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Newtype (unwrap)
 import Data.Newtype (over)
+import Data.NonEmpty (fromNonEmpty)
+import Data.String (joinWith, null)
+import Data.String.Utils (words)
 import Data.Traversable (for, sequence, traverse)
 import Data.Tuple (Tuple(..))
+import Data.Tuple.Nested (tuple3)
+import Editor.Data.DateTime.Utils (dateTimeWithLocale, formatISO8601, formatReadable, removeLocale)
 import Editor.Models.Chapter (Chapter(..), LocalChapter, ServerChapter, fromServerChapter, toServerChapter)
+import Editor.Models.Entry (Entry(..))
 import Editor.Utils.Array (swap)
 import Editor.Utils.GoogleAuth (GAPI, GoogleServices, showPicker)
+import Editor.Utils.ModelHelpers (ReleaseGroup, makeReleaseGroupTitle, makeReleaseGroups)
 import Editor.Utils.Parser (getHeadingGroups, getTagContents, parseChapter, stripTags)
 import Editor.Utils.Requests (crupdate, deleteChapter, getChapterHtmlFromGDocs, postChapters)
+import Halogen.HTML (span_)
 import Halogen.HTML.Properties (class_, id_)
 import Halogen.Query (Action)
 import Network.HTTP.Affjax (AJAX)
@@ -38,6 +52,7 @@ import Network.HTTP.Affjax (AJAX)
 type State = 
     { chapters :: Array LocalChapter
     , chaptersOriginal :: Array LocalChapter
+    , now :: Maybe LocalDateTime
     }
 
 data Query a 
@@ -63,6 +78,7 @@ type AppEffects eff = ReaderT GoogleServices (Aff
     , gapi :: GAPI
     , console :: CONSOLE
     , locale :: LOCALE
+    , now :: NOW
     | eff
     ))
 
@@ -79,10 +95,10 @@ chapterList =
       , receiver: const Nothing
       , initializer: Just (H.action Initialize)
       , finalizer: Nothing
-      }
+      } 
   where
         initialState :: State
-        initialState = { chapters : [], chaptersOriginal : [] }
+        initialState = { chapters : [], chaptersOriginal : [], now : Nothing }
 
         render :: State -> H.ComponentHTML Query
         render state = 
@@ -90,53 +106,105 @@ chapterList =
                 [ HP.id_ "chapter-list" ] 
                 [ HH.div [ HP.class_ (H.ClassName "left-col") ] $ mapWithIndex chapterToHtml state.chapters
                 , HH.div 
-                    [ HP.class_ (H.ClassName "right-col") ] 
-                    [ HH.h2_ [ HH.text "Cool Sidebar" ] ] 
-                ]
-                
-                    
-                where
-                    chapterToHtml chapterIndex ch@(Chapter chR@{id,title,docId}) = 
-                        HH.div
-                            [ HP.class_ $ H.ClassName "chapter-tile" ]
-                            [ HH.h2_ 
-                                [ HH.a 
-                                    [ HP.href $ "https://docs.google.com/document/d/" <> docId <> "/edit"
-                                    , HP.target "_blank" 
-                                    ] 
-                                    [ HH.text $ stripTags title ] 
-                                ] 
-                            , HH.div 
-                                [ HP.class_ $ H.ClassName "chapter-controls" ]
-                                [ HH.i [ HP.class_ (H.ClassName "fa fa-pencil-square-o")
-                                       , HP.attr (H.AttrName "aria-hidden") "true"
-                                       , HE.onClick $ HE.input_ (EditChapterMetadata ch)
-                                       ] []
-                                , HH.i [ HP.class_ (H.ClassName "fa fa-refresh")
-                                       , HP.attr (H.AttrName "aria-hidden") "true"
-                                       , HE.onClick $ HE.input_ (SyncChapter ch)
-                                       ] []
-                                , HH.i [ HP.class_ (H.ClassName "fa fa-download")
-                                       , HP.attr (H.AttrName "aria-hidden") "true"
-                                       , HE.onClick $ HE.input_ (ChangeChapterSource ch)
-                                       ] []
-                                , HH.i [ HP.class_ (H.ClassName "fa fa-arrow-up")
-                                       , HP.attr (H.AttrName "aria-hidden") "true"
-                                       , HE.onClick $ HE.input_ (MoveChapter chapterIndex (chapterIndex - 1))
-                                       ] []
-                                , HH.i [ HP.class_ (H.ClassName "fa fa-arrow-down")
-                                       , HP.attr (H.AttrName "aria-hidden") "true"
-                                       , HE.onClick $ HE.input_ (MoveChapter chapterIndex (chapterIndex + 1))
-                                       ] []
-                                , HH.i [ HP.class_ (H.ClassName "fa fa-trash")
-                                       , HP.attr (H.AttrName "aria-hidden") "true"
-                                       , HE.onClick $ HE.input_ (DeleteChapter chapterIndex)
-                                       ] []
-                                ]
-                            , HH.div 
-                                [ HP.class_ $ H.ClassName "chapter-data" ]
-                                [ HH.text "Chapter data like release date and such goes here..." ]
+                    [ HP.class_ (H.ClassName "right-col") ] $
+                    [ HH.div 
+                        [ HP.class_ (H.ClassName "chapter-tile next-release") ] $
+                        [ HH.h2_ [ HH.text "Next Release" ] ] <>
+                        case head nextReleases of
+                            Nothing -> [ HH.text "No release scheduled." ]
+                            Just _ ->
+                                concatMap (\release ->
+                                    [ HH.h3_ [ HH.text $ makeReleaseGroupTitle release ] 
+                                    , HH.span_ [ HH.text $ maybe "" formatReadable $ getReleaseGroupDate release ]
+                                    ]
+                                ) nextReleases
+                    , HH.div 
+                        [ HP.class_ (H.ClassName "chapter-tile upcoming-releases") ] 
+                        [ HH.h2_ [ HH.text "Upcoming Releases" ]
+                        , case upcomingReleases !! (length nextReleases) of
+                            Nothing -> HH.text "No upcoming releases."
+                            Just _ -> 
+                                HH.ul [ HP.class_ (H.ClassName "upcoming-releases") ] $ map (\releaseGroup -> 
+                                    HH.li 
+                                        [ HP.class_ (H.ClassName "upcoming-release") ]
+                                        [ HH.h3_ [ HH.text $ makeReleaseGroupTitle releaseGroup ]
+                                        , HH.span_ [ HH.text $ maybe "" id $ map formatReadable $ getReleaseGroupDate releaseGroup ]
+                                        ]
+                                ) $ drop (length nextReleases) upcomingReleases
+                        ]
+                    ] 
+                ]    
+          where
+            chapterToHtml chapterIndex ch@(Chapter chR@{id,title,docId}) = 
+                HH.div
+                    [ HP.class_ $ H.ClassName "chapter-tile" ]
+                    [ HH.h2_ 
+                        [ HH.a 
+                            [ HP.href $ "https://docs.google.com/document/d/" <> docId <> "/edit"
+                            , HP.target "_blank" 
+                            ] 
+                            [ HH.text $ stripTags title ] 
+                        ] 
+                    , HH.div 
+                        [ HP.class_ $ H.ClassName "chapter-controls" ]
+                        [ HH.i [ HP.class_ (H.ClassName "fa fa-pencil-square-o")
+                                , HP.attr (H.AttrName "aria-hidden") "true"
+                                , HE.onClick $ HE.input_ (EditChapterMetadata ch)
+                                ] []
+                        , HH.i [ HP.class_ (H.ClassName "fa fa-refresh")
+                                , HP.attr (H.AttrName "aria-hidden") "true"
+                                , HE.onClick $ HE.input_ (SyncChapter ch)
+                                ] []
+                        , HH.i [ HP.class_ (H.ClassName "fa fa-download")
+                                , HP.attr (H.AttrName "aria-hidden") "true"
+                                , HE.onClick $ HE.input_ (ChangeChapterSource ch)
+                                ] []
+                        , HH.i [ HP.class_ (H.ClassName "fa fa-arrow-up")
+                                , HP.attr (H.AttrName "aria-hidden") "true"
+                                , HE.onClick $ HE.input_ (MoveChapter chapterIndex (chapterIndex - 1))
+                                ] []
+                        , HH.i [ HP.class_ (H.ClassName "fa fa-arrow-down")
+                                , HP.attr (H.AttrName "aria-hidden") "true"
+                                , HE.onClick $ HE.input_ (MoveChapter chapterIndex (chapterIndex + 1))
+                                ] []
+                        , HH.i [ HP.class_ (H.ClassName "fa fa-trash")
+                                , HP.attr (H.AttrName "aria-hidden") "true"
+                                , HE.onClick $ HE.input_ (DeleteChapter chapterIndex)
+                                ] []
+                        ]
+                    , HH.div 
+                        [ HP.class_ $ H.ClassName "chapter-data" ] $ 
+                        [ HH.text $ intercalate " / "
+                            [ "Word count: " <> show (wordCount ch) 
+                            , "Entries: " <> show (length chR.entries)
+                            , "Interactive: " <> show chR.isInteractive
+                            , "Release Date: " <> maybe "Not scheduled" formatReadable chR.releaseDate
                             ]
+                        ]
+                    ]
+            
+            upcomingReleases :: Array ReleaseGroup
+            upcomingReleases = 
+                concatMap makeReleaseGroups state.chaptersOriginal
+                # filter (\releaseGroup -> maybe false id do
+                    releaseDate <- getReleaseGroupDate releaseGroup
+                    now <- state.now
+                    pure $ removeLocale releaseDate > removeLocale now)
+                # sortWith (getReleaseGroupDate >>> maybe Nothing (removeLocale >>> Just))
+
+            nextReleases :: Array ReleaseGroup 
+            nextReleases = 
+                case head upcomingReleases of
+                    Nothing -> []
+                    Just nextRelease -> takeWhile (getReleaseGroupDate >>> (==) (getReleaseGroupDate nextRelease)) upcomingReleases
+
+            getReleaseGroupDate :: ReleaseGroup -> Maybe LocalDateTime
+            getReleaseGroupDate { chapter, entries } = join $ map (unwrap >>> _.releaseDate) (last entries) <|> Just (unwrap chapter).releaseDate
+
+            -- Silly magic numbers to make the word count line up closer with the Google Docs word count
+            wordCount :: LocalChapter -> Int
+            wordCount (Chapter { content, entries }) = round $ (\n -> n - (n*0.026)) $ toNumber $ length $ filter (not <<< null) $ words $
+                stripTags content <> " " <> (stripTags $ joinWith " " $ map (\(Entry e) -> e.content) entries)
 
         eval :: Query ~> H.ComponentDSL State Query Message (AppEffects eff)
         eval = case _ of
@@ -146,8 +214,9 @@ chapterList =
                     either 
                         (const $ pure []) 
                         (traverse fromServerChapter >>> map sort >>> map (map \(Chapter chapter) -> Chapter chapter { entries = sort chapter.entries }))
-                        chs.response    
-                H.put { chapters : localChs, chaptersOriginal : localChs }
+                        chs.response
+                now <- H.liftEff nowDateTime    
+                H.put { chapters : localChs, chaptersOriginal : localChs, now : Just now }
                 updateOptions
                 pure next
             

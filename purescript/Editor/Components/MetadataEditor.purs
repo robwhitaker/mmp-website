@@ -1,6 +1,11 @@
 module Editor.Components.MetadataEditor where
 
+import Prelude
 import Editor.Models.Chapter as Chapter
+import Halogen as H
+import Halogen.HTML as HH
+import Halogen.HTML.Events as HE
+import Halogen.HTML.Properties as HP
 import Control.Bind (join)
 import Control.Comonad (extract)
 import Control.Monad.Aff (Aff)
@@ -16,7 +21,8 @@ import Data.Newtype (over, unwrap, wrap)
 import Data.String (take)
 import Data.Time.Duration (Days(..), Minutes(..))
 import Data.Traversable (for, traverse)
-import Editor.Data.DateTime.Utils (dateTimeWithLocale, formatISO8601, localAdjust, parseISO8601, parseLocalDateTime, removeLocale)
+import Data.Tuple (Tuple(..))
+import Editor.Data.DateTime.Utils (dateTimeWithLocale, formatISO8601, formatReadable, localAdjust, parseISO8601, parseLocalDateTime, removeLocale)
 import Editor.Models.Chapter (Chapter(..), LocalChapter, toServerChapter)
 import Editor.Models.Entry (Entry(..), LocalEntry)
 import Editor.Utils.ModelHelpers (CommonMetadata)
@@ -26,13 +32,6 @@ import Halogen (AttrName(..))
 import Halogen.HTML.Events (onValueChange)
 import Halogen.Query (liftEff)
 import Network.HTTP.Affjax (AJAX)
-
-import Prelude
-import Data.Tuple (Tuple(..))
-import Halogen as H
-import Halogen.HTML as HH
-import Halogen.HTML.Events as HE
-import Halogen.HTML.Properties as HP
 
 type State =
     { chapter :: LocalChapter
@@ -125,10 +124,10 @@ metadataEditor =
                     ]
                 , HH.div_
                     [ HH.input 
-                        [ HP.value (maybe "" formatISO8601 $ join $ map dateTimeWithLocale chapter.releaseDate) 
+                        [ HP.value (maybe "" formatReadable chapter.releaseDate) 
                         , HE.onValueChange (HE.input $ UpdateChapter <<< ReleaseDate)
                         ]
-                    , HH.text $ maybe "" formatISO8601 $ join $ map dateTimeWithLocale chapter.releaseDate 
+                    , HH.text $ maybe "" formatReadable chapter.releaseDate 
                     ]
                 , HH.hr_
                 ] <> mapWithIndex entryToHtml chapter.entries
@@ -176,10 +175,10 @@ metadataEditor =
                             ]
                         , HH.div_
                             [ HH.input 
-                                [ HP.value (maybe "" formatISO8601 $ join $ map dateTimeWithLocale entry.releaseDate) 
+                                [ HP.value (maybe "" formatReadable entry.releaseDate) 
                                 , HE.onValueChange (HE.input $ UpdateEntry index <<< ReleaseDate)
                                 ]
-                            , HH.text $ maybe "" formatISO8601 $ join $ map dateTimeWithLocale entry.releaseDate
+                            , HH.text $ maybe "" formatReadable entry.releaseDate
                             ]
                         , HH.hr_    
                         ]
