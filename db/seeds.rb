@@ -1,5 +1,3 @@
-# bundle exec irb -I. -r app.rb
-
 ## Chapter retrieval restricted | GET /api/chapters
 # curl -X GET http://localhost:4567/api/chapters
 
@@ -18,8 +16,9 @@
 ## Chapter deletion | POST /api/chapters/delete ##
 # curl -H "Content-Type: application/json" -X POST -d '{"data": [3, 5], "secretKey": "hello"}' http://localhost:4567/api/chapters/delete
 
-## Webhook | POST /webhook
-# curl -H "Content-Type: application/json" -X POST -d '{ "key": "value" }' http://localhost:4567/webhook
+## Auth | POST /api/authors_note
+# curl -H "Content-Type: application/json" -X POST -d "{\"exp\":1494987733,\"iss\":\"https://accounts.google.com\",\"aud\":\"123456789.apps.googleusercontent.com\",\"cid\":\"123456789.apps.googleusercontent.com\",\"user_id\":\"12345\",\"email\":\"test@gmail.com\",\"provider_id\":\"google.com\",\"verified\":true}" http://localhost:4567/api/auth
+# curl -H "Content-Type: application/json" -X POST -d "{\"exp\":1494987733,\"iss\":\"https://accounts.google.com\",\"aud\":\"123456789.apps.googleusercontent.com\",\"cid\":\"123456789.apps.googleusercontent.com\",\"user_id\":\"12345\",\"email\":\"larouxn@gmail.com\",\"provider_id\":\"google.com\",\"verified\":true}" http://localhost:4567/api/auth
 
 @chapter1 = Chapter.create(order: 1, stylesheet: "<dingle mcringleberry>", title: "Hey!", content: "Beep boop", release_date: "2015-10-01 12:30:00 -0400", authors_note: "wao")
 @chapter1.entries.create(order: 1, title: "Entry #1", level: 1, content: "Hinkle dinkle domp", release_date: "2015-10-02 12:30:00 -0400", authors_note: "Womp")
