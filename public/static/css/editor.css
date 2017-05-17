@@ -100,19 +100,19 @@ h1, h2, h3, h4, h5, h6 {
     display: inline-block;
 }
 
-#chapter-list .chapter-tile .chapter-controls {
+.chapter-controls {
     white-space: nowrap;
     float: right;
     color: #009688;
     margin-top: 5px;
 }
 
-#chapter-list .chapter-tile .chapter-controls i {
+.chapter-controls i {
     margin: 0 0.2em;
     cursor: pointer;
 }
     
-#chapter-list .chapter-tile .chapter-controls i:hover {
+.chapter-controls i:hover {
     text-shadow: 0px 1px #333;
 }
 
@@ -157,4 +157,91 @@ a:hover {
 
 #chapter-list .upcoming-release h3 {
     font-size: 17px;
+}
+
+#chapter-sync {
+    max-width: 1500px;
+    margin: 1em auto;
+}
+
+.tile {
+    padding: 0.5em 1em;
+    box-shadow: 0px 2px 2px #ccc;
+    margin: 1em 0;
+    background-color: white;
+}
+
+.chapter-sync-chapter {
+    text-align: center;
+}
+
+#chapter-sync span {
+    font-style: italic;
+    font-size: 16px;
+    display: block;
+    float: left;
+    color: #777;
+}
+
+#chapter-sync i {
+    margin: 0 0.2em;
+    color: #009688;
+}
+
+.metadata-box-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    margin-top: 1em;
+}
+
+.metadata-box-container > div {
+    flex: 1;
+    max-width: 35%;
+}
+
+.metadata-box-container > div > h2 {
+    border-bottom: 1px solid #333;
+}
+
+.metadata-box-container > div > div {
+    max-height: 80px;
+    overflow: auto;
+    margin-bottom: 1em;
+}
+
+#chapter-sync table {
+    width: 100%;
+    text-align: center;
+    border-spacing: 1.5em;
+}
+
+#chapter-sync table td.arrow-col i {
+    font-size: 38px;
+}
+
+#chapter-sync td.original-chapter h2,
+#chapter-sync td.imported-chapter h2 {
+    font-weight: 400;
+}
+
+#chapter-sync td.original-chapter h2 i {
+    margin: 0 0.2em;
+}
+
+#chapter-sync .data-row i {
+    margin-left: 1.5em;
+}
+
+#chapter-sync .data-row i:first-child {
+    margin-left: 0;
+}
+
+#chapter-sync .control-row div:last-child {
+    clear: both;
+}
+
+#chapter-sync h3 {
+    font-weight: 400;
+    text-decoration: underline;
 }

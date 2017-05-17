@@ -90,13 +90,12 @@ editor =
                 [ HH.div
                     [ HP.id_ "top-bar" ] $ 
                     [ HH.h1_ $ case state.activeComponent of
-                        ChapterList _ -> [ HH.text "Midnight Murder Party Editor" ]
+                        ChapterList _ -> []
                         _ -> [ HH.i 
                                 [ HP.class_ (H.ClassName "fa fa-chevron-left")
                                 , HP.attr (H.AttrName "aria-hidden") "true" 
                                 , HE.onClick (HE.input_ $ HandleMetadataEditor MetadataEditor.GoToChapterList) --TODO: Reusing this route is janky
                                 ] []
-                             , HH.text "Midnight Murder Party Editor"
                              ]
                     ] <>
                     (case state.activeComponent of
