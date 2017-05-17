@@ -136,6 +136,27 @@ post '/api/chapters/delete' do
   end
 end
 
+post '/api/auth' do
+  validator = GoogleIDToken::Validator.new(expiry: 1800)
+
+  payload = JSON.parse(request.body.read)
+  log(payload)
+
+  key = generate_certificate[:key]
+
+  token = JWT.encode(payload, key, 'RS256')
+  aud = payload['aud']
+  cid = payload['cid']
+
+  begin
+    success_response if validator.check(token, aud, cid) &&
+      payload['email'] == 'robjameswhitaker@gmail.com' || payload['email'] == 'larouxn@gmail.com'
+  rescue GoogleIDToken::ValidationError => e
+    log("Cannot validate: #{e}")
+    failure_response
+  end
+end
+
 private
 
 def success_response
@@ -283,4 +304,23 @@ def send_error_email(subject, message)
     :via => :sendmail,
     :via_options => { :location  => '/usr/sbin/sendmail' }
   })
+end
+
+def generate_certificate
+  key = OpenSSL::PKey::RSA.new(2048)
+  public_key = key.public_key
+
+  cert_subject = "/C=BE/O=Test/OU=Test/CN=Test"
+
+  cert = OpenSSL::X509::Certificate.new
+  cert.subject = cert.issuer = OpenSSL::X509::Name.parse(cert_subject)
+  cert.not_before = Time.now
+  cert.not_after = Time.now + 365 * 24 * 60 * 60
+  cert.public_key = public_key
+  cert.serial = 0x0
+  cert.version = 2
+
+  cert.sign key, OpenSSL::Digest::SHA1.new
+
+  { key: key, cert: cert }
 end
