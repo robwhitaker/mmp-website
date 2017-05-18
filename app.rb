@@ -139,18 +139,19 @@ end
 post '/api/auth' do
   validator = GoogleIDToken::Validator.new(expiry: 1800)
 
-  payload = JSON.parse(request.body.read)
-  log(payload)
-
+  aud = request.body.read
   key = generate_certificate[:key]
-
-  token = JWT.encode(payload, key, 'RS256')
-  aud = payload['aud']
-  cid = payload['cid']
+  token = JWT.encode(aud, key, 'RS256')
 
   begin
-    success_response if validator.check(token, aud, cid) &&
-      payload['email'] == 'robjameswhitaker@gmail.com' || payload['email'] == 'larouxn@gmail.com'
+    payload = validator.check(token, aud)
+    email = payload['email']
+
+    if email == 'robjameswhitaker@gmail.com' || email == 'larouxn@gmail.com'
+      success_response
+    else
+      failure_response
+    end
   rescue GoogleIDToken::ValidationError => e
     log("Cannot validate: #{e}")
     failure_response
