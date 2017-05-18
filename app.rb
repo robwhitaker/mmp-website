@@ -139,9 +139,8 @@ end
 post '/api/auth' do
   validator = GoogleIDToken::Validator.new(expiry: 1800)
 
-  aud = request.body.read
-  key = generate_certificate[:key]
-  token = JWT.encode(aud, key, 'RS256')
+  token = request.body.read
+  aud = '361874213844-33mf5b41pp4p0q38q26u8go81cod0h7f.apps.googleusercontent.com'
 
   begin
     payload = validator.check(token, aud)

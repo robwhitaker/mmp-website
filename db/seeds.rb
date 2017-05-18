@@ -17,7 +17,7 @@
 # curl -H "Content-Type: application/json" -X POST -d '{"data": [3, 5], "secretKey": "hello"}' http://localhost:4567/api/chapters/delete
 
 ## Auth | POST /api/authors_note
-# curl -H "Content-Type: application/json" -X POST -d '123456789.apps.googleusercontent.com' http://localhost:4567/api/auth
+# curl -H "Content-Type: application/json" -X POST -d 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjdhOWY5Yzc5ZGYzMDU5MzhlMjY4ODk3Y2JkNDc1ZDQ3MjY4MWI0ZWEifQ.eyJhenAiOiIzNjE4NzQyMTM4NDQtMzNtZjViNDFwcDRwMHEzOHEyNnU4Z284MWNvZDBoN2YuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiIzNjE4NzQyMTM4NDQtMzNtZjViNDFwcDRwMHEzOHEyNnU4Z284MWNvZDBoN2YuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDIzNDA1ODE5ODM0MDI5MDY0NTUiLCJlbWFpbCI6InJvYmphbWVzd2hpdGFrZXJAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImF0X2hhc2giOiJGVGMwakFWTHowVlBpcFFKQml2ZU5nIiwiaXNzIjoiYWNjb3VudHMuZ29vZ2xlLmNvbSIsImlhdCI6MTQ5NTA3NjMwMSwiZXhwIjoxNDk1MDc5OTAxfQ.oAvIT3dg82C_EyaWYMGp8ziidbUbgFcq24qDfYfYgWgKt908NvODcv9RAWO_VIRyFpk1Q2SXi-BeonYi-YkplLo5rpG9PQnNGwH9f9VpnEgMqYopZHZF7ve_mEZJr1y7o7WJv5HPNAzL6uZU4qI5bNY9uaKW21YjRp-GKyGVMcKbOjMe-I9XKxrh2ywFVRe4qtmmPyPTIouoD9y1TwSjX75p76Xim1cy_jcMW34kriqAH8I2vHzk5Al5foVJwMaD9JO_wlbQQQ4C9dhGxp1SLU5mHK8KxbxTVyTFyj13jnrCwNFzhtEULWjql1VadP2Ha7U_PFvUqvwfua2S4FtbMA' http://localhost:4567/api/auth
 
 @chapter1 = Chapter.create(order: 1, stylesheet: "<dingle mcringleberry>", title: "Hey!", content: "Beep boop", release_date: "2015-10-01 12:30:00 -0400", authors_note: "wao")
 @chapter1.entries.create(order: 1, title: "Entry #1", level: 1, content: "Hinkle dinkle domp", release_date: "2015-10-02 12:30:00 -0400", authors_note: "Womp")
