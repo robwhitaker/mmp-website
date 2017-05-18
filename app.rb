@@ -205,7 +205,7 @@ def all_chapters_with_entries(type = 'all')
   chapters_with_entries = []
 
   if type == 'released'
-    chapters = Chapter.where('release_date <= ?', DateTime.now)
+    chapters = Chapter.where('releaseDate <= ?', DateTime.now)
   else
     chapters = Chapter.all
   end
@@ -236,7 +236,7 @@ end
 def released_content
   released_content = []
 
-  Chapter.where('release_date <= ?', DateTime.now).each do |chapter|
+  Chapter.where('releaseDate <= ?', DateTime.now).each do |chapter|
     entries = chapter.entries.select { |entry| entry.release_date <= DateTime.now }
     chapter = chapter.as_json.deep_symbolize_keys
     chapter[:level] = 0
@@ -304,23 +304,4 @@ def send_error_email(subject, message)
     :via => :sendmail,
     :via_options => { :location  => '/usr/sbin/sendmail' }
   })
-end
-
-def generate_certificate
-  key = OpenSSL::PKey::RSA.new(2048)
-  public_key = key.public_key
-
-  cert_subject = "/C=BE/O=Test/OU=Test/CN=Test"
-
-  cert = OpenSSL::X509::Certificate.new
-  cert.subject = cert.issuer = OpenSSL::X509::Name.parse(cert_subject)
-  cert.not_before = Time.now
-  cert.not_after = Time.now + 365 * 24 * 60 * 60
-  cert.public_key = public_key
-  cert.serial = 0x0
-  cert.version = 2
-
-  cert.sign key, OpenSSL::Digest::SHA1.new
-
-  { key: key, cert: cert }
 end

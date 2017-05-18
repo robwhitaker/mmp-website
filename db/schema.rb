@@ -13,33 +13,33 @@
 ActiveRecord::Schema.define(version: 20170406130556) do
 
   create_table "chapters", force: :cascade do |t|
-    t.integer  "order"
-    t.text     "stylesheet"
-    t.string   "title"
-    t.text     "content"
+    t.integer "order"
+    t.text "stylesheet"
+    t.string "title"
+    t.text "content"
     t.datetime "releaseDate"
-    t.text     "authorsNote"
-    t.datetime "created_at",      null: false
-    t.datetime "updated_at",      null: false
-    t.boolean  "isInteractive"
-    t.string   "interactiveData"
-    t.string   "interactiveUrl"
-    t.string   "docId"
+    t.text "authorsNote"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "isInteractive"
+    t.string "interactiveData"
+    t.string "interactiveUrl"
+    t.string "docId"
   end
 
   create_table "entries", force: :cascade do |t|
-    t.integer  "chapterId"
-    t.integer  "level"
-    t.integer  "order"
-    t.string   "title"
-    t.text     "content"
+    t.integer "chapterId"
+    t.integer "level"
+    t.integer "order"
+    t.string "title"
+    t.text "content"
     t.datetime "releaseDate"
-    t.text     "authorsNote"
-    t.datetime "created_at",      null: false
-    t.datetime "updated_at",      null: false
-    t.boolean  "isInteractive"
-    t.string   "interactiveData"
-    t.string   "interactiveUrl"
+    t.text "authorsNote"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "isInteractive"
+    t.string "interactiveData"
+    t.string "interactiveUrl"
   end
 
 end
