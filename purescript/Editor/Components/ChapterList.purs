@@ -39,8 +39,9 @@ import Data.Tuple.Nested (tuple3)
 import Editor.Data.DateTime.Utils (dateTimeWithLocale, formatISO8601, formatReadable, removeLocale)
 import Editor.Models.Chapter (Chapter(..), LocalChapter, ServerChapter, fromServerChapter, toServerChapter)
 import Editor.Models.Entry (Entry(..))
+import Editor.Models.Session (Session, GoogleServices)
 import Editor.Utils.Array (swap)
-import Editor.Utils.GoogleAuth (GAPI, GoogleServices, showPicker)
+import Editor.Utils.GoogleServices (AccessToken, DriveReadOnlyScope, GAPI, showPicker)
 import Editor.Utils.ModelHelpers (ReleaseGroup, makeReleaseGroupTitle, makeReleaseGroups)
 import Editor.Utils.Parser (getHeadingGroups, getTagContents, parseChapter, stripTags)
 import Editor.Utils.Requests (crupdate, deleteChapter, getChapterHtmlFromGDocs, postChapters)
@@ -73,7 +74,7 @@ data Message
     | OptionChange (Array (Tuple String (Action Query)))
     | GoToChapterSync LocalChapter LocalChapter
 
-type AppEffects eff = ReaderT GoogleServices (Aff 
+type AppEffects eff = ReaderT (Tuple Session GoogleServices) (Aff 
     ( ajax :: AJAX 
     , gapi :: GAPI
     , console :: CONSOLE
@@ -228,16 +229,19 @@ chapterList =
                 pure next
 
             SyncChapter chapter next -> do
-                googleServices <- ask
-                newChapter <- H.liftAff $ retrieveChapter googleServices.accessToken (unwrap chapter).docId (unwrap chapter).order                    
+                Tuple session _ <- ask
+                newChapter <- H.liftAff $ retrieveChapter session.accessToken (unwrap chapter).docId (unwrap chapter).order                    
                 H.raise $ GoToChapterSync chapter newChapter
                 pure next
             
             ChangeChapterSource chapter next -> do
-                googleServices <- ask
+                Tuple session googleServices <- ask
                 newChapter <- H.liftAff do
-                    newChapterId <- map (fromMaybe "") $ showPicker googleServices.filePicker
-                    retrieveChapter googleServices.accessToken newChapterId (unwrap chapter).order
+                    case googleServices.filepicker of
+                        Nothing -> throwError $ error "Filepicker not initialized."
+                        Just filepicker -> do 
+                            newChapterId <- showPicker filepicker >>= maybe (throwError $ error "No file picked.") pure
+                            retrieveChapter session.accessToken newChapterId (unwrap chapter).order
                 H.raise $ GoToChapterSync chapter newChapter
                 pure next
 
@@ -247,10 +251,13 @@ chapterList =
 
             NewChapter next -> do
                 state <- H.get
-                googleServices <- ask
+                Tuple session googleServices <- ask
                 newChapter <- H.liftAff do
-                    chapterId <- map (fromMaybe "") $ showPicker googleServices.filePicker
-                    retrieveChapter googleServices.accessToken chapterId (length state.chaptersOriginal)
+                    case googleServices.filepicker of
+                        Nothing -> throwError $ error "Filepicker not initialized."
+                        Just filepicker -> do
+                            chapterId <- showPicker filepicker >>= maybe (throwError $ error "No file picked.") pure
+                            retrieveChapter session.accessToken chapterId (length state.chaptersOriginal)
                 H.raise $ GoToMetadataEditor newChapter
                 pure next
 
@@ -294,7 +301,8 @@ chapterList =
                             H.raise $ OptionChange
                                 [ Tuple "New Chapter" NewChapter ] 
 
-                retrieveChapter :: forall e. String -> String -> Int -> Aff (ajax :: AJAX | e) LocalChapter
+                -- TODO: type sig causes an error
+                retrieveChapter :: forall scope e. AccessToken (driveReadOnly :: DriveReadOnlyScope | scope) -> String -> Int -> Aff (ajax :: AJAX | e) LocalChapter
                 retrieveChapter accessToken docId order = do
                     chapterResponse <- getChapterHtmlFromGDocs accessToken docId
                     either 

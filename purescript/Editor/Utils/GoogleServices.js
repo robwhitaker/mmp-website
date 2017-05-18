@@ -1,9 +1,10 @@
 "use strict";
 
 (function() {
+    if(typeof gapi !== "undefined" || !!document.getElementById("loader-script")) return;
     var loaderScript = document.createElement("script");
     loaderScript.id = "loader-script";
-    loaderScript.src = "https://apis.google.com/js/platform.js?onload=gapiloaded";
+    loaderScript.src = "https://apis.google.com/js/platform.js";
     loaderScript.async = true;
     loaderScript.defer = true;
     document.head.appendChild(loaderScript);
@@ -20,7 +21,7 @@ exports.awaitGapi = function(success, error) {
     check();
 }
 
-exports.load = function(service) {
+exports._load = function(service) {
     return function(success, error) {
         if(typeof gapi === "undefined") {
             error("GAPI not loaded.");
@@ -33,27 +34,21 @@ exports.load = function(service) {
 }
 
 exports.initAuth2 = function(clientId) {
-    return function(success,error) {
-        if(typeof gapi === "undefined") {
-            error("GAPI not loaded.");
-            return;
+    return function() {
+        return function(success, error) {
+            try {
+                gapi.auth2.init({ clientId: clientId });
+            } catch(e) {
+                error("Unable to init auth2.");
+                return;
+            }
+            success();
         }
-        if(!gapi.auth2) {
-            error("auth2 undefined. Has it been loaded?");
-            return;
-        }
-        try {
-            gapi.auth2.init({ clientId: clientId });
-        } catch(e) {
-            error("Unable to init auth2.");
-        }
-        success();
     }
 }
 
-
-exports._googleLogin = function(clientId, scope, responseType) {
-    return function(success,error) {
+exports._googleLogin = function(nothing, just, clientId, scope, responseType) {
+    return function(success, error) {
         gapi.auth2.authorize(
             { clientId: clientId
             , scope: scope
@@ -64,8 +59,8 @@ exports._googleLogin = function(clientId, scope, responseType) {
                     return;
                 }
                 success(
-                    { accessToken: response.access_token
-                    , idToken: response.id_token
+                    { accessToken: !!response.access_token ? just(response.access_token) : nothing
+                    , idToken: !!response.id_token ? just(response.id_token) : nothing
                     }
                 );
             });
@@ -73,18 +68,20 @@ exports._googleLogin = function(clientId, scope, responseType) {
 }
 
 exports.initPicker = function(accessToken) {
-    return function(success,error) {
-        var picker = new google.picker.PickerBuilder().
-                        addView(google.picker.ViewId.DOCS).
-                        setOAuthToken(accessToken).
-                        setDeveloperKey("AIzaSyBbo919OET_4fZ7XL14prcl1mhy0lthjKI").
-                        build();
-        success(picker);
+    return function() {
+        return function(success, error) {
+            var picker = new google.picker.PickerBuilder().
+                            addView(google.picker.ViewId.DOCS).
+                            setOAuthToken(accessToken).
+                            setDeveloperKey("AIzaSyBbo919OET_4fZ7XL14prcl1mhy0lthjKI").
+                            build();
+            success(picker);
+        }
     }
 }
 
 exports._showPicker = function(picker) {
-    return function(success,error) {
+    return function(success, error) {
         picker.setCallback(function(result) {
             if(result.action === "cancel") {
                 success(null);

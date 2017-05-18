@@ -2,10 +2,11 @@ module Editor.Utils.Requests where
 
 import Prelude
 import Data.Argonaut (class DecodeJson, class EncodeJson, decodeJson, encodeJson, jsonEmptyObject, (:=), (~>))
-import Data.Either (Either)
+import Data.Either (Either, either)
 import Data.Maybe (Maybe(..))
 import Data.String (joinWith)
 import Editor.Models.Chapter (ServerChapter)
+import Editor.Utils.GoogleServices (AccessToken, DriveReadOnlyScope, fromAccessToken)
 import Network.HTTP.Affjax (Affjax, URL, get, post)
 
 ---- REQUESTS ----
@@ -22,9 +23,14 @@ crupdate secretKey chapter = postRequest chapterUpdateEndpoint secretKey (Just c
 deleteChapter :: forall e. String -> Int -> Affjax e (Either String Int)
 deleteChapter secretKey chapterId = postRequest chapterDeleteEndpoint secretKey (Just chapterId)
 
-getChapterHtmlFromGDocs :: forall e. String -> String -> Affjax e String
+authorize :: forall e. String -> Affjax e Boolean
+authorize idToken = do
+    affjaxResponse <- post authorizeEndpoint (encodeJson idToken)
+    pure $ affjaxResponse { response = either (const false) id (decodeJson affjaxResponse.response) }
+
+getChapterHtmlFromGDocs :: forall scopes e. AccessToken (driveReadOnly :: DriveReadOnlyScope | scopes) -> String -> Affjax e String
 getChapterHtmlFromGDocs accessToken fileId = do 
-    get $ joinWith "" ["https://www.googleapis.com/drive/v3/files/", fileId, "/export?access_token=", accessToken, "&mimeType=text/html"]
+    get $ joinWith "" ["https://www.googleapis.com/drive/v3/files/", fileId, "/export?access_token=", fromAccessToken accessToken, "&mimeType=text/html"]
 
 ---- REQUEST HELPERS ----
 
@@ -68,3 +74,6 @@ singleChapterEndpoint cId = chaptersEndpoint <> "/" <> show cId
 nextReleaseEndpoint :: String
 nextReleaseEndpoint = apiBase <> "/next"
 
+-- supports POST
+authorizeEndpoint :: String
+authorizeEndpoint = apiBase <> "/auth"

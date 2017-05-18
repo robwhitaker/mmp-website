@@ -8,24 +8,33 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Control.Alt ((<$>))
+import Control.Applicative ((<*>))
 import Control.Monad.Aff (Aff)
 import Control.Monad.Aff.Console (log)
 import Control.Monad.Eff.Console (CONSOLE)
+import Control.Monad.Eff.Exception (error)
 import Control.Monad.Eff.Now (NOW)
+import Control.Monad.Except (withExcept)
+import Control.Monad.Except.Trans (throwError)
 import Control.Monad.Reader.Trans (runReaderT)
+import Control.MonadPlus (guard)
 import Data.Bifunctor (rmap)
 import Data.Either.Nested (Either3)
 import Data.Either.Nested (Either2)
+import Data.Functor ((<$>))
 import Data.Functor.Coproduct.Nested (Coproduct3)
 import Data.Functor.Coproduct.Nested (Coproduct2)
+import Data.Functor.Product.Nested (T4)
 import Data.JSDate (LOCALE)
-import Data.Maybe (isJust, isNothing)
+import Data.Maybe (isJust, isNothing, maybe)
 import Data.Maybe (Maybe(..))
 import Data.Tuple (fst, snd)
 import Data.Tuple (Tuple(..))
+import Data.Tuple.Nested (tuple3, (/\))
 import Editor.Models.Chapter (Chapter(..), LocalChapter)
-import Editor.Utils.GoogleAuth (FilePicker, GAPI, GoogleAuthData, GoogleServices, awaitGapi, googleLogin, initAuth2, initPicker, load, showPicker)
+import Editor.Models.Session (Session, GoogleServices)
+import Editor.Utils.GoogleServices (AccessToken, Auth2, FilePicker, GAPI, Gapi, GooglePickerObject, Ready, awaitGapi, driveReadOnlyScope, emailScope, googleLogin, initAuth2, initPicker, loadAuth2, loadFilePicker, profileScope, (<+>))
+import Editor.Utils.Requests (authorize)
 import Halogen (lifecycleParentComponent)
 import Halogen (Action)
 import Halogen.Component.ChildPath (cp2, cp3)
@@ -39,9 +48,12 @@ data ActiveComponent
     | MetadataEditor LocalChapter (Array (Tuple String (Action MetadataEditor.Query)))
     | ChapterSync LocalChapter LocalChapter (Array (Tuple String (Action ChapterSync.Query)))
 
+type Config = Unit
+
 type State = 
     { activeComponent :: ActiveComponent
-    , googleServices :: Maybe GoogleServices
+    , googleServices :: GoogleServices
+    , session :: Maybe Session
     }
 
 data Query a 
@@ -82,7 +94,7 @@ editor =
       }
   where
         initialState :: State
-        initialState = { activeComponent : ChapterList [], googleServices : Nothing }
+        initialState = { activeComponent : ChapterList [], googleServices : { gapi : Nothing, filepicker : Nothing }, session : Nothing }
 
         render :: State -> H.ParentHTML Query ChildQuery ChildSlot (AppEffects eff)
         render state =
@@ -105,7 +117,7 @@ editor =
                             renderOption <$> mapOptions SendMetadataEditorAction options
                         ChapterSync _ _ options -> 
                             renderOption <$> mapOptions SendChapterSyncAction options) <>
-                    (if isNothing state.googleServices
+                    (if isNothing state.session
                         then 
                             [ HH.button
                                 [ HE.onClick (HE.input_ Login) ]
@@ -114,11 +126,11 @@ editor =
                         else
                             []) 
                 , HH.div [ HP.id_ "top-bar-spacer" ] []
-                , case state.googleServices of
-                    Just googleServices ->
+                , case state.session of
+                    Just session ->
                         case state.activeComponent of
                             ChapterList _ -> 
-                                HH.slot' cp1 unit (H.hoist (flip runReaderT googleServices) ChapterList.chapterList) unit (HE.input HandleChapterList)
+                                HH.slot' cp1 unit (H.hoist (flip runReaderT $ Tuple session state.googleServices) ChapterList.chapterList) unit (HE.input HandleChapterList)
                             MetadataEditor chapter _ -> 
                                 HH.slot' cp2 unit MetadataEditor.metadataEditor chapter (HE.input HandleMetadataEditor)
                             ChapterSync chapterOriginal chapterNew _ ->
@@ -138,11 +150,12 @@ editor =
         eval = case _ of
             Initialize next -> do
                 -- setup Google auth and file picker
-                H.liftAff do 
-                    _ <- awaitGapi
-                    load "auth2"
-                    load "picker"
+                gapiDef <- H.liftAff $ 
+                    awaitGapi >>=
+                    loadAuth2 >>=
+                    loadFilePicker >>=
                     initAuth2 "361874213844-33mf5b41pp4p0q38q26u8go81cod0h7f.apps.googleusercontent.com"
+                H.modify _ { googleServices = { gapi : Just gapiDef, filepicker : Nothing } }
                 pure next
 
             HandleChapterList (ChapterList.OptionChange options) next -> do
@@ -193,11 +206,24 @@ editor =
                 pure next
 
             Login next -> do
-                result <- H.liftAff do
+                state <- H.get
+                filepicker /\ accessToken /\ idToken /\ unit <- H.liftAff do
+                    gapi <- maybe (throwError $ error "Gapi not defined.") pure state.googleServices.gapi
                     result <- googleLogin "361874213844-33mf5b41pp4p0q38q26u8go81cod0h7f.apps.googleusercontent.com" 
-                                          ["profile", "email", "https://www.googleapis.com/auth/drive.readonly"]
-                                          ["id_token", "permission"]
-                    picker <- initPicker result.accessToken
-                    pure $ Tuple result picker
-                H.modify (_ { googleServices = Just { accessToken : (fst result).accessToken, idToken : (fst result).idToken, filePicker : snd result }})
+                                          driveReadOnlyScope
+                                          "id_token permission"
+                                          gapi
+                    Tuple accessToken idToken <- maybe (throwError $ error "Bad login. (Step 1)") 
+                                                 pure 
+                                                 (Tuple <$> result.accessToken <*> result.idToken)
+                    -- Commented out until auth endpoint works
+                    -- login <- authorize idToken
+                    -- if not login.response then throwError (error "Bad login. (Step 2)") else pure unit 
+                    picker <- initPicker accessToken gapi
+                    pure $ tuple3 picker accessToken idToken
+                
+                H.modify \s -> s 
+                    { googleServices = s.googleServices { filepicker = Just filepicker }
+                    , session = Just { accessToken, idToken }
+                    }
                 pure next
