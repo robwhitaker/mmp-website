@@ -235,7 +235,7 @@ def released_content
   released_content = []
 
   Chapter.where('releaseDate <= ?', DateTime.now).each do |chapter|
-    entries = chapter.entries.select { |entry| entry.release_date <= DateTime.now }
+    entries = chapter.entries.select { |entry| entry.releaseDate <= DateTime.now }
     chapter = chapter.as_json.deep_symbolize_keys
     chapter[:level] = 0
 
