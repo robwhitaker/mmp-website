@@ -181,6 +181,7 @@ metadataEditor =
                 PropagateReleaseDate maybeIndex next -> do
                     let index = fromMaybe (-1) maybeIndex
                     numEntries <- H.get >>= pure <<< length <<< _.entries <<< unwrap <<< _.chapter
+                    -- TODO: possibly rewrite; it's slow and can be buggy
                     _ <- for (range (index+1) (numEntries-1)) \i ->
                         H.modify \state -> fromMaybe state do
                             let entries = _.entries $ unwrap $ state.chapter

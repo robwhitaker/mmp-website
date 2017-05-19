@@ -143,6 +143,12 @@ a:hover {
     font-style: italic;
 }
 
+#chapter-list h1 i,
+#chapter-list h2 i,
+#chapter-list h3 i {
+    margin: 0 0.2em;
+}
+
 #chapter-list .right-col h2 {
     display: block;
     border-bottom: 1px solid #333;
@@ -336,4 +342,8 @@ textarea {
 
 .no-left-margin {
     margin-left: 0 !important;
+}
+
+.hide {
+    display: none !important;
 }

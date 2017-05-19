@@ -115,7 +115,7 @@ chapterList =
                             Nothing -> [ HH.text "No release scheduled." ]
                             Just _ ->
                                 concatMap (\release ->
-                                    [ HH.h3_ [ HH.text $ makeReleaseGroupTitle release ] 
+                                    [ HH.h3_ [ interactiveIcon (getReleaseGroupIsInteractive release), HH.text $ makeReleaseGroupTitle release ] 
                                     , HH.span_ [ HH.text $ maybe "" formatReadable $ getReleaseGroupDate release ]
                                     ]
                                 ) nextReleases
@@ -128,7 +128,7 @@ chapterList =
                                 HH.ul [ HP.class_ (H.ClassName "upcoming-releases") ] $ map (\releaseGroup -> 
                                     HH.li 
                                         [ HP.class_ (H.ClassName "upcoming-release") ]
-                                        [ HH.h3_ [ HH.text $ makeReleaseGroupTitle releaseGroup ]
+                                        [ HH.h3_ [ interactiveIcon (getReleaseGroupIsInteractive releaseGroup), HH.text $ makeReleaseGroupTitle releaseGroup ]
                                         , HH.span_ [ HH.text $ maybe "" id $ map formatReadable $ getReleaseGroupDate releaseGroup ]
                                         ]
                                 ) $ drop (length nextReleases) upcomingReleases
@@ -136,11 +136,16 @@ chapterList =
                     ] 
                 ]    
           where
-            chapterToHtml chapterIndex ch@(Chapter chR@{id,title,docId}) = 
+            chapterToHtml chapterIndex ch@(Chapter chR@{id,title,docId,isInteractive}) = 
                 HH.div
                     [ HP.class_ $ H.ClassName "chapter-tile" ]
                     [ HH.h2_ 
-                        [ HH.a 
+                        [ HH.a
+                            [ HP.href chR.interactiveUrl
+                            , HP.target "_blank" 
+                            ]
+                            [ interactiveIcon isInteractive ]
+                        , HH.a 
                             [ HP.href $ "https://docs.google.com/document/d/" <> docId <> "/edit"
                             , HP.target "_blank" 
                             ] 
@@ -176,14 +181,15 @@ chapterList =
                     , HH.div 
                         [ HP.class_ $ H.ClassName "chapter-data" ] $ 
                         [ HH.text $ intercalate " / "
-                            [ "Word count: " <> show (wordCount ch) 
-                            , "Entries: " <> show (length chR.entries)
-                            , "Interactive: " <> show chR.isInteractive
-                            , "Release Date: " <> maybe "Not scheduled" formatReadable chR.releaseDate
+                            [ show (wordCount ch) <> " words"
+                            , show (length chR.entries) <> " entries"
+                            , maybe "Not scheduled" formatReadable chR.releaseDate
                             ]
                         ]
                     ]
             
+            interactiveIcon isInteractive = HH.i [ HP.class_ (H.ClassName $ "fa fa-gamepad" <> if isInteractive then "" else " hide"), HP.attr (H.AttrName "aria-hidden") "true" ] []
+
             upcomingReleases :: Array ReleaseGroup
             upcomingReleases = 
                 concatMap makeReleaseGroups state.chaptersOriginal
@@ -201,6 +207,9 @@ chapterList =
 
             getReleaseGroupDate :: ReleaseGroup -> Maybe LocalDateTime
             getReleaseGroupDate { chapter, entries } = join $ map (unwrap >>> _.releaseDate) (last entries) <|> Just (unwrap chapter).releaseDate
+
+            getReleaseGroupIsInteractive :: ReleaseGroup -> Boolean
+            getReleaseGroupIsInteractive { chapter, entries } = fromMaybe false $ map (unwrap >>> _.isInteractive) (last entries) <|> Just (unwrap chapter).isInteractive
 
             -- Silly magic numbers to make the word count line up closer with the Google Docs word count
             wordCount :: LocalChapter -> Int
