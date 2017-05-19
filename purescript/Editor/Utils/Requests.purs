@@ -25,7 +25,7 @@ deleteChapter secretKey chapterId = postRequest chapterDeleteEndpoint secretKey 
 
 authorize :: forall e. String -> Affjax e Int
 authorize idToken = do
-    affjaxResponse <- post authorizeEndpoint (encodeJson idToken)
+    affjaxResponse <- post authorizeEndpoint idToken
     pure $ affjaxResponse { response = either (const 0) id (decodeJson affjaxResponse.response) }
 
 getChapterHtmlFromGDocs :: forall scopes e. AccessToken (driveReadOnly :: DriveReadOnlyScope | scopes) -> String -> Affjax e String
