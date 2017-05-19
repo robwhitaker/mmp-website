@@ -5,6 +5,7 @@ require 'rss'
 require 'logger'
 require 'time'
 require 'yaml'
+require 'net/http'
 require './config/environments'
 require './models/chapter'
 require './models/entry'
@@ -137,22 +138,19 @@ post '/api/chapters/delete' do
 end
 
 post '/api/auth' do
-  validator = GoogleIDToken::Validator.new(expiry: 1800)
+  valid_aud = '361874213844-33mf5b41pp4p0q38q26u8go81cod0h7f.apps.googleusercontent.com'
+  valid_emails = ['robjameswhitaker@gmail.com', 'larouxn@gmail.com']
 
-  token = request.body.read
-  aud = '361874213844-33mf5b41pp4p0q38q26u8go81cod0h7f.apps.googleusercontent.com'
+  token = request.body.read.gsub(/"/, '')
 
-  begin
-    payload = validator.check(token, aud)
-    email = payload['email']
+  uri = URI("https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=#{token}")
+  payload = JSON.parse(Net::HTTP.get(uri))
+  payload_email = payload['email']
+  payload_aud = payload['aud']
 
-    if email == 'robjameswhitaker@gmail.com' || email == 'larouxn@gmail.com'
-      success_response
-    else
-      failure_response
-    end
-  rescue GoogleIDToken::ValidationError => e
-    log("Cannot validate: #{e}")
+  if valid_emails.include?(payload_email) && payload_aud == valid_aud
+    success_response
+  else
     failure_response
   end
 end
