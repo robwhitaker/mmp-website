@@ -1,10 +1,10 @@
 module Editor.Models.Session where
 
 import Data.Maybe (Maybe)
-import Editor.Utils.GoogleServices (AccessToken, Auth2, DriveReadOnlyScope, FilePicker, Gapi, GooglePickerObject, Ready)
+import Editor.Utils.GoogleServices (AccessToken, Auth2, DriveReadOnlyScope, EmailScope, FilePicker, Gapi, GooglePickerObject, ProfileScope, Ready)
 
 type Session = 
-    { accessToken :: AccessToken (driveReadOnly :: DriveReadOnlyScope)
+    { accessToken :: AccessToken (driveReadOnly :: DriveReadOnlyScope, email :: EmailScope, profile :: ProfileScope)
     , idToken :: String
     }
 

@@ -77,7 +77,7 @@ chapterSync chapterOriginal chapter =
                     [ HH.span_ [ HH.text $ maybe "(!!)" show (unwrap state.chapterOriginal).id ]
                     , HH.h1_ 
                         [ if (unwrap state.chapterOriginal).isInteractive
-                          then HH.i [ HP.class_ (H.ClassName "fa fa-gamepad"), HP.attr (H.AttrName "aria-hidden") "true" ] []
+                          then interactiveIcon
                           else HH.span_ []
                         , HH.text $ stripTags (unwrap state.chapter).title 
                         ]

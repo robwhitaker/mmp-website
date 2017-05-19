@@ -12,25 +12,25 @@ import Control.Monad.Aff (Aff)
 import Control.Monad.Aff.Console (CONSOLE, log)
 import Control.Monad.Eff (Eff)
 import Control.Plus ((<|>))
-import Data.Array (length, mapWithIndex, modifyAt, range, sort, updateAt, (!!))
+import Data.Array (catMaybes, length, mapWithIndex, modifyAt, range, sort, updateAt, (!!))
 import Data.DateTime (DateTime(..), adjust)
 import Data.Formatter.Internal (repeat)
 import Data.JSDate (LOCALE, fromDateTime, getTimezoneOffset)
 import Data.Maybe (Maybe(..), fromMaybe, isJust, isNothing, maybe)
 import Data.Newtype (over, unwrap, wrap)
-import Data.String (take)
+import Data.String (null, take)
 import Data.Time.Duration (Days(..), Minutes(..))
 import Data.Traversable (for, traverse)
 import Data.Tuple (Tuple(..))
 import Editor.Data.DateTime.Utils (dateTimeWithLocale, formatISO8601, formatReadable, localAdjust, parseISO8601, parseLocalDateTime, removeLocale)
 import Editor.Models.Chapter (Chapter(..), LocalChapter, toServerChapter)
 import Editor.Models.Entry (Entry(..), LocalEntry)
-import Editor.Utils.ModelHelpers (CommonMetadata)
+import Editor.Utils.ModelHelpers (CommonMetadata, AllCommonData)
 import Editor.Utils.Parser (stripTags)
 import Editor.Utils.Requests (crupdate)
 import Halogen (AttrName(..))
-import Halogen.HTML.Events (onValueChange)
-import Halogen.Query (liftEff)
+import Halogen.HTML.Events (input_, onValueChange)
+import Halogen.Query (Action, liftEff)
 import Network.HTTP.Affjax (AJAX)
 
 type State =
@@ -83,105 +83,75 @@ metadataEditor =
 
         render :: State -> H.ComponentHTML Query
         render state = 
-            HH.div_ $
-                [ HH.h1_ [ HH.text $ stripTags chapter.title ]
-                , HH.div_ [ HH.text chapter.stylesheet ]
-                , HH.div_ [ HH.text $ take 100 chapter.content ]
-                , HH.button [ HE.onClick $ HE.input_ (PropagateReleaseDate Nothing)] [ HH.text "Propagate release date" ]
-                , HH.div_ 
-                    [ HH.input
-                        [ HP.type_ HP.InputCheckbox
-                        , HP.title "WOW!"
-                        , HP.checked chapter.isInteractive
-                        , HE.onChecked (HE.input $ UpdateChapter <<< IsInteractive)
-                        ]
+            HH.div [ HP.id_ "chapter-sync" ] $
+                [ renderItem 0 chapter.stylesheet Nothing UpdateChapter chapter ] <>
+                (mapWithIndex (\i (Entry e) -> renderItem e.level chapter.stylesheet (Just i) (UpdateEntry i) e) chapter.entries)
+          where chapter = unwrap state.chapter
+
+        renderItem :: forall r. Int -> String -> Maybe Int -> (FormField -> Action Query) -> AllCommonData r -> H.ComponentHTML Query
+        renderItem level stylesheet maybeIndex router item = 
+            HH.div 
+                [ HP.class_ (H.ClassName $ "tile chapter-sync-chapter" <> " level-" <> show level) ] 
+                [ HH.span_ [ HH.text $ maybe "(New!)" show item.id ]
+                , HH.h1_ 
+                    [ interactiveIcon item.isInteractive
+                    , HH.text $ stripTags item.title 
                     ]
-                , HH.div 
-                    (if not chapter.isInteractive then
-                        [ HP.attr (AttrName "style") "display:none;" ]
-                     else
-                        []
-                    )
-                    [ HH.input
-                        [ HP.placeholder "Interactive URL..."
-                        , HP.value chapter.interactiveUrl
-                        , HE.onValueChange (HE.input $ UpdateChapter <<< InteractiveUrl)
+                , HH.p [ HP.class_ (H.ClassName "data-row") ] $
+                    [ releaseDateIcon
+                    , HH.input 
+                        [ HP.value (maybe "Not scheduled" formatReadable item.releaseDate) 
+                        , HP.class_ (H.ClassName "release-date-field")
+                        , HE.onValueChange (HE.input $ router <<< ReleaseDate)
                         ]
-                    , HH.input
-                        [ HP.placeholder "Interactive Data..."
-                        , HP.value chapter.interactiveData
-                        , HE.onValueChange (HE.input $ UpdateChapter <<< InteractiveData)
+                    , propagateIcon
+                    ] <> if item.isInteractive 
+                            then [ interactiveUrlIcon
+                                    , HH.input
+                                    [ HP.value item.interactiveUrl
+                                    , HP.class_ (H.ClassName "interactive-url-field")
+                                    , HE.onValueChange (HE.input $ router <<< InteractiveUrl)
+                                    ]  
+                                    ]
+                            else []
+                , HH.div
+                    [ HP.class_ (H.ClassName "flex-container") ]  
+                    [ HH.div
+                        [ HP.class_ (H.ClassName "metadata-box-container wrap") ] $ catMaybes
+                        [ Just $
+                            HH.div_ 
+                                    [ HH.h2 [ HP.class_ (H.ClassName "no-border") ] [ HH.text "Author's Note" ]
+                                    , HH.textarea [ HE.onValueChange $ HE.input $ router <<< AuthorsNote
+                                                    , HP.value item.authorsNote 
+                                                    ]
+                                    ]
+                        , if not (item.isInteractive)
+                        then Nothing
+                        else Just $
+                                HH.div_ 
+                                    [ HH.h2 [ HP.class_ (H.ClassName "no-border") ] [ HH.text "Interactive Data" ]
+                                    , HH.textarea [ HE.onValueChange $ HE.input $ router <<< InteractiveData
+                                                    , HP.value item.interactiveData
+                                                    ]
+                                    ]
                         ] 
+                    , HH.div
+                        [ HP.class_ (H.ClassName "preview-container") ] 
+                        [ HH.iframe [ HP.attr (H.AttrName "srcdoc") htmlContent ] ]    
                     ]
-                , HH.div_ 
-                    [ HH.input 
-                        [ HP.placeholder "Author's note..."
-                        , HP.value chapter.authorsNote
-                        , HE.onValueChange (HE.input $ UpdateChapter <<< AuthorsNote)
-                        ]
-                    , HH.br_ 
-                    , HH.text chapter.authorsNote
-                    ]
-                , HH.div_
-                    [ HH.input 
-                        [ HP.value (maybe "" formatReadable chapter.releaseDate) 
-                        , HE.onValueChange (HE.input $ UpdateChapter <<< ReleaseDate)
-                        ]
-                    , HH.text $ maybe "" formatReadable chapter.releaseDate 
-                    ]
-                , HH.hr_
-                ] <> mapWithIndex entryToHtml chapter.entries
-          where 
-                chapter = unwrap state.chapter
-                entryToHtml :: Int -> LocalEntry -> H.ComponentHTML Query
-                entryToHtml index (Entry entry) = 
-                    HH.div_ 
-                        [ HH.h1_ [ HH.text $ repeat ">" entry.level <> stripTags entry.title, HH.text ", ", HH.text $ show entry.order ]
-                        , HH.div_ [ HH.text $ take 100 entry.content ]
-                        , HH.button [ HE.onClick $ HE.input_ (PropagateReleaseDate $ Just index)] [ HH.text "Propagate release date" ]
-                        , HH.div_ 
-                            [ HH.input
-                                [ HP.type_ HP.InputCheckbox
-                                , HP.title "WOW!"
-                                , HP.checked entry.isInteractive
-                                , HE.onChecked (HE.input $ UpdateEntry index <<< IsInteractive)
-                                ]
-                            ]
-                        , HH.div 
-                            (if not entry.isInteractive then
-                                [ HP.attr (AttrName "style") "display:none;" ]
-                            else
-                                []
-                            )
-                            [ HH.input
-                                [ HP.placeholder "Interactive URL..."
-                                , HP.value entry.interactiveUrl
-                                , HE.onValueChange (HE.input $ UpdateEntry index <<< InteractiveUrl)
-                                ]
-                            , HH.input
-                                [ HP.placeholder "Interactive Data..."
-                                , HP.value entry.interactiveData
-                                , HE.onValueChange (HE.input $ UpdateEntry index <<< InteractiveData)
-                                ] 
-                            ]
-                        , HH.div_ 
-                            [ HH.input 
-                                [ HP.placeholder "Author's note..."
-                                , HP.value entry.authorsNote
-                                , HE.onValueChange (HE.input $ UpdateEntry index <<< AuthorsNote)
-                                ]
-                            , HH.br_ 
-                            , HH.text entry.authorsNote
-                            ]
-                        , HH.div_
-                            [ HH.input 
-                                [ HP.value (maybe "" formatReadable entry.releaseDate) 
-                                , HE.onValueChange (HE.input $ UpdateEntry index <<< ReleaseDate)
-                                ]
-                            , HH.text $ maybe "" formatReadable entry.releaseDate
-                            ]
-                        , HH.hr_    
-                        ]
+                ]
+          where interactiveIcon isInteractive = 
+                    HH.i [ HP.class_ (H.ClassName $ "fa fa-gamepad clickable" <> if isInteractive then "" else " disabled")
+                         , HP.attr (H.AttrName "aria-hidden") "true" 
+                         , HE.onClick (HE.input_ $ router (IsInteractive (not isInteractive)))
+                         ] []
+                releaseDateIcon = HH.i [ HP.class_ (H.ClassName "fa fa-calendar"), HP.attr (H.AttrName "aria-hidden") "true" ] []
+                interactiveUrlIcon = HH.i [ HP.class_ (H.ClassName "fa fa-link"), HP.attr (H.AttrName "aria-hidden") "true" ] []
+                propagateIcon = HH.i [ HP.class_ (H.ClassName $ "fa fa-level-down clickable no-left-margin")
+                                     , HP.attr (H.AttrName "aria-hidden") "true" 
+                                     , HE.onClick (HE.input_ $ PropagateReleaseDate maybeIndex)
+                                     ] []
+                htmlContent = "<style>" <> stylesheet <> "</style>" <> item.title <> item.content
 
         eval :: Query ~> H.ComponentDSL State Query Message (AppEffects eff)
         eval =
@@ -262,7 +232,7 @@ metadataEditor =
                         AuthorsNote authorsNote -> pure $ state { authorsNote = authorsNote }
                         ReleaseDate releaseDate -> do
                             rd <- parseLocalDateTime releaseDate
-                            pure $ state { releaseDate = rd <|> state.releaseDate  }
+                            pure $ state { releaseDate = rd  }
                 
                 
 

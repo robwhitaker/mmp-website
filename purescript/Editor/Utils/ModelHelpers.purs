@@ -40,6 +40,12 @@ copyCommonMetadata base new =
         , releaseDate = base.releaseDate
         }
 
+type AllCommonData r = CommonMetadata
+    ( order :: Int
+    , title :: String
+    , content :: String
+    | r)
+
 type EntryMetadata r = CommonMetadata (chapterId :: Int | r)
 
 copyEntryMetadata :: forall r. EntryMetadata r -> EntryMetadata r -> EntryMetadata r

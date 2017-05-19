@@ -23,10 +23,10 @@ crupdate secretKey chapter = postRequest chapterUpdateEndpoint secretKey (Just c
 deleteChapter :: forall e. String -> Int -> Affjax e (Either String Int)
 deleteChapter secretKey chapterId = postRequest chapterDeleteEndpoint secretKey (Just chapterId)
 
-authorize :: forall e. String -> Affjax e Boolean
+authorize :: forall e. String -> Affjax e Int
 authorize idToken = do
     affjaxResponse <- post authorizeEndpoint (encodeJson idToken)
-    pure $ affjaxResponse { response = either (const false) id (decodeJson affjaxResponse.response) }
+    pure $ affjaxResponse { response = either (const 0) id (decodeJson affjaxResponse.response) }
 
 getChapterHtmlFromGDocs :: forall scopes e. AccessToken (driveReadOnly :: DriveReadOnlyScope | scopes) -> String -> Affjax e String
 getChapterHtmlFromGDocs accessToken fileId = do 

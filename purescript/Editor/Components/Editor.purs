@@ -210,15 +210,14 @@ editor =
                 filepicker /\ accessToken /\ idToken /\ unit <- H.liftAff do
                     gapi <- maybe (throwError $ error "Gapi not defined.") pure state.googleServices.gapi
                     result <- googleLogin "361874213844-33mf5b41pp4p0q38q26u8go81cod0h7f.apps.googleusercontent.com" 
-                                          driveReadOnlyScope
+                                          (driveReadOnlyScope <+> emailScope <+> profileScope)
                                           "id_token permission"
                                           gapi
                     Tuple accessToken idToken <- maybe (throwError $ error "Bad login. (Step 1)") 
                                                  pure 
                                                  (Tuple <$> result.accessToken <*> result.idToken)
-                    -- Commented out until auth endpoint works
-                    -- login <- authorize idToken
-                    -- if not login.response then throwError (error "Bad login. (Step 2)") else pure unit 
+                    login <- authorize idToken
+                    if login.response /= 1 then throwError (error "Bad login. (Step 2)") else pure unit 
                     picker <- initPicker accessToken gapi
                     pure $ tuple3 picker accessToken idToken
                 
