@@ -42,7 +42,7 @@ import Editor.Models.Entry (Entry(..))
 import Editor.Models.Session (Session, GoogleServices)
 import Editor.Utils.Array (swap)
 import Editor.Utils.GoogleServices (AccessToken, DriveReadOnlyScope, GAPI, showPicker)
-import Editor.Utils.ModelHelpers (ReleaseGroup, makeReleaseGroupTitle, makeReleaseGroups)
+import Editor.Utils.ModelHelpers (ReleaseGroup, fromReleaseGroup, makeReleaseGroupTitle, makeReleaseGroups)
 import Editor.Utils.Parser (getHeadingGroups, getTagContents, parseChapter, stripTags)
 import Editor.Utils.Requests (crupdate, deleteChapter, getChapterHtmlFromGDocs, postChapters)
 import Halogen.HTML (span_)
@@ -192,7 +192,8 @@ chapterList =
 
             upcomingReleases :: Array ReleaseGroup
             upcomingReleases = 
-                concatMap makeReleaseGroups state.chaptersOriginal
+                map (makeReleaseGroups >>> fromNonEmpty (:)) state.chaptersOriginal
+                # concat
                 # filter (\releaseGroup -> maybe false id do
                     releaseDate <- getReleaseGroupDate releaseGroup
                     now <- state.now
@@ -206,10 +207,10 @@ chapterList =
                     Just nextRelease -> takeWhile (getReleaseGroupDate >>> (==) (getReleaseGroupDate nextRelease)) upcomingReleases
 
             getReleaseGroupDate :: ReleaseGroup -> Maybe LocalDateTime
-            getReleaseGroupDate { chapter, entries } = join $ map (unwrap >>> _.releaseDate) (last entries) <|> Just (unwrap chapter).releaseDate
+            getReleaseGroupDate = fromReleaseGroup _.releaseDate
 
             getReleaseGroupIsInteractive :: ReleaseGroup -> Boolean
-            getReleaseGroupIsInteractive { chapter, entries } = fromMaybe false $ map (unwrap >>> _.isInteractive) (last entries) <|> Just (unwrap chapter).isInteractive
+            getReleaseGroupIsInteractive = fromReleaseGroup _.isInteractive
 
             -- Silly magic numbers to make the word count line up closer with the Google Docs word count
             wordCount :: LocalChapter -> Int

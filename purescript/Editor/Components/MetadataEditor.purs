@@ -12,26 +12,29 @@ import Control.Monad.Aff (Aff)
 import Control.Monad.Aff.Console (CONSOLE, log)
 import Control.Monad.Eff (Eff)
 import Control.Plus ((<|>))
-import Data.Array (catMaybes, length, mapWithIndex, modifyAt, range, sort, updateAt, (!!))
+import DOM.HTML.HTMLElement (offsetHeight)
+import Data.Array (catMaybes, drop, foldl, length, mapWithIndex, modifyAt, range, snoc, sort, take, updateAt, (!!))
 import Data.DateTime (DateTime(..), adjust)
 import Data.Formatter.Internal (repeat)
 import Data.JSDate (LOCALE, fromDateTime, getTimezoneOffset)
-import Data.Maybe (Maybe(..), fromMaybe, isJust, isNothing, maybe)
+import Data.Maybe (Maybe(..), fromJust, fromMaybe, isJust, isNothing, maybe)
 import Data.Newtype (over, unwrap, wrap)
-import Data.String (null, take)
+import Data.String (null)
 import Data.Time.Duration (Days(..), Minutes(..))
 import Data.Traversable (for, traverse)
 import Data.Tuple (Tuple(..))
+import Data.Tuple.Nested (get3, get4, tuple3, tuple4, (/\))
 import Editor.Data.DateTime.Utils (dateTimeWithLocale, formatISO8601, formatReadable, localAdjust, parseISO8601, parseLocalDateTime, removeLocale)
 import Editor.Models.Chapter (Chapter(..), LocalChapter, toServerChapter)
 import Editor.Models.Entry (Entry(..), LocalEntry)
-import Editor.Utils.ModelHelpers (CommonMetadata, AllCommonData)
+import Editor.Utils.ModelHelpers (AllCommonData, CommonMetadata, isOwnRelease)
 import Editor.Utils.Parser (stripTags)
 import Editor.Utils.Requests (crupdate)
 import Halogen (AttrName(..))
 import Halogen.HTML.Events (input_, onValueChange)
 import Halogen.Query (Action, liftEff)
 import Network.HTTP.Affjax (AJAX)
+import Partial.Unsafe (unsafePartial)
 
 type State =
     { chapter :: LocalChapter
@@ -169,7 +172,6 @@ metadataEditor =
 
                 Save next -> do
                     state <- H.get
-                    -- TODO: failed Aff needs handling here because otherwise it could duplicate the stripLocale
                     _ <- H.liftAff $ crupdate "" $ toServerChapter state.chapter
                     H.raise GoToChapterList
                     pure next
@@ -179,29 +181,23 @@ metadataEditor =
                     pure next
 
                 PropagateReleaseDate maybeIndex next -> do
-                    let index = fromMaybe (-1) maybeIndex
-                    numEntries <- H.get >>= pure <<< length <<< _.entries <<< unwrap <<< _.chapter
-                    -- TODO: possibly rewrite; it's slow and can be buggy
-                    _ <- for (range (index+1) (numEntries-1)) \i ->
-                        H.modify \state -> fromMaybe state do
-                            let entries = _.entries $ unwrap $ state.chapter
-                                lastEntryData = case entries !! (i-1) of
-                                    Just (Entry entry) -> 
-                                        { releaseDate : entry.releaseDate
-                                        , level : entry.level 
-                                        }
-                                    Nothing -> 
-                                        { releaseDate : (unwrap state.chapter).releaseDate
-                                        , level : 0 
-                                        }
-                            newEntries <- modifyAt i (\(Entry entry) ->
-                                    if entry.level > lastEntryData.level 
-                                        then Entry $ entry { releaseDate = lastEntryData.releaseDate }
-                                        else fromMaybe (Entry entry) do
-                                            newReleaseDate <- map (localAdjust (Days 7.0)) lastEntryData.releaseDate
-                                            pure $ Entry $ entry { releaseDate = newReleaseDate }
-                                ) entries
-                            pure $ state { chapter = over Chapter (_ { entries = newEntries }) state.chapter }
+                    state <- H.get
+                    let chapter = unwrap state.chapter
+                        entries = map unwrap chapter.entries
+                        Tuple initialAcc startEntry = case maybeIndex of
+                            Nothing -> Tuple (tuple4 chapter.releaseDate 0 (isOwnRelease chapter) []) 0
+                            Just i ->
+                                let entry = unsafePartial $ fromJust $ entries !! i 
+                                in Tuple (tuple4 entry.releaseDate entry.level (isOwnRelease entry) []) (i+1)
+                        newEntries = map Entry $ take startEntry entries <>
+                            (foldl (\(lastReleaseDate /\ lastLevel /\ lastIsOwnRelease /\ acc /\ unit) entry -> 
+                                let newEntry =
+                                        if entry.level > lastLevel && not lastIsOwnRelease
+                                        then entry { releaseDate = lastReleaseDate }
+                                        else entry { releaseDate = join $ map (localAdjust (Days 7.0)) lastReleaseDate }
+                                in tuple4 newEntry.releaseDate newEntry.level (isOwnRelease newEntry) (acc `snoc` newEntry)
+                            ) initialAcc (drop startEntry entries) # get4)
+                    H.modify _ { chapter = Chapter chapter { entries = newEntries } }
                     pure next
 
                 UpdateChapter formField next -> do

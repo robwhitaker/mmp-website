@@ -3,11 +3,12 @@ module Editor.Utils.ModelHelpers where
 import Prelude
 import Data.String as Str
 import Control.Plus ((<|>))
-import Data.Array (filter, foldl, last, null, snoc, (!!), (:))
+import Data.Array (catMaybes, concatMap, filter, foldl, group, head, last, length, modifyAt, null, reverse, snoc, sort, tail, (!!), (:))
 import Data.DateTime.Locale (LocalDateTime)
 import Data.Functor.Product.Nested (T4)
-import Data.Maybe (Maybe(..), maybe)
-import Data.Newtype (class Newtype, unwrap)
+import Data.Maybe (Maybe(..), fromJust, fromMaybe, maybe)
+import Data.Newtype (class Newtype, over, unwrap, wrap)
+import Data.NonEmpty (NonEmpty(..), fromNonEmpty)
 import Data.String (joinWith, trim)
 import Data.String.Regex (match)
 import Data.String.Regex.Flags (noFlags)
@@ -54,7 +55,7 @@ copyEntryMetadata base new =
 
 type ReleaseGroup = { chapter :: LocalChapter, entries :: Array LocalEntry }
 
-makeReleaseGroups :: LocalChapter -> Array ReleaseGroup
+makeReleaseGroups :: LocalChapter -> NonEmpty Array ReleaseGroup
 makeReleaseGroups chapter@(Chapter { entries }) =
     foldl (\(lastLevel /\ currentGroup /\ acc /\ unit) entry@(Entry { level }) -> 
         if lastLevel < level then
@@ -70,15 +71,20 @@ makeReleaseGroups chapter@(Chapter { entries }) =
                    (filter (\(Entry e) -> e.level < level) currentGroup `snoc` entry) 
                    (acc `snoc` { chapter : chapter, entries : currentGroup })
     ) startAcc entries
-    # \(lastLevel /\ currentGroup /\ acc /\ unit) ->
-        if null currentGroup then acc else acc `snoc` { chapter : chapter, entries : currentGroup }
+    # \(lastLevel /\ currentGroup /\ acc /\ unit) -> fromMaybe (NonEmpty { chapter : chapter, entries : [] } []) do
+        let arr = if null currentGroup then acc else acc `snoc` { chapter : chapter, entries : currentGroup }
+        NonEmpty <$> head arr <*> tail arr
   where
     startAcc = tuple3 0 [] $ if isOwnRelease (unwrap chapter) then [ { chapter : chapter, entries : [] } ] else []
     
-    isOwnRelease :: forall r. { content :: String, isInteractive :: Boolean | r } -> Boolean
-    isOwnRelease item = (not $ Str.null item.content) || item.isInteractive
+isOwnRelease :: forall r. { content :: String, isInteractive :: Boolean | r } -> Boolean
+isOwnRelease item = (not $ Str.null item.content) || item.isInteractive
 
--- TODO: make fancier, like the Elm version
+fromReleaseGroup :: forall a. (forall r. AllCommonData r -> a) -> ReleaseGroup -> a
+fromReleaseGroup f { chapter, entries } = fromMaybe (f $ unwrap chapter) do
+    entry <- entries !! (length entries - 1)
+    pure $ f (unwrap entry)
+
 makeReleaseGroupTitle :: ReleaseGroup -> String
 makeReleaseGroupTitle { chapter, entries } =
     foldl (\acc@(Tuple seg txt) title -> maybe acc id do
