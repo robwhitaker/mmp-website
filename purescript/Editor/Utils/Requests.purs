@@ -6,7 +6,7 @@ import Data.Either (Either, either)
 import Data.Maybe (Maybe(..))
 import Data.String (joinWith)
 import Editor.Models.Chapter (ServerChapter)
-import Editor.Utils.GoogleServices (AccessToken, DriveReadOnlyScope, fromAccessToken)
+import Editor.Utils.GoogleServices (AccessToken, DriveReadOnlyScope, EmailScope, IdToken, ProfileScope, fromAccessToken, fromIdToken)
 import Network.HTTP.Affjax (Affjax, URL, get, post)
 
 ---- REQUESTS ----
@@ -23,9 +23,9 @@ crupdate secretKey chapter = postRequest chapterUpdateEndpoint secretKey (Just c
 deleteChapter :: forall e. String -> Int -> Affjax e (Either String Int)
 deleteChapter secretKey chapterId = postRequest chapterDeleteEndpoint secretKey (Just chapterId)
 
-authorize :: forall e. String -> Affjax e Int
+authorize :: forall scopes e. IdToken (profile :: ProfileScope, email :: EmailScope | scopes) -> Affjax e Int
 authorize idToken = do
-    affjaxResponse <- post authorizeEndpoint idToken
+    affjaxResponse <- post authorizeEndpoint (fromIdToken idToken)
     pure $ affjaxResponse { response = either (const 0) id (decodeJson affjaxResponse.response) }
 
 getChapterHtmlFromGDocs :: forall scopes e. AccessToken (driveReadOnly :: DriveReadOnlyScope | scopes) -> String -> Affjax e String
@@ -77,3 +77,4 @@ nextReleaseEndpoint = apiBase <> "/next"
 -- supports POST
 authorizeEndpoint :: String
 authorizeEndpoint = apiBase <> "/auth"
+

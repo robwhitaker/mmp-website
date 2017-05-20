@@ -12,7 +12,9 @@ module Editor.Utils.GoogleServices
     , emailScope
     , driveReadOnlyScope
     , fromAccessToken
+    , fromIdToken
     , AccessToken
+    , IdToken
     , Scope
     , ProfileScope
     , EmailScope
@@ -32,15 +34,14 @@ module Editor.Utils.GoogleServices
 import Prelude
 import Control.Monad.Aff (Aff)
 import Control.Monad.Eff (kind Effect)
-import Data.Function.Uncurried (Fn3, Fn5, runFn3, runFn5)
+import Data.Function.Uncurried (Fn5, runFn5)
 import Data.Maybe (Maybe(..))
 import Data.Nullable (Nullable, toMaybe)
-import Data.String (joinWith)
 import Unsafe.Coerce (unsafeCoerce)
 
 type GoogleAuthData scopes = 
     { accessToken :: Maybe (AccessToken scopes)
-    , idToken :: Maybe String
+    , idToken :: Maybe (IdToken scopes)
     }
     
 type FileId = String
@@ -63,6 +64,7 @@ foreign import data EmailScope :: Type
 foreign import data DriveReadOnlyScope :: Type
 
 foreign import data AccessToken :: # Type -> Type
+foreign import data IdToken :: # Type -> Type
 
 foreign import awaitGapi :: forall eff. Aff (gapi :: GAPI | eff) (Gapi ())
 
@@ -110,6 +112,9 @@ showPicker = _showPicker >>> map toMaybe
 
 fromAccessToken :: forall scopes. AccessToken scopes -> String
 fromAccessToken = unsafeCoerce
+
+fromIdToken :: forall scopes. IdToken scopes -> String
+fromIdToken = unsafeCoerce
 
 fromScope :: forall scopes. Scope scopes -> String
 fromScope = unsafeCoerce
