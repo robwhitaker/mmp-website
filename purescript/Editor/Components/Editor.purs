@@ -216,8 +216,8 @@ editor =
                     Tuple accessToken idToken <- maybe (throwError $ error "Bad login. (Step 1)") 
                                                  pure 
                                                  (Tuple <$> result.accessToken <*> result.idToken)
-                    -- login <- authorize idToken
-                    -- if login.response /= 1 then throwError (error "Bad login. (Step 2)") else pure unit 
+                    login <- authorize idToken
+                    if login.response /= 1 then throwError (error "Bad login. (Step 2)") else pure unit 
                     picker <- initPicker accessToken gapi
                     pure $ tuple3 picker accessToken idToken
                 
