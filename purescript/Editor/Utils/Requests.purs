@@ -1,7 +1,7 @@
 module Editor.Utils.Requests where
 
 import Prelude
-import Data.Argonaut (class DecodeJson, class EncodeJson, decodeJson, encodeJson, jsonEmptyObject, (:=), (~>))
+import Data.Argonaut (class DecodeJson, class EncodeJson, decodeJson, encodeJson, jsonEmptyObject, jsonSingletonObject, (:=), (~>))
 import Data.Either (Either, either)
 import Data.Maybe (Maybe(..))
 import Data.String (joinWith)
@@ -14,14 +14,14 @@ import Network.HTTP.Affjax (Affjax, URL, get, post)
 getChapters :: forall e. Affjax e (Either String (Array ServerChapter))
 getChapters = getRequest chaptersEndpoint
 
-postChapters :: forall e. String -> Affjax e (Either String (Array ServerChapter))
-postChapters secretKey = postRequest chaptersEndpoint secretKey (Nothing :: Maybe String)
+postChapters :: forall e. Affjax e (Either String (Array ServerChapter))
+postChapters = postRequest chaptersEndpoint (Nothing :: Maybe String)
 
-crupdate :: forall e. String -> ServerChapter -> Affjax e (Either String Int)
-crupdate secretKey chapter = postRequest chapterUpdateEndpoint secretKey (Just chapter)
+crupdate :: forall e. ServerChapter -> Affjax e (Either String Int)
+crupdate chapter = postRequest chapterUpdateEndpoint (Just chapter)
 
-deleteChapter :: forall e. String -> Int -> Affjax e (Either String Int)
-deleteChapter secretKey chapterId = postRequest chapterDeleteEndpoint secretKey (Just chapterId)
+deleteChapter :: forall e. Int -> Affjax e (Either String Int)
+deleteChapter chapterId = postRequest chapterDeleteEndpoint (Just chapterId)
 
 authorize :: forall scopes e. IdToken (profile :: ProfileScope, email :: EmailScope | scopes) -> Affjax e Int
 authorize idToken = do
@@ -39,15 +39,10 @@ getRequest endpoint = do
     affjaxResponse <- get endpoint
     pure $ affjaxResponse { response = decodeJson affjaxResponse.response }
 
-postRequest :: forall a e r. EncodeJson a => DecodeJson r => URL -> String -> Maybe a -> Affjax e (Either String r)
-postRequest endpoint secretKey postData = do
-    affjaxResponse <- post endpoint (encodeJson payload)
+postRequest :: forall a e r. EncodeJson a => DecodeJson r => URL -> Maybe a -> Affjax e (Either String r)
+postRequest endpoint postData = do
+    affjaxResponse <- post endpoint (jsonSingletonObject "data" $ encodeJson postData)
     pure $ affjaxResponse { response = decodeJson affjaxResponse.response }
-  where 
-    payload = 
-        "secretKey" := secretKey
-        ~> "data" := postData
-        ~> jsonEmptyObject
 
 ---- ENDPOINTS ----
 

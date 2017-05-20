@@ -172,7 +172,7 @@ metadataEditor =
 
                 Save next -> do
                     state <- H.get
-                    _ <- H.liftAff $ crupdate "" $ toServerChapter state.chapter
+                    _ <- H.liftAff $ crupdate (toServerChapter state.chapter)
                     H.raise GoToChapterList
                     pure next
 

@@ -220,7 +220,7 @@ chapterList =
         eval :: Query ~> H.ComponentDSL State Query Message (AppEffects eff)
         eval = case _ of
             Initialize next -> do
-                chs <- H.liftAff $ postChapters ""
+                chs <- H.liftAff postChapters
                 localChs <- H.liftEff $ 
                     either 
                         (const $ pure []) 
@@ -283,12 +283,12 @@ chapterList =
                 state <- H.get
                 _ <- H.liftAff $ sequence $ catMaybes $ flip map state.chaptersOriginal \(Chapter oldChapter) -> do
                     case find (unwrap >>> _.id >>> (==) oldChapter.id) state.chapters of
-                        Nothing -> Just $ deleteChapter "" (fromMaybe (-1) oldChapter.id)
+                        Nothing -> Just $ deleteChapter (fromMaybe (-1) oldChapter.id)
                         Just newChapter -> 
                             if Chapter oldChapter == newChapter then
                                 Nothing
                             else
-                                Just $ crupdate "" $ toServerChapter newChapter
+                                Just $ crupdate (toServerChapter newChapter)
                 H.modify (_ { chaptersOriginal = state.chapters })
                 updateOptions
                 pure next
