@@ -136,8 +136,9 @@ post '/api/chapters/delete' do
 end
 
 post '/api/auth' do
-  valid_aud = '361874213844-33mf5b41pp4p0q38q26u8go81cod0h7f.apps.googleusercontent.com'
   valid_emails = ['robjameswhitaker@gmail.com', 'larouxn@gmail.com']
+  valid_aud = '361874213844-33mf5b41pp4p0q38q26u8go81cod0h7f.apps.googleusercontent.com'
+  valid_exp = Time.now.to_i
 
   token = request.body.read.gsub(/"/, '')
 
@@ -145,8 +146,9 @@ post '/api/auth' do
   payload = JSON.parse(Net::HTTP.get(uri))
   payload_email = payload['email']
   payload_aud = payload['aud']
+  payload_exp = payload['exp'].to_i
 
-  if valid_emails.include?(payload_email) && payload_aud == valid_aud
+  if valid_emails.include?(payload_email) && payload_aud == valid_aud && payload_exp > valid_exp
     success_response
   else
     failure_response
