@@ -6,21 +6,18 @@ require 'logger'
 require 'time'
 require 'yaml'
 require 'net/http'
+require 'securerandom'
 require './config/environments'
 require './models/chapter'
 require './models/entry'
 
-set :server => :puma,
-    :show_exceptions => :after_handler,
-    :public_folder => 'public'
-environment = ''
+enable :sessions
+set :server => :puma
+set :public_folder => 'public'
+set :sessions, :expire_after => 3500
+set :session_secret, YAML.load_file('config/secrets.yml')["session"] || SecureRandom.hex(64)
 
-if File.file?('config/secrets.yml')
-  environment = YAML.load_file('config/secrets.yml')["rack_env"]
-else
-  environment = 'development'
-end
-
+environment = YAML.load_file('config/secrets.yml')["rack_env"] || 'development'
 databases = YAML.load(ERB.new(File.read('config/database.yml')).result)
 ActiveRecord::Base.establish_connection(databases[environment])
 
@@ -30,13 +27,8 @@ app_logger = Logger.new(app_log)
 error_logger = File.new(File.join(File.dirname(File.expand_path(__FILE__)), 'var', 'log', 'error.log'), "a+")
 error_logger.sync = true
 
-configure do
-  use Rack::CommonLogger, app_logger
-end
-
-before {
-  env["rack.errors"] = error_logger
-}
+configure { use Rack::CommonLogger, app_logger }
+before { env["rack.errors"] = error_logger }
 
 error 501..510 do
   if environment == 'production'
@@ -90,7 +82,7 @@ post '/api/chapters' do # all chapters
 
   payload = JSON.parse(request.body.read)
 
-  if authorized? payload["secretKey"]
+  if authorized?
     success_response
     json all_chapters_with_entries('all')
   else
@@ -105,7 +97,7 @@ post '/api/chapters/crupdate' do
   data = payload["data"]
   log(payload)
 
-  if authorized? payload["secretKey"]
+  if authorized?
     if data["id"].nil? # Create chapter
       chapter = Chapter.new(data)
       chapter.save
@@ -129,7 +121,7 @@ post '/api/chapters/delete' do
   payload = JSON.parse(request.body.read)
   log(payload)
 
-  if authorized? payload["secretKey"]
+  if authorized?
     Chapter.destroy(payload["data"])
     success_response
   else
@@ -138,8 +130,11 @@ post '/api/chapters/delete' do
 end
 
 post '/api/auth' do
-  valid_aud = '361874213844-33mf5b41pp4p0q38q26u8go81cod0h7f.apps.googleusercontent.com'
+  return success_response if authorized?
+
   valid_emails = ['robjameswhitaker@gmail.com', 'larouxn@gmail.com']
+  valid_aud = '361874213844-33mf5b41pp4p0q38q26u8go81cod0h7f.apps.googleusercontent.com'
+  valid_exp = Time.now.to_i
 
   token = request.body.read.gsub(/"/, '')
 
@@ -147,8 +142,10 @@ post '/api/auth' do
   payload = JSON.parse(Net::HTTP.get(uri))
   payload_email = payload['email']
   payload_aud = payload['aud']
+  payload_exp = payload['exp'].to_i
 
-  if valid_emails.include?(payload_email) && payload_aud == valid_aud
+  if valid_emails.include?(payload_email) && payload_aud == valid_aud && payload_exp > valid_exp
+    session[:authorized] = true
     success_response
   else
     failure_response
@@ -173,17 +170,8 @@ def log(payload)
   end
 end
 
-def authorized?(string)
-  if File.file?('config/secrets.yml')
-    secrets = YAML.load_file('config/secrets.yml')
-    if secrets["rack_env"] == 'dev-auth' || secrets["rack_env"] == 'production'
-      string == secrets["admin_secret"]
-    else
-      true
-    end
-  else
-    true
-  end
+def authorized?
+  session[:authorized]
 end
 
 def with_entries(chapter, type = 'all')
@@ -235,7 +223,7 @@ def released_content
   released_content = []
 
   Chapter.where('releaseDate <= ?', DateTime.now).each do |chapter|
-    entries = chapter.entries.select { |entry| entry.release_date <= DateTime.now }
+    entries = chapter.entries.select { |entry| entry.releaseDate <= DateTime.now }
     chapter = chapter.as_json.deep_symbolize_keys
     chapter[:level] = 0
 
