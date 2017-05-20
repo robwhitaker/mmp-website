@@ -9,7 +9,7 @@ else
   workers 4
 
 
-  if File.file?('config/secrets.yml') && YAML.load_file('config/secrets.yml')["rack_env"] == 'production'
+  if File.file?('config/secrets.yml') && YAML.load_file('config/secrets.yml')["app_env"] == 'production'
     bind 'unix://var/run/puma.sock'
     pidfile 'var/run/puma.pid'
     daemonize

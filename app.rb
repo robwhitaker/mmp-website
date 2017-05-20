@@ -11,15 +11,21 @@ require './config/environments'
 require './models/chapter'
 require './models/entry'
 
+secrets = if File.file?('config/secrets.yml')
+            YAML.load_file('config/secrets.yml')
+          else
+            {}
+          end
+
 enable :sessions
 set :server => :puma
 set :public_folder => 'public'
 set :sessions, :expire_after => 3500
-set :session_secret, YAML.load_file('config/secrets.yml')["session"] || SecureRandom.hex(64)
+set :session_secret, secrets["session"] || SecureRandom.hex(64)
 
-environment = YAML.load_file('config/secrets.yml')["rack_env"] || 'development'
+@environment = secrets["app_env"] || 'development'
 databases = YAML.load(ERB.new(File.read('config/database.yml')).result)
-ActiveRecord::Base.establish_connection(databases[environment])
+ActiveRecord::Base.establish_connection(databases[@environment])
 
 Logger.class_eval { alias :write :'<<' }
 app_log = File.join(File.dirname(File.expand_path(__FILE__)), 'var', 'log', 'app.log')
@@ -31,7 +37,7 @@ configure { use Rack::CommonLogger, app_logger }
 before { env["rack.errors"] = error_logger }
 
 error 501..510 do
-  if environment == 'production'
+  if @environment == 'production'
     subject = "Production Error Occurred"
     message = "#{Time.now}\nsinatra.error: #{env["sinatra.error"]}"
 
@@ -171,6 +177,7 @@ def log(payload)
 end
 
 def authorized?
+  # return true if @environment == 'development'
   session[:authorized]
 end
 
