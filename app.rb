@@ -21,9 +21,9 @@ enable :sessions
 set :server => :puma
 set :public_folder => 'public'
 set :sessions, :expire_after => 3500
-set :session_secret, secrets["session"] || SecureRandom.hex(64)
+set :session_secret, secrets['session'] || SecureRandom.hex(64)
 
-@environment = secrets["app_env"] || 'development'
+@environment = secrets['app_env'] || 'development'
 databases = YAML.load(ERB.new(File.read('config/database.yml')).result)
 ActiveRecord::Base.establish_connection(databases[@environment])
 
@@ -177,7 +177,7 @@ def log(payload)
 end
 
 def authorized?
-  # return true if @environment == 'development'
+  return true if @environment == 'development'
   session[:authorized]
 end
 
@@ -198,7 +198,7 @@ def all_chapters_with_entries(type = 'all')
   chapters_with_entries = []
 
   if type == 'released'
-    chapters = Chapter.where('releaseDate <= ?', DateTime.now)
+    chapters = Chapter.select { |chapter| chapter.releaseDate <= DateTime.now }
   else
     chapters = Chapter.all
   end
@@ -229,7 +229,7 @@ end
 def released_content
   released_content = []
 
-  Chapter.where('releaseDate <= ?', DateTime.now).each do |chapter|
+  Chapter.select { |chapter| chapter.releaseDate <= DateTime.now }.each do |chapter|
     entries = chapter.entries.select { |entry| entry.releaseDate <= DateTime.now }
     chapter = chapter.as_json.deep_symbolize_keys
     chapter[:level] = 0
