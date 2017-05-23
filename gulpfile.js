@@ -11,6 +11,7 @@ var fs = require('fs');
 var replace = require('gulp-replace');
 var stripDebug = require('gulp-strip-debug');
 var ifElse = require('gulp-if-else');
+var purescript = require('gulp-purescript');
 var argv = require('yargs').argv;
 
 var env = argv.dev ? "dev" : "prod";
@@ -122,14 +123,42 @@ gulp.task('build:countdown-elm', function() {
         .pipe(gulp.dest('tmp-elm'));
 });
 
-gulp.task('build:editor-js', function() {
-    gulp.src(['editor.js','init-editor.js'], { cwd: 'public/static/js' })
-        .pipe(concat('editor.js'))
-        .pipe(uglifyJS({ mangle: false }))
+var sources = [
+  "purescript/**/*.purs",
+  "bower_components/purescript-*/src/**/*.purs",
+];
+
+gulp.task('build:ps-deps', function() {
+    return purescript.compile({ src: sources[1] });
+});
+
+gulp.task('build:editor-ps', function() {
+    return purescript.compile({ src: sources });
+});
+
+gulp.task('build:editor-html', function() {
+    return gulp.src(['public/static/html/editor.html'])
+        .pipe(injectConfig())
+        .pipe(gulp.dest('public'));
+});
+
+gulp.task('build:editor-css', function() {
+    gulp.src('public/static/css/editor.css')
+        .pipe(autoprefixer())
+        .pipe(minifyCSS())
         .pipe(rename({
             suffix: '.min'
          }))
-        .pipe(gulp.dest('public/static/build/js'));
+        .pipe(gulp.dest('public/static/build/css'));
+});
+
+gulp.task('build:editor', ['build:editor-html','build:editor-css','build:editor-ps'], function() {
+    return purescript.bundle(
+        { src: "output/**/*.js"
+        , module: "Editor.Main"
+        , main: "Editor.Main"
+        , output: "public/static/build/js/editor.js" 
+        });
 });
 
 gulp.task('build:reader', ['build:reader-html','build:reader-css','build:reader-js'], function() {

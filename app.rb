@@ -5,21 +5,27 @@ require 'rss'
 require 'logger'
 require 'time'
 require 'yaml'
+require 'net/http'
+require 'securerandom'
 require './config/environments'
 require './models/chapter'
 require './models/entry'
 
+secrets = if File.file?('config/secrets.yml')
+            YAML.load_file('config/secrets.yml')
+          else
+            {}
+          end
+
+enable :sessions
 set :server => :puma
 set :public_folder => 'public'
+set :sessions, :expire_after => 3500
+set :session_secret, secrets['session'] || SecureRandom.hex(64)
 
-environment = if File.file?('config/secrets.yml')
-                YAML.load_file('config/secrets.yml')["rack_env"]
-              else
-                'development'
-              end
-
+@environment = secrets['app_env'] || 'development'
 databases = YAML.load(ERB.new(File.read('config/database.yml')).result)
-ActiveRecord::Base.establish_connection(databases[environment])
+ActiveRecord::Base.establish_connection(databases[@environment])
 
 Logger.class_eval { alias :write :'<<' }
 app_log = File.join(File.dirname(File.expand_path(__FILE__)), 'var', 'log', 'app.log')
@@ -27,16 +33,11 @@ app_logger = Logger.new(app_log)
 error_logger = File.new(File.join(File.dirname(File.expand_path(__FILE__)), 'var', 'log', 'error.log'), "a+")
 error_logger.sync = true
 
-configure do
-  use Rack::CommonLogger, app_logger
-end
-
-before {
-  env["rack.errors"] = error_logger
-}
+configure { use Rack::CommonLogger, app_logger }
+before { env["rack.errors"] = error_logger }
 
 error 501..510 do
-  if environment == 'production'
+  if @environment == 'production'
     subject = "Production Error Occurred"
     message = "#{Time.now}\nsinatra.error: #{env["sinatra.error"]}"
 
@@ -64,14 +65,6 @@ get '/extras/halloween2015/play' do
   send_file File.join(settings.public_folder, '/extras/halloween2015/index.html')
 end
 
-get '/api/chapters/:id' do |id|
-  content_type :json
-
-  chapter = Chapter.includes(:entries).find(id)
-  success_response
-  json with_entries(chapter)
-end
-
 get '/api/chapters' do # public chapters
   content_type :json
   success_response
@@ -95,7 +88,7 @@ post '/api/chapters' do # all chapters
 
   payload = JSON.parse(request.body.read)
 
-  if authorized? payload["secretKey"]
+  if authorized?
     success_response
     json all_chapters_with_entries('all')
   else
@@ -107,10 +100,10 @@ post '/api/chapters/crupdate' do
   content_type :json
 
   payload = JSON.parse(request.body.read)
-  data = adjust_time_zones(payload["data"])
+  data = payload["data"]
   log(payload)
 
-  if authorized? payload["secretKey"]
+  if authorized?
     if data["id"].nil? # Create chapter
       chapter = Chapter.new(data)
       chapter.save
@@ -134,8 +127,31 @@ post '/api/chapters/delete' do
   payload = JSON.parse(request.body.read)
   log(payload)
 
-  if authorized? payload["secretKey"]
+  if authorized?
     Chapter.destroy(payload["data"])
+    success_response
+  else
+    failure_response
+  end
+end
+
+post '/api/auth' do
+  return success_response if authorized?
+
+  valid_emails = ['robjameswhitaker@gmail.com', 'larouxn@gmail.com']
+  valid_aud = '361874213844-33mf5b41pp4p0q38q26u8go81cod0h7f.apps.googleusercontent.com'
+  valid_exp = Time.now.to_i
+
+  token = request.body.read.gsub(/"/, '')
+
+  uri = URI("https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=#{token}")
+  payload = JSON.parse(Net::HTTP.get(uri))
+  payload_email = payload['email']
+  payload_aud = payload['aud']
+  payload_exp = payload['exp'].to_i
+
+  if valid_emails.include?(payload_email) && payload_aud == valid_aud && payload_exp > valid_exp
+    session[:authorized] = true
     success_response
   else
     failure_response
@@ -146,12 +162,12 @@ private
 
 def success_response
   status 200
-  body '{ "data": 1 }'
+  body '1'
 end
 
 def failure_response
   status 418
-  body '{ "data": 0 }'
+  body '0'
 end
 
 def log(payload)
@@ -160,45 +176,16 @@ def log(payload)
   end
 end
 
-def authorized?(string)
-  if File.file?('config/secrets.yml')
-    secrets = YAML.load_file('config/secrets.yml')
-    if secrets["rack_env"] == 'dev-auth' || secrets["rack_env"] == 'production'
-      string == secrets["admin_secret"]
-    else
-      true
-    end
-  else
-    true
-  end
-end
-
-def adjust_time_zone(date_string)
-  release_date = Time.parse(date_string)
-
-  if release_date.dst?
-    adjusted_release_date = release_date.strftime('%Y-%m-%d %H:%M:%S') + ' -0400'
-  else
-    adjusted_release_date = release_date.strftime('%Y-%m-%d %H:%M:%S') + ' -0500'
-  end
-end
-
-def adjust_time_zones(data)
-  adjusted_data = data
-  adjusted_data["release_date"] = adjust_time_zone(data["release_date"])
-
-  data["entries_attributes"].each_with_index do |entry, index|
-    adjusted_data["entries_attributes"][index]["release_date"] = adjust_time_zone(entry["release_date"])
-  end
-
-  adjusted_data
+def authorized?
+  return true if @environment == 'development'
+  session[:authorized]
 end
 
 def with_entries(chapter, type = 'all')
   chapter_with_entries = chapter.attributes
 
   entries = if type == 'released'
-              chapter.entries.select { |entry| entry.release_date <= DateTime.now }
+              chapter.entries.select { |entry| entry.releaseDate <= DateTime.now }
             else
               chapter.entries
             end
@@ -211,7 +198,7 @@ def all_chapters_with_entries(type = 'all')
   chapters_with_entries = []
 
   if type == 'released'
-    chapters = Chapter.where('release_date <= ?', DateTime.now)
+    chapters = Chapter.select { |chapter| chapter.releaseDate <= DateTime.now }
   else
     chapters = Chapter.all
   end
@@ -235,15 +222,15 @@ def next_release_date
     entries.each {|entry| all_content.push(entry.as_json.deep_symbolize_keys)}
   end
 
-  next_release = all_content.find { |data| data[:release_date] > DateTime.now }
-  next_release.class == Hash ? next_release[:release_date] : ''
+  next_release = all_content.find { |data| data[:releaseDate] > DateTime.now }
+  next_release.class == Hash ? next_release[:releaseDate] : ''
 end
 
 def released_content
   released_content = []
 
-  Chapter.where('release_date <= ?', DateTime.now).each do |chapter|
-    entries = chapter.entries.select { |entry| entry.release_date <= DateTime.now }
+  Chapter.select { |chapter| chapter.releaseDate <= DateTime.now }.each do |chapter|
+    entries = chapter.entries.select { |entry| entry.releaseDate <= DateTime.now }
     chapter = chapter.as_json.deep_symbolize_keys
     chapter[:level] = 0
 

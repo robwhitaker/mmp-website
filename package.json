@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Elm, Sinatra, SQLite3 (dev), PostgreSQL (prod)",
   "main": "index.js",
-  "dependencies": {},
+  "dependencies": {
+    "google-client-api": "^1.0.4"
+  },
   "devDependencies": {
     "elm": "^0.18.0",
     "gulp": "^3.9.1",
@@ -12,15 +14,19 @@
     "gulp-concat": "^2.6.0",
     "gulp-elm": "^0.5.0",
     "gulp-if-else": "^1.0.3",
+    "gulp-purescript": "^2.0.0",
     "gulp-rename": "^1.2.2",
     "gulp-replace": "^0.5.4",
     "gulp-strip-debug": "^1.1.0",
     "gulp-uglify": "^1.5.4",
     "js-yaml": "^3.6.1",
+    "purescript": "^0.11.4",
     "rimraf": "^2.5.4",
     "yargs": "^5.0.0"
   },
-  "scripts": {},
+  "scripts": {
+    "editor": "pulp browserify -m Editor.Main -I purescript -t public/static/build/js/editor.min.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/robwhitaker/MMPWebsiteV2.git"

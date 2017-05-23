@@ -36,8 +36,8 @@ decoder =
         (field "stylesheet" <| Decoder.string)
         (field "title" <| Decoder.string)
         (field "content" <| Decoder.string)
-        (field "release_date" <| Decoder.map (Maybe.withDefault "") (Decoder.maybe Decoder.string))
-        (field "authors_note" <| Decoder.string)
+        (field "releaseDate" <| Decoder.map (Maybe.withDefault "") (Decoder.maybe Decoder.string))
+        (field "authorsNote" <| Decoder.string)
         (field "entries" <| Decoder.list Entry.decoder)
 
 encode : Chapter -> Value
@@ -48,8 +48,8 @@ encode chapter =
         , ("stylesheet", Encoder.string chapter.stylesheet)
         , ("title", Encoder.string chapter.title)
         , ("content", Encoder.string chapter.content)
-        , ("release_date", Encoder.string chapter.releaseDate)
-        , ("authors_note", Encoder.string chapter.authorsNote)
+        , ("releaseDate", Encoder.string chapter.releaseDate)
+        , ("authorsNote", Encoder.string chapter.authorsNote)
         , ("entries_attributes", Encoder.list <| List.map Entry.encode chapter.entries_)
         ]
 
