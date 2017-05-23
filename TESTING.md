@@ -77,7 +77,9 @@ This checklist represents the bare minimum functionality that each tester should
     - [ ] Mailchimp Sign-Up Form
 - [ ] Misc.
     - [ ] High-res images load
-    - [ ] Forward arrow disabled on last page
+    - [ ] Forward arrow replaced with proper text on last page
+    - [ ] Book controls/scrolling/input disabled when overlay is open
+    - [ ] Arrow keys don't turn page when a text input is focused
 
 ## Expected Reader Functionality
 
@@ -95,9 +97,9 @@ Clicking on the book cover or pressing the right arrow key should open the book.
 
 The cover should display different text depending on whether or not you've visited the site before.
 
-1. If this is your first visit and no [bookmark](#setting-a-bookmark) is set, the cover should show the text "Start Reading".
+1. If this is your first visit and no [bookmark](#bookmark) is set, the cover should show the text "Start Reading".
     1. On your first visit, if you don't open the cover for a seven seconds, text will fade in saying, "Click the cover to start reading..." Once you open the cover, this text will no longer be visible, even if you close it again.
-2. If you have visited before and a [bookmark](#setting-a-bookmark) was set, the cover should show the text "Resume Reading".
+2. If you have visited before and a [bookmark](#bookmark) was set, the cover should show the text "Resume Reading".
 
 ### Open Book
 
@@ -203,7 +205,12 @@ The book bottom bar should have a “previous” button (<) on the left, the pag
 
 Pressing the prev and next buttons should, hopefully obviously, progress the current page back or forward by one. The back and forward arrow keys should do the same.
 
-If you are on the last page of the entire story, the next arrow should not be displayed.
+If you are on the last page of the entire story, the next arrow should not be displayed. In its place, if there is a new release scheduled, it should display the date of the next release. For example:
+
+      Next release:
+    Monday 07/24/17
+
+If there is nothing scheduled, it should just say, "To be continued..."
 
 ### End of Segment Links
 
@@ -237,11 +244,19 @@ Under the "Extras heading in the footer, there should be several links.
 - _Contact_ - should open a modal with an email address and some other text. Clicking on the perimeter or the "X" should close this modal.
 - _Credits_ - should start a credits roll, which should run to completion and stop on the MMP logo. Clicking the "Exit Credits" button at the top right should close the credits.
 
-### Optimizations
+### Misc.
+
+#### Fullscreen Overlays / Modals
+
+When a fullscreen overlay or modal (like the Contact, Share, Credits, etc. screens) is open, you should be unable to affect the page behind the overlay. This includes scrolling, turning the book pages with the arrow keys, etc.
+
+#### Input Boxes
+
+When an input box like the Email field in the footer or the Disqus comment box is focused, pressing the arrow keys should not turn the pages of the book.
 
 #### High-res Image Swap
 
-The MMP site is highly image-based, and some of these images are rather large. In order to be usable faster on slow connections, low resolution images are loaded in first, and the high resolution images are loaded in the background and swapped in when ready. Make sure that the high-res images always get swapped in.
+The MMP site is highly image-based, and some of these images are rather large. In order to more quickly reach a usable state on slow connections, low resolution images are loaded in first, and the high resolution images are loaded in the background and swapped in when ready. Make sure that the high-res images always get swapped in.
 
 ## Terminology Reference
 
