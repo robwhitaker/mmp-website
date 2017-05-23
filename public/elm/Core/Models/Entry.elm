@@ -30,24 +30,24 @@ decoder : Decoder Entry
 decoder =
     Decoder.map8 Entry
         (field "id" <| Decoder.maybe Decoder.int)
-        (field "chapter_id" <| Decoder.int)
+        (field "chapterId" <| Decoder.int)
         (field "level" <| Decoder.int)
         (field "order" <| Decoder.int)
         (field "title" <| Decoder.string)
         (field "content" <| Decoder.string)
-        (field "release_date" <| Decoder.map (Maybe.withDefault "") (Decoder.maybe Decoder.string))
-        (field "authors_note" <| Decoder.string)
+        (field "releaseDate" <| Decoder.map (Maybe.withDefault "") (Decoder.maybe Decoder.string))
+        (field "authorsNote" <| Decoder.string)
 
 encode : Entry -> Value
 encode entry =
     Encoder.object
         [ ("id", Maybe.map Encoder.int entry.id |> Maybe.withDefault Encoder.null)
-        , ("chapter_id", Encoder.int entry.chapter)
+        , ("chapterId", Encoder.int entry.chapter)
         , ("level", Encoder.int entry.level)
         , ("order", Encoder.int entry.order)
         , ("title", Encoder.string entry.title)
         , ("content", Encoder.string entry.content)
-        , ("release_date", Encoder.string entry.releaseDate)
-        , ("authors_note", Encoder.string entry.authorsNote)
+        , ("releaseDate", Encoder.string entry.releaseDate)
+        , ("authorsNote", Encoder.string entry.authorsNote)
         ]
 
