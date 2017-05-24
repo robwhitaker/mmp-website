@@ -29,21 +29,17 @@ import Reader.Ports exposing (..)
 import Reader.Utils.Disqus exposing (..)
 import Reader.Utils.Analytics as Analytics
 
-import Core.HTTP.Requests as Requests
 import Json.Decode as Json
 import Core.Models.Chapter as Chapter
 
---TODO: remove these when done
-import Debug
-
 init : Flags -> Location -> (Model, Cmd Msg)
 init { localStorage, progStartTime } location =
-    let dataRequest = Requests.mkRequest Nothing Requests.Get (Json.list Chapter.decoder) "/chapters"
+    let dataRequest = Http.get "/api/chapters" (Json.list Chapter.decoder)
         dataRequestHandle =
             Result.map (\chapters -> Load chapters localStorage progStartTime location)
                 >> Result.withDefault NoOp
 
-        nextEntryRequest = Requests.mkRequest Nothing Requests.Get (Json.string) "/next"
+        nextEntryRequest = Http.get "/api/next" Json.string
         nextEntryRequestHandle =
             Result.mapError (always "") --to make the type signature of andThen match
                 >> Result.andThen (Date.fromString)

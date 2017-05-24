@@ -237,7 +237,7 @@ update msg model =
                         let nToc =
                             SL.traverseFromSelectedUntil
                                     SL.previous
-                                    (\entry -> entry.body /= "" && entry.chapter /= model.toc.selected.chapter)
+                                    (\entry -> isOwnRelease entry && entry.chapter /= model.toc.selected.chapter)
                                     model.toc
                                         |> Maybe.withDefault model.toc
                             (_, newToc, cmds) = gotoHeading nToc.selected.id model.toc
@@ -482,7 +482,7 @@ update msg model =
 
 untilContent : (TOC -> TOC) -> TOC -> TOC
 untilContent traverse toc =
-    SL.traverseFromSelectedUntil traverse (.body >> (/=) "") toc
+    SL.traverseFromSelectedUntil traverse isOwnRelease toc
     |> Maybe.withDefault toc
 
 gotoHeading : RenderElementID -> TOC -> (TOC, TOC, Cmd Msg) --(@headingID,@contentAfterHeadingID,setStorageCmds)
@@ -490,13 +490,13 @@ gotoHeading headingID toc =
     SL.indexOf (.id >> (==) headingID) toc |> Maybe.andThen (\index ->
         let tocAtHeadingId = SL.goto index toc
             tocWithContent =
-                if tocAtHeadingId.selected.body == "" then
+                if not (isOwnRelease tocAtHeadingId.selected) then
                     untilContent SL.next tocAtHeadingId
                 else
                     tocAtHeadingId
 
         in
-            if tocWithContent.selected.body == "" then
+            if not (isOwnRelease tocWithContent.selected) then
                 Nothing
             else
                 let (tocWithContentMarked, cmds) = markSelectedRead tocWithContent
@@ -508,7 +508,7 @@ markSelectedRead : TOC -> (TOC, Cmd Msg)
 markSelectedRead toc =
     let selectedIndex = SL.selectedIndex toc
         markTocRead t last cmd =
-            if t.selected.level < last.selected.level && t.selected.body == "" then
+            if t.selected.level < last.selected.level && not (isOwnRelease t.selected) then
                 markTocRead
                     (SL.previous
                         (SL.mapSelected
