@@ -109,6 +109,25 @@ genRenderBlob_ model =
                         (Regex.regex "id=\".*?\"|\">")
                         (\{ match } -> "\" id=\"" ++ renderElem.id ++ "\"" ++ if String.left 2 match == "id" then "" else ">")
                         renderElem.heading
+                    |> if renderElem.isInteractive 
+                            then
+                                Regex.replace 
+                                    (Regex.AtMost 1)
+                                    (Regex.regex "(<h\\d.*?>)(.*?)(<\\/h\\d>)")
+                                    (\{ match, submatches } -> 
+                                        case List.filterMap identity submatches of
+                                            [openTag, content, closeTag] -> 
+                                                openTag ++
+                                                "<a href=\"" ++ renderElem.interactiveUrl ++ "\"" ++ 
+                                                "   id=\"interactive-" ++ renderElem.id ++ "\">" ++
+                                                "<i class=\"fa fa-gamepad\" aria-hidden=\"true\"></i>" ++
+                                                content ++
+                                                "</a>" ++
+                                                closeTag
+                                            _ -> match
+                                    )
+                           
+                            else identity
             }
     in
         { stylesheet = Dict.get model.toc.selected.chapter model.stylesheets ? ""

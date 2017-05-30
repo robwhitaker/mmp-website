@@ -36,15 +36,17 @@ type alias Flags =
 type alias HeadingUpdate = { headingsOnPage : List RenderElementID, headingAtTop : Bool }
 
 type alias RenderElement =
-    { id          : RenderElementID
-    , disqusId    : String
-    , heading     : String
-    , body        : String
-    , authorsNote : String
-    , chapter     : ChapterID
-    , level       : Int
-    , isRead      : Bool
-    , releaseDate : String
+    { id             : RenderElementID
+    , disqusId       : String
+    , heading        : String
+    , body           : String
+    , isInteractive  : Bool
+    , interactiveUrl : String
+    , authorsNote    : String
+    , chapter        : ChapterID
+    , level          : Int
+    , isRead         : Bool
+    , releaseDate    : String
     }
 
 type alias RenderBlob =

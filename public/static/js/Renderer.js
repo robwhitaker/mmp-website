@@ -165,7 +165,7 @@ var Renderer = window.Renderer = (function() {
             storyTextArea = renderObj.renderElements.reduce(function(acc, entry) {
                 acc.innerHTML += entry.heading + entry.body;
 
-                if(entry.body === "") return acc;
+                if(entry.body === "" && !entry.isInteractive) return acc;
 
                 acc.appendChild(mkLinkLine(
                     [ mkAuthorsNoteLink(entry)
@@ -174,6 +174,9 @@ var Renderer = window.Renderer = (function() {
                     ].filter(function(item) { return item != null; })
                 ));
 
+                if(entry.isInteractive) attachListener("interactive-" + entry.id, function() {
+                    listeners.linkClick("interactive", entry.id);
+                });
 
                 return acc;
             }, document.createElement("div"));

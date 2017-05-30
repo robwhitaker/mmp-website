@@ -49,10 +49,13 @@ selectedTopParentId : TOC -> RenderElementID
 selectedTopParentId sl =
     let prev = SL.previous sl
     in
-        if prev.selected.level < sl.selected.level && prev.selected.body == "" then
+        if prev.selected.level < sl.selected.level && not (isOwnRelease prev.selected) then
             selectedTopParentId prev
         else
             sl.selected.id
+
+isOwnRelease : RenderElement -> Bool
+isOwnRelease { body, isInteractive } = String.trim body /= "" || isInteractive
 
 dateStringToTime : String -> Time
 dateStringToTime dateStr =

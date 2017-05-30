@@ -31,7 +31,7 @@ view model =
             model.pages.current + 1 >= model.pages.total &&
                 SL.traverseFromSelectedUntil
                                     SL.next
-                                    (\entry -> entry.body /= "" && entry.chapter /= model.toc.selected.chapter)
+                                    (\entry -> Utils.isOwnRelease entry && entry.chapter /= model.toc.selected.chapter)
                                     model.toc == Nothing
     in div []
         [ section

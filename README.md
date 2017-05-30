@@ -28,6 +28,8 @@ Bower and Gulp are both installed as `npm` dependencies in order to avoid global
 - Editor: `npm run gulp build:editor`
 - Countdown: `npm run gulp build:countdown`
 
+**Note:** To use the `--dev` flag when building the reader (which disables stripping logs/alerts/debuggers on build), `npm run gulp build:reader` cannot be used. Instead, run Gulp directly with `./node_modules/.bin/gulp build:reader --dev`.
+
 ### Running the Server
 - `ruby app.rb`
 - Visit `localhost:4567`/`localhost:4567/editor` in your browser
