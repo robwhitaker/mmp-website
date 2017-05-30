@@ -470,10 +470,6 @@ body.book-cover-loaded .loader.cover {
 .drop-down-container ul li .li-label {
     flex: 1;
     max-width: 100%;
-}
-
-.drop-down-container ul li .li-label > div, .drop-down-container ul li .li-label > div > p {
-    max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -494,6 +490,15 @@ body.book-cover-loaded .loader.cover {
 .drop-down-container.expanded ul li.latest .alert {
     display: inline-block;
 }
+
+.drop-down-container ul li .interactive {
+    display: none;
+}
+
+.drop-down-container ul li.isInteractive .interactive {
+    display: inline-block;
+    padding: 0.12em 0.4em;
+} 
 
 .drop-down-container ul li.latest .li-label {
     /*font-style: italic;*/

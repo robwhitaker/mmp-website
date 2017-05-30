@@ -118,7 +118,8 @@ genRenderBlob_ model =
                                         case List.filterMap identity submatches of
                                             [openTag, content, closeTag] -> 
                                                 openTag ++
-                                                "<a href=\"" ++ renderElem.interactiveUrl ++ "\">" ++
+                                                "<a href=\"" ++ renderElem.interactiveUrl ++ "\"" ++ 
+                                                "   id=\"interactive-" ++ renderElem.id ++ "\">" ++
                                                 "<i class=\"fa fa-gamepad\" aria-hidden=\"true\"></i>" ++
                                                 content ++
                                                 "</a>" ++

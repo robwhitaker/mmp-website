@@ -154,6 +154,16 @@ var RendererInterface = (function() {
                             }
                         );
                         break;
+                    case "interactive":
+                        Reader.ports.inlineLinkClicked.send(id);
+                        sendAnalyticEvent(
+                            { category : "Book"
+                            , action   : "Interactive Heading Click"
+                            , label    : id
+                            , value    : null                                
+                            }
+                        );
+                        break;
                     default:
                         console.log(link, id);
 

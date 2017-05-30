@@ -25,6 +25,7 @@ type alias DropdownItem a =
     { a
         | heading : String
         , level : Int
+        , isInteractive : Bool
         , releaseDate : String
         , id : String
         , isRead : Bool
@@ -55,10 +56,12 @@ renderDropdownList list =
                     [ ("selected", index == selectedIndex)
                     , ("latest", dateStringToTime item.releaseDate == maxReleaseDate && not item.isRead)
                     , ("unread", not item.isRead)
+                    , ("isInteractive", item.isInteractive)
                     ]
                 , onClick (Just item.id, Just False)
-                ]
-                [ div [ class "li-label" ] [ Markdown.toHtml [] <| String.repeat item.level "<div class=\"drop-down-spacer\"></div>" ++ stripTags item.heading ]
+                ] <| List.repeat item.level (div [ class "drop-down-spacer" ] []) ++
+                [ div [ class "li-label" ] [ text (stripTags item.heading) ]
+                , div [ class "interactive" ] [ i [ class "fa fa-gamepad", attribute "aria-hidden" "true" ] [] ]
                 , div [ class "alert" ] [ text "new!" ]
                 ]
         ) (SL.toList list)

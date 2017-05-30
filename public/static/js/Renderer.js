@@ -174,6 +174,9 @@ var Renderer = window.Renderer = (function() {
                     ].filter(function(item) { return item != null; })
                 ));
 
+                if(entry.isInteractive) attachListener("interactive-" + entry.id, function() {
+                    listeners.linkClick("interactive", entry.id);
+                });
 
                 return acc;
             }, document.createElement("div"));
