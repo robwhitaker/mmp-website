@@ -34,4 +34,7 @@ npm run gulp build:editor > /dev/null
 echo "Building the reader..."
 npm run gulp build:reader > /dev/null
 
+echo "Building the countdown page..."
+npm run gulp build:countdown > /dev/null
+
 echo "Success!"

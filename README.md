@@ -13,7 +13,7 @@ _Elm, PureScript, JavaScript, Ruby, Sinatra, SQLite3 (dev), PostgreSQL (prod)_
 - `cd` into repository
 - Run `./setup` (if your OS doesn't support bash scripts, follow the steps within the script manually)
 
-The setup script will create the necessary files/folders, install dependencies, setup the database, and build the reader and editor.
+The setup script will create the necessary files/folders, install dependencies, setup the database, and build the reader, editor, and countdown page.
 
 ### Using Bower/Gulp
 Bower and Gulp are both installed as `npm` dependencies in order to avoid global installs. After the initial setup, they can be run with `npm run bower` and `npm run gulp`, respectively.
@@ -26,6 +26,7 @@ Bower and Gulp are both installed as `npm` dependencies in order to avoid global
 ### Building the Front End
 - Reader: `npm run gulp build:reader`
 - Editor: `npm run gulp build:editor`
+- Countdown: `npm run gulp build:countdown`
 
 ### Running the Server
 - `ruby app.rb`
