@@ -72,7 +72,7 @@ xml.rss :version => "2.0" do
     end
 
     def prepare_pub_date release
-      DateTime.parse(release.last[:release_date].to_s).rfc822()
+      DateTime.parse(release.last[:releaseDate].to_s).rfc822()
     end
 
     @releases.each do |release|
