@@ -43,6 +43,7 @@ repo
 revisions.log
 rvm1scripts
 /vendor
+/db/debug_http.rb
 
 ## Documentation cache and generated files:
 /.yardoc/
