@@ -1,0 +1,37 @@
+#!/bin/bash
+
+set -e
+
+echo "Creating required files and directories..."
+
+mkdir -p var/{pids,run,log}
+touch var/log/app.log
+cat > config/database.yml <<- EOM
+defaults: &defaults
+  host: localhost
+  encoding: utf8
+
+development:
+  adapter: sqlite3
+  database: db/development.sqlite3
+  pool: 5
+  timeout: 5000
+EOM
+
+echo "Installing dependencies..."
+
+bundle install > /dev/null
+npm install > /dev/null
+npm run bower install > /dev/null
+
+echo "Setting up the database..."
+
+bundle exec rake db:setup > /dev/null
+
+echo "Building the editor..."
+npm run gulp build:editor > /dev/null
+
+echo "Building the reader..."
+npm run gulp build:reader > /dev/null
+
+echo "Success!"

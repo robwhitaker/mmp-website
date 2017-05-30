@@ -1,38 +1,32 @@
 # Midnight Murder Party v2
-Elm, Sinatra, SQLite3 (dev), PostgreSQL (prod)
+_Elm, PureScript, JavaScript, Ruby, Sinatra, SQLite3 (dev), PostgreSQL (prod)_
 
-Requires
+### Requires
 - [Ruby](https://www.ruby-lang.org/en/) v2.3.1
+- [Bundler](http://bundler.io/#getting-started)
 - [NodeJS/NPM](https://nodejs.org/en/)
-- Gulp (`npm install -g gulp`)
+- An OS that supports GHC 7.10.1+ (though you shouldn't have to install this yourself)
 
-Dev Setup
+### Dev Setup
 - Install above prerequistites
 - Clone repository
 - `cd` into repository
-- Create necessary files/folders (`mkdir -p var/{pids,run,log} && touch var/log/app.log`)
-- Create a `config/database.yml` file with contents listed below
-- `bundle install`
-- `bundle exec rake db:setup`
-- `npm install`
+- Run `./setup` (if your OS doesn't support bash scripts, follow the steps within the script manually)
 
-Building the Front End
-- Reader: `gulp build:reader`
-- Editor: `gulp build:editor-js`
+The setup script will create the necessary files/folders, install dependencies, setup the database, and build the reader and editor.
 
-Running the Server
+### Using Bower/Gulp
+Bower and Gulp are both installed as `npm` dependencies in order to avoid global installs. After the initial setup, they can be run with `npm run bower` and `npm run gulp`, respectively.
+
+### Manually Installing Dependencies
+- Reader: `npm install`
+- Editor: `npm run bower install`
+- Server: `bundle install`
+
+### Building the Front End
+- Reader: `npm run gulp build:reader`
+- Editor: `npm run gulp build:editor`
+
+### Running the Server
 - `ruby app.rb`
-- Visit localhost:4567 in your browser
-
-Local environment `config/database.yml`:
-```yaml
-defaults: &defaults
-  host: localhost
-  encoding: utf8
-
-development:
-  adapter: sqlite3
-  database: db/development.sqlite3
-  pool: 5
-  timeout: 5000
-```
+- Visit `localhost:4567`/`localhost:4567/editor` in your browser

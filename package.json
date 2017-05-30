@@ -7,6 +7,7 @@
     "google-client-api": "^1.0.4"
   },
   "devDependencies": {
+    "bower": "^1.8.0",
     "elm": "^0.18.0",
     "gulp": "^3.9.1",
     "gulp-autoprefixer": "^3.1.0",
@@ -25,7 +26,8 @@
     "yargs": "^5.0.0"
   },
   "scripts": {
-    "editor": "pulp browserify -m Editor.Main -I purescript -t public/static/build/js/editor.min.js"
+    "gulp": "./node_modules/.bin/gulp",
+    "bower": "./node_modules/.bin/bower"
   },
   "repository": {
     "type": "git",
