@@ -182,7 +182,7 @@ def with_entries(chapter, type = 'all')
   chapter_with_entries = chapter.attributes
 
   entries = if type == 'released'
-              chapter.entries.select { |entry| entry.releaseDate <= DateTime.now }
+              chapter.entries.select { |entry| entry.releaseDate && entry.releaseDate <= DateTime.now }
             else
               chapter.entries
             end
@@ -195,7 +195,7 @@ def all_chapters_with_entries(type = 'all')
   chapters_with_entries = []
 
   if type == 'released'
-    chapters = Chapter.select { |chapter| chapter.releaseDate <= DateTime.now }
+    chapters = Chapter.select { |chapter| chapter.releaseDate && chapter.releaseDate <= DateTime.now }
   else
     chapters = Chapter.all
   end
@@ -226,8 +226,8 @@ end
 def released_content
   released_content = []
 
-  Chapter.select { |chapter| chapter.releaseDate <= DateTime.now }.each do |chapter|
-    entries = chapter.entries.select { |entry| entry.releaseDate <= DateTime.now }
+  Chapter.select { |chapter| chapter.releaseDate && chapter.releaseDate <= DateTime.now }.each do |chapter|
+    entries = chapter.entries.select { |entry| entry.releaseDate && entry.releaseDate <= DateTime.now }
     chapter = chapter.as_json.deep_symbolize_keys
     chapter[:level] = 0
 
