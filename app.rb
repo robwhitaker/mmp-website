@@ -219,7 +219,7 @@ def next_release_date
     entries.each {|entry| all_content.push(entry.as_json.deep_symbolize_keys)}
   end
 
-  next_release = all_content.find { |data| data[:releaseDate] > DateTime.now }
+  next_release = all_content.find { |data| data[:releaseDate] && data[:releaseDate] > DateTime.now }
   next_release.class == Hash ? next_release[:releaseDate] : ''
 end
 
