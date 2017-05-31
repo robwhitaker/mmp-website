@@ -23,9 +23,9 @@ set :public_folder => 'public'
 set :sessions, :expire_after => 3500
 set :session_secret, secrets['session'] || SecureRandom.hex(64)
 
-@@environment = secrets['app_env'] || 'development'
+ENVIRONMENT = secrets['app_env'] || 'development'
 databases = YAML.load(ERB.new(File.read('config/database.yml')).result)
-ActiveRecord::Base.establish_connection(databases[@@environment])
+ActiveRecord::Base.establish_connection(databases[ENVIRONMENT])
 
 Logger.class_eval { alias :write :'<<' }
 app_log = File.join(File.dirname(File.expand_path(__FILE__)), 'var', 'log', 'app.log')
@@ -37,7 +37,7 @@ configure { use Rack::CommonLogger, app_logger }
 before { env["rack.errors"] = error_logger }
 
 error 501..510 do
-  if @@environment == 'production'
+  if ENVIRONMENT == 'production'
     subject = "Production Error Occurred"
     message = "#{Time.now}\nsinatra.error: #{env["sinatra.error"]}"
 
@@ -175,7 +175,7 @@ def log(payload)
 end
 
 def authorized?
-  session[:authorized] || @@environment == 'development'
+  session[:authorized] || ENVIRONMENT == 'development'
 end
 
 def with_entries(chapter, type = 'all')
