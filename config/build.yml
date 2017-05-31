@@ -37,6 +37,9 @@ social: &social
   facebook: MMPWebSeries
   twitter: MMPWebSeries
   ello: midnightmurderparty
+  share:
+    twitterText: Join in on a night of silly shenanigans, spooky stories, and murder at the Midnight Murder Party!
+
 
 author:
   email: author@midnightmurderparty.com
