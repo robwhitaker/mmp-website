@@ -60,14 +60,14 @@ view model =
                             [ class "cover-txt cover-btn" ]
                             [ text <|
                                 case model.bookmark of
-                                    HasBookmark     -> "Resume Reading"
-                                    NoBookmark      -> "Start Reading"
-                                    LoadingBookmark -> "Loading..."
+                                    HasBookmark     -> "{{% reader.book.continue %}}"
+                                    NoBookmark      -> "{{% reader.book.start %}}"
+                                    LoadingBookmark -> "{{% reader.book.loading %}}"
                             ]
                         , if not model.analyticData.firstCoverOpen && model.bookmark == NoBookmark then
                             div
                                 [ class "cover-txt start-reading-txt" ]
-                                [ text "Click the cover to start reading..." ]
+                                [ text "{{% reader.book.helperPrompt %}}" ]
                           else
                             div [] []
 
@@ -105,8 +105,8 @@ view model =
                                 [ classList [("book-arrow forward-btn", True),("btn-disabled", isLastPage)], onClick (TurnPage Forward) ]
                                 [ div [ class "last-page-txt" ]
                                       <| case model.nextReleaseDate of
-                                            Just date -> [ text "Next release:", br [] [], text <| Date.format "%A %m/%d/%y" date]
-                                            Nothing   -> [ text <| "To be continued..." ]
+                                            Just date -> [ text "{{% reader.book.nextRelease %}}", br [] [], text <| Date.format "%A %m/%d/%y" date]
+                                            Nothing   -> [ text <| "{{% reader.book.noReleaseScheduled %}}" ]
 
                                 , i [ class "fa fa-angle-right" ] []
                                 ]
@@ -132,7 +132,7 @@ view model =
             ]
         , footer []
             [ div [ class "footer-link-block" ] <| List.map2 mkFooterSection footerHeadings footerContent
-            , div [ class "copy" ] [ text "© Midnight Murder Party 2015-2016" ]
+            , div [ class "copy" ] [ Markdown.toHtml [] "{{% reader.metadata.copy %}}" ]
             ]
         , Html.map CreditsRollMsg <| Modal.view model.creditsRoll
         , Html.map ContactModalMsg <| Modal.view model.contactModal
@@ -155,9 +155,9 @@ follow =
               [ img [ src <| "/static/assets/img/" ++ iconUrl ] [] ]
 
         icons =
-            [ ("facebook-icon.png", "https://www.facebook.com/MMPWebSeries/", FollowFacebook)
-            , ("twitter-icon.png", "https://twitter.com/MMPWebSeries", FollowTwitter)
-            , ("ello-icon.jpg", "https://ello.co/midnightmurderparty", FollowEllo)
+            [ ("facebook-icon.png", "https://www.facebook.com/{{% social.facebook %}}", FollowFacebook)
+            , ("twitter-icon.png", "https://twitter.com/{{% social.twitter %}}", FollowTwitter)
+            , ("ello-icon.jpg", "https://ello.co/{{% social.ello %}}", FollowEllo)
             , ("rss-icon.png", "/rss", FollowRss)
             ]
 
@@ -168,7 +168,7 @@ follow =
             [ div
                 [ id "mc_embed_signup" ]
                 [ Html.form
-                    [ action "//{{% mailchimp.subdomain %}}.us11.list-manage.com/subscribe/post?u={{% mailchimp.u %}}&amp;id={{% mailchimp.id %}}"
+                    [ action "//{{% mailchimp.subdomain %}}.us11.list-manage.com/subscribe/post?u={{% mailchimp.u %}}&amp;id={{% mailchimp.listId.weeklyUpdate %}}"
                     , class "validate"
                     , id "mc-embedded-subscribe-form"
                     , method "post"
@@ -181,7 +181,7 @@ follow =
                         [ input [ class "email", id "mce-EMAIL", name "EMAIL", placeholder "email address", required True, type_ "email", value "" ] []
                         , div
                             [ attribute "aria-hidden" "true", attribute "style" "position: absolute; left: -5000px;" ]
-                            [ input [ name "b_{{% mailchimp.u %}}_{{% mailchimp.id %}}", tabindex -1, type_ "text", value "" ] [] ]
+                            [ input [ name "b_{{% mailchimp.u %}}_{{% mailchimp.listId.weeklyUpdate %}}", tabindex -1, type_ "text", value "" ] [] ]
                         , button
                             [ class "button", id "mc-embedded-subscribe", name "subscribe", type_ "submit", onClick (SendFollowAnalytic FollowEmail) ]
                             [ i [ class "fa fa-envelope-o", attribute "aria-hidden" "true" ] []

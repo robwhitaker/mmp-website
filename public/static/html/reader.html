@@ -3,15 +3,15 @@
 <head>
   	<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-  	<title>Midnight Murder Party</title>
-    <meta name="description" content="Join in on a night of friendly shenanigans, spooky stories, and brutal murder at the Midnight Murder Party! (cookies provided at your own risk.)">
-    <meta name="keywords" content="novel, web comic, midnight murder party, MMP, episodic, horror, comedy, cookies, tea party, serial novel, second person, present tense">
+  	<title>{{% reader.metadata.title %}}</title>
+    <meta name="description" content="{{% reader.metadata.description %}}">
+    <meta name="keywords" content="{{% reader.metadata.keywords %}}">
 
-    <meta property="og:title" content="Midnight Murder Party">
-    <meta property="og:url" content="http://www.midnightmurderparty.com">
-    <meta property="og:type" content="website">
-    <meta property="og:image" content="http://www.midnightmurderparty.com/static/assets/img/mmpavatar.png">
-    <meta property="og:description" content="Join in on a night of friendly shenanigans, spooky stories, and brutal murder at the Midnight Murder Party! (cookies provided at your own risk.)">
+    <meta property="og:title" content="{{% reader.metadata.title %}}">
+    <meta property="og:url" content="{{% reader.metadata.ogurl %}}">
+    <meta property="og:type" content="{{% reader.metadata.ogtype %}}">
+    <meta property="og:image" content="{{% reader.metadata.ogimage %}}">
+    <meta property="og:description" content="{{% reader.metadata.description %}}">
     <link rel="icon" href="/static/assets/img/favicon.ico" type="image/x-icon">
     <link href="//cdn-images.mailchimp.com/embedcode/horizontal-slim-10_7.css" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
@@ -20,10 +20,10 @@
 </head>
 <body>
     <div id="error-popup">
-      <h2>Uh oh!</h2>
-      <p>It looks like something went wrong. If you are experiencing trouble, try refreshing the page. If this problem persists, please let me know at:</p>
-      <p><a href="mailto:author@midnightmurderparty.com?subject=BUG REPORT: " target="_BLANK">author@midnightmurderparty.com</a>
-      <p>Thanks, and enjoy the Party!</p>
+      <h2>{{% reader.errorPopup.heading %}}</h2>
+      <p>{{% reader.errorPopup.preEmail %}}</p>
+      <p><a href="mailto:{{% author.email %}}?subject=BUG REPORT: " target="_BLANK">{{% author.email %}}</a>
+      <p>{{% reader.errorPopup.postEmail %}}</p>
       <p class="close"><a href="#" onclick="document.getElementById('error-popup').style.display = 'none'; return false;">Close</a></p>
     </div>
   	<script src="/static/build/js/reader.min.js?nocache={{% gen.buildNum %}}"></script>

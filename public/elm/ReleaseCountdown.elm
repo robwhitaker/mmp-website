@@ -13,7 +13,6 @@ import Http
 
 import Navigation
 
-import Core.HTTP.Requests as Requests
 import Reader.Utils.Analytics as Analytics exposing (..)
 import Reader.Views.ShareButtons as ShareButtons
 
@@ -29,26 +28,26 @@ main = Html.program
 
 init : (Model, Cmd Msg)
 init =
-    let nextEntryRequest = Requests.mkRequest Nothing Requests.Get (Json.string) "/next"
+    let nextEntryRequest = Http.get "/api/next" Json.string
         nextEntryRequestHandle =
-            Result.mapError (always "") --to make the type signature of andThen match
+            Result.mapError toString --to make the type signature of andThen match
                 >> Result.andThen (Date.fromString)
-                >> Result.map (SetNextReleaseDate << Date.toTime)
-                >> Result.withDefault (SetNextReleaseDate 0)
+                >> Result.map Date.toTime
+                >> SetNextReleaseDate
         requestCmd = Http.send nextEntryRequestHandle nextEntryRequest
     in (empty, requestCmd)
 
 -- Model
 
 type alias Model =
-    { nextReleaseDate : Time
+    { nextReleaseDate : Result String Time
     , currentTime     : Time
     , showShare       : Bool
     }
 
 empty : Model
 empty =
-    { nextReleaseDate = 0
+    { nextReleaseDate = Err "Loading..."
     , currentTime     = 0
     , showShare       = False
     }
@@ -56,7 +55,7 @@ empty =
 -- Update
 
 type Msg
-    = SetNextReleaseDate Time
+    = SetNextReleaseDate (Result String Time)
     | SetCurrentTime Time
     | OpenSharePopup ShareButtons.Msg
     | ToggleShowShare
@@ -64,15 +63,18 @@ type Msg
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
-        SetNextReleaseDate time ->
-            { model | nextReleaseDate = time }
+        SetNextReleaseDate timeResult ->
+            { model | nextReleaseDate = timeResult }
                 ! []
 
         SetCurrentTime time ->
             { model | currentTime = time }
-                ! [ if model.nextReleaseDate - time <= 0
-                    then Navigation.reloadAndSkipCache
-                    else Cmd.none
+                ! [ case model.nextReleaseDate of
+                        Err _ -> Cmd.none
+                        Ok releaseDate ->
+                            if releaseDate - time <= 0
+                            then Navigation.reloadAndSkipCache
+                            else Cmd.none
                   ]
 
         -- DUPLICATED FROM Reader.Update
@@ -112,7 +114,7 @@ view model =
                     [ div
                         [ class "preview" ]
                         [ iframe
-                            [ src "https://www.youtube.com/embed/6ttgY6ygHqk"
+                            [ src "{{% countdown.video %}}"
                             , attribute "frameborder" "0"
                             , attribute "allowfullscreen" ""
                             ] []
@@ -127,7 +129,7 @@ view model =
                     []
                     [ Markdown.toHtml
                         []
-                        "© 2017 **Midnight Murder Party** All rights reserved"
+                        "{{% countdown.metadata.copy %}}"
                     ]
                 ]
             ]
@@ -152,28 +154,36 @@ timerView { nextReleaseDate, currentTime } =
                 in (newT,htmlOutList++[outHtml])
             ) (time,[]) [(day,"day"),(Time.hour,"hour"),(Time.minute,"minute"),(Time.second,"second")]
     in
-        div [ id "countdown-timer" ]
-            [ h1
-                []
-                [ text "The party begins on "
-                , span
-                    [ class "highlight-color" ]
-                    [ text <| Date.format "%m/%d/%y" (Date.fromTime nextReleaseDate) ]
-                ]
-            , div
-                [ class "timer" ]
-                (showTimer <| nextReleaseDate - currentTime)
-            ]
+        case nextReleaseDate of
+            Err str -> 
+                if str == "Loading..." then
+                    div [ id "countdown-timer" ]
+                        [ h1 [] [ text str ] ] 
+                else
+                    div [] []
+            Ok releaseDate ->
+                div [ id "countdown-timer" ]
+                    [ h1
+                        []
+                        [ text "{{% countdown.preDateText %}} "
+                        , span
+                            [ class "highlight-color" ]
+                            [ text <| Date.format "%m/%d/%y" (Date.fromTime releaseDate) ]
+                        ]
+                    , div
+                        [ class "timer" ]
+                        (showTimer <| releaseDate - currentTime)
+                    ]
 
 mailchimpForm : Html Msg
 mailchimpForm =
     div [ id "mc_embed_signup" ]
-        [ Html.form [ action "//midnightmurderparty.us11.list-manage.com/subscribe/post?u=7d09d2d3e4c3251078a03ce5d&id=c64c3b7e69", class "validate", id "mc-embedded-subscribe-form", method "post", name "mc-embedded-subscribe-form", attribute "novalidate" "", target "_blank" ]
+        [ Html.form [ action "//{{% mailchimp.subdomain %}}.us11.list-manage.com/subscribe/post?u={{% mailchimp.u %}}&id={{% mailchimp.listId.initialRelease %}}", class "validate", id "mc-embedded-subscribe-form", method "post", name "mc-embedded-subscribe-form", attribute "novalidate" "", target "_blank" ]
             [ div [ id "mc_embed_signup_scroll" ]
                 [ h2 []
-                    [ text "I'm in! Let me know when "
+                    [ text "{{% countdown.formAcceptText1 %}} "
                     , span [ class "mmp-title" ] [ text "Midnight Murder Party" ]
-                    , text " comes out!"
+                    , text " {{% countdown.formAcceptText2 %}}"
                     ]
                 , div [ class "mc-field-group" ]
                     [ label [ for "mce-EMAIL", class "header-label" ]
@@ -190,7 +200,7 @@ mailchimpForm =
                             [ input [ id "mce-group[16105]-16105-0", name "group[16105][1]", type_ "checkbox", value "1" ]
                                 []
                             , label [ for "mce-group[16105]-16105-0" ]
-                                [ text "Also notify me whenever there is a new release" ]
+                                [ text "{{% countdown.notifyReleaseText %}}" ]
                             ]
                         ]
                         ]
@@ -201,7 +211,7 @@ mailchimpForm =
                             []
                         ]
                     , div [ attribute "aria-hidden" "true", attribute "style" "position: absolute; left: -5000px;" ]
-                        [ input [ name "b_7d09d2d3e4c3251078a03ce5d_c64c3b7e69", attribute "tabindex" "-1", type_ "text", value "" ]
+                        [ input [ name "b_{{% mailchimp.u %}}_{{% mailchimp.listId.initialRelease %}}", attribute "tabindex" "-1", type_ "text", value "" ]
                             []
                         ]
                     , div [ class "clear" ]
@@ -231,9 +241,9 @@ follow =
               [ img [ src <| "/static/assets/img/" ++ iconUrl ] [] ]
 
         icons =
-            [ ("facebook-icon.png", "https://www.facebook.com/MMPWebSeries/")
-            , ("twitter-icon.png", "https://twitter.com/MMPWebSeries")
-            , ("ello-icon.jpg", "https://ello.co/midnightmurderparty")
+            [ ("facebook-icon.png", "https://www.facebook.com/{{% social.facebook %}}/")
+            , ("twitter-icon.png", "https://twitter.com/{{% social.twitter %}}")
+            , ("ello-icon.jpg", "https://ello.co/{{% social.ello %}}")
             , ("rss-icon.png", "/rss")
             ]
     in div [ class "social-follow" ] <| List.map mkIcon icons
@@ -250,11 +260,11 @@ testimonialsView =
             ) testimonials
     in
         div [ class "testimonials" ] <|
-            h2 [] [ text "Testimonials from the partygoers: " ] ::
+            h2 [] [ text "{{% countdown.testimonials.intro %}} " ] ::
             testimonialsHtml ++
             [ Markdown.toHtml
                 [ class "center-align" ]
-                "\"_**Come on over and join the Party, Reader!**_\""
+                "\"_**{{% countdown.testimonials.final %}}**_\""
             ]
 
 
@@ -266,24 +276,34 @@ port openSharePopup       : ShareButtons.Data -> Cmd msg
 
 summaryBlurb : String
 summaryBlurb = """
-### _Midnight Murder Party_ is a lighthearted serial novel, a blood-soaked murder-fest, a story that believes that horror can be fun. It's a party, and you're invited!
+### _Midnight Murder Party_ {{% countdown.summaryBlurb.headline %}}
 
-You hold in your hands an invitation to the Midnight Murder Party, the paper trimmed with gold and the words handwritten in looping cursive by the hostess herself. The letter invites you to a mansion where the rules of life and death no longer apply. Resurrection is the norm; killing each other is a game; and being dismembered over the last cookie is to be expected. The rules of the night's game are simple: if you get killed, you have to tell the group a story.
-
-The hostess of the Party, Arlene, eagerly awaits your response. What do you say, Reader?
+{{% countdown.summaryBlurb.description %}}
 """
 
 testimonials : List (String, String)
-testimonials =
-    [ (,) "My Parties are always a _bloody_  good time!" "Arlene"
-    , (,) "Wanna see me kill Marc, like, a lot?" "Marissa"
-    , (,) "A ‘bloody good time?’ Really, Arlene?" "Marc"
-    , (,) "..." "Aidan"
-    , (,) "Marc, tell your creepy brother to stop staring at me." "Marissa"
-    , (,) "Aidan, stop staring at Marissa." "Marc"
-    , (,) "Excuse me. Have you finished the testimonials? The tea is ready." "April"
-    , (,) "Who cares about stupid tea? Where are the _cookies_?" "Marissa"
-    , (,) "Those will be out in a moment." "April"
-    , (,) "_Heck yeah!_" "Marissa"
-    , (,) "Oh, goodness. It seems we've gotten off topic. Well then, everyone, all together now..." "Arlene"
+testimonials = List.map2 (,)
+    [ "{{% countdown.testimonials.content.0.text %}}"
+    , "{{% countdown.testimonials.content.1.text %}}"
+    , "{{% countdown.testimonials.content.2.text %}}"
+    , "{{% countdown.testimonials.content.3.text %}}"
+    , "{{% countdown.testimonials.content.4.text %}}"
+    , "{{% countdown.testimonials.content.5.text %}}"
+    , "{{% countdown.testimonials.content.6.text %}}"
+    , "{{% countdown.testimonials.content.7.text %}}"
+    , "{{% countdown.testimonials.content.8.text %}}"
+    , "{{% countdown.testimonials.content.9.text %}}"
+    , "{{% countdown.testimonials.content.10.text %}}"
+    ]
+    [ "{{% countdown.testimonials.content.0.by %}}"
+    , "{{% countdown.testimonials.content.1.by %}}"
+    , "{{% countdown.testimonials.content.2.by %}}"
+    , "{{% countdown.testimonials.content.3.by %}}"
+    , "{{% countdown.testimonials.content.4.by %}}"
+    , "{{% countdown.testimonials.content.5.by %}}"
+    , "{{% countdown.testimonials.content.6.by %}}"
+    , "{{% countdown.testimonials.content.7.by %}}"
+    , "{{% countdown.testimonials.content.8.by %}}"
+    , "{{% countdown.testimonials.content.9.by %}}"
+    , "{{% countdown.testimonials.content.10.by %}}"
     ]

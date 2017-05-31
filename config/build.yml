@@ -1,24 +1,100 @@
-dev:
+dev: &dev
   disqus:
     siteName    : "mmptest"
-
   mailchimp:
     subdomain   : "midnightmurderparty"
     u           : "7d09d2d3e4c3251078a03ce5d"
-    id          : "67dd83fcd2"
-
+    listId      : 
+      weeklyUpdate: "67dd83fcd2"
+      initialRelease: "c64c3b7e69"
   googleanalytics :
     trackingid  : "UA-66135411-2"
 
-# This is a copy of the dev settings until prod accounts are made
-prod:
-  disqus:
-    siteName    : "mmptest"
+prod: *dev
 
-  mailchimp:
-    subdomain   : "midnightmurderparty"
-    u           : "7d09d2d3e4c3251078a03ce5d"
-    id          : "67dd83fcd2"
+metadata: &metadata
+  title: Midnight Murder Party
+  description: Join in on a night of friendly shenanigans, spooky stories, and brutal murder at the Midnight Murder Party! (cookies provided at your own risk.)
+  keywords: 
+    - novel
+    - web comic
+    - midnight murder party
+    - MMP
+    - episodic
+    - horror
+    - comedy
+    - cookies
+    - tea party
+    - serial novel
+    - second person
+    - present tense
+  ogurl: "http://www.midnightmurderparty.com"
+  ogtype: website
+  ogimage: "http://www.midnightmurderparty.com/static/assets/img/mmpavatar.png"
+  copy: © 2017 **Midnight Murder Party** All rights reserved
 
-  googleanalytics :
-    trackingid  : "UA-66135411-2"
+social: &social
+  facebook: MMPWebSeries
+  twitter: MMPWebSeries
+  ello: midnightmurderparty
+  share:
+    twitterText: Join in on a night of silly shenanigans, spooky stories, and murder at the Midnight Murder Party!
+
+
+author:
+  email: author@midnightmurderparty.com
+
+reader:
+  metadata: *metadata
+  errorPopup:
+    heading: Uh oh!
+    preEmail: "It looks like something went wrong. If you are experiencing trouble, try refreshing the page. If this problem persists, please let me know at:"
+    postEmail: Thanks, and enjoy the Party!
+  book:
+    start: Start Reading
+    continue: Resume Reading
+    loading: Loading...
+    helperPrompt: Click the cover to start reading...
+    nextRelease: "Next release:"
+    noReleaseScheduled: To be continued...
+
+countdown:
+  metadata: *metadata
+  video: "https://www.youtube.com/embed/6ttgY6ygHqk"
+  preDateText: The party begins on
+  formAcceptText1: I\'m in! Let me know when
+  formAcceptText2: comes out!
+  notifyReleaseText: Also notify me whenever there is a new release
+  summaryBlurb: 
+    headline: is a lighthearted serial novel, a blood-soaked murder-fest, a story that believes that horror can be fun. It\'s a party, and you\'re invited!
+    description: "You hold in your hands an invitation to the Midnight Murder Party, the paper trimmed with gold and the words handwritten in looping cursive by the hostess herself. The letter invites you to a mansion where the rules of life and death no longer apply. Resurrection is the norm; killing each other is a game; and being dismembered over the last cookie is to be expected. The rules of the night\\'s game are simple: if you get killed, you have to tell the group a story.\\n\\nThe hostess of the Party, Arlene, eagerly awaits your response. What do you say, Reader?"
+  testimonials:
+    intro: "Testimonials from the partygoers:"
+    final: Come on over and join the Party, Reader!
+    content: 
+      - text: My Parties are always a _bloody_  good time!
+        by: Arlene
+      - text: Wanna see me kill Marc, like, a lot?
+        by: Marissa
+      - text: A \'bloody good time?\' Really, Arlene?
+        by: Marc
+      - text: ...
+        by: Aidan
+      - text: Marc, tell your creepy brother to stop staring at me.
+        by: Marissa
+      - text: Aidan, stop staring at Marissa.
+        by: Marc
+      - text: Excuse me. Have you finished the testimonials? The tea is ready.
+        by: April
+      - text: Who cares about stupid tea? Where are the _cookies_?
+        by: Marissa
+      - text: Those will be out in a moment.
+        by: April
+      - text: _Heck yeah!_
+        by: Marissa
+      - text: Oh, goodness. It seems we\'ve gotten off topic. Well then, everyone, all together now...
+        by: Arlene
+
+
+
+  
