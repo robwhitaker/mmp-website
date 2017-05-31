@@ -17,9 +17,12 @@ var argv = require('yargs').argv;
 var env = argv.dev ? "dev" : "prod";
 var config = yaml.safeLoad(fs.readFileSync('config/build.yml', 'utf8'));
 var generated = { buildNum : new Date().getTime() };
+var envConf = config[env] || {};
 
 for(key in config)
-    config[key].gen = generated;
+    if(key !== "prod" && key !== "dev")
+        envConf[key] = config[key];
+envConf.gen = generated;
 
 var injectConfig = function() {
     if(!config[env]) throw "Invalid environment string: \"" + env + "\"";
@@ -30,7 +33,7 @@ var injectConfig = function() {
                 throw "Error during replacement. No such property: " + text;
             else
                 return props[key];
-        }, config[env]);
+        }, envConf);
         return replaceVal;
     });
 };
