@@ -5,6 +5,7 @@ require 'rss'
 require 'logger'
 require 'time'
 require 'yaml'
+require 'pry'
 require 'net/http'
 require 'securerandom'
 require './config/environments'
@@ -246,7 +247,13 @@ def rss_feed
   current_chapter_id = nil
 
   released_content.each do |sub_release|
-    if release_stack.empty? || sub_release[:level] > release_stack.last[:level]
+    if release_stack.empty? && valid_release(sub_release) # Chapters
+      release_stack.push(sub_release)
+      feed.push(release_stack.clone)
+    elsif sub_release[:level] != 2 && valid_release(sub_release) # Headings
+      release_stack.push(sub_release)
+      feed.push(release_stack.clone)
+    elsif release_stack.empty? || sub_release[:level] > release_stack.last[:level] # segments (first segement enters, subsequent do not until next chapter)
       release_stack.push(sub_release)
     else
       if release_stack.first[:id] != current_chapter_id
@@ -268,6 +275,10 @@ def rss_feed
 
   feed.push(release_stack.clone)
   feed
+end
+
+def valid_release(sub_release)
+  !sub_release[:content].empty? || sub_release[:isInteractive]
 end
 
 def diff_entry_ids(chapter_id, entries)
