@@ -14,10 +14,12 @@ var ifElse = require('gulp-if-else');
 var purescript = require('gulp-purescript');
 var argv = require('yargs').argv;
 
-var env = argv.dev ? "dev" : "prod";
+var env = argv.prod ? "prod" : "dev";
 var config = yaml.safeLoad(fs.readFileSync('config/build.yml', 'utf8'));
 var generated = { buildNum : new Date().getTime() };
 var envConf = config[env] || {};
+
+console.log("Building for environment:", env);
 
 for(key in config)
     if(key !== "prod" && key !== "dev")

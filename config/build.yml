@@ -1,16 +1,22 @@
-dev: &dev
-  disqus:
-    siteName    : "mmptest"
+default: &default
   mailchimp:
-    subdomain   : "midnightmurderparty"
-    u           : "7d09d2d3e4c3251078a03ce5d"
-    listId      : 
-      weeklyUpdate: "67dd83fcd2"
-      initialRelease: "c64c3b7e69"
-  googleanalytics :
-    trackingid  : "UA-66135411-2"
+    subdomain: midnightmurderparty
+    u: 7d09d2d3e4c3251078a03ce5d
+    listId: 
+      weeklyUpdate: 67dd83fcd2
+      initialRelease: c64c3b7e69
+  googleanalytics:
+    trackingid: UA-66135411-2
 
-prod: *dev
+dev: &dev
+  <<: *default
+  disqus:
+    siteName: mmptest
+
+prod: 
+  <<: *default
+  disqus:
+    siteName: midnight-murder-party
 
 metadata: &metadata
   title: Midnight Murder Party
