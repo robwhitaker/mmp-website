@@ -244,23 +244,22 @@ def rss_feed
 
   feed = []
   release_stack = []
-  current_chapter_id = nil
 
   released_content.each do |sub_release|
-    if release_stack.empty? && valid_release(sub_release) # Chapters
-      release_stack.push(sub_release)
-      feed.push(release_stack.clone)
-    elsif sub_release[:level] != 2 && valid_release(sub_release) # Headings
-      release_stack.push(sub_release)
-      feed.push(release_stack.clone)
-    elsif release_stack.empty? || sub_release[:level] > release_stack.last[:level] # segments (first segement enters, subsequent do not until next chapter)
-      release_stack.push(sub_release)
-    else
-      if release_stack.first[:id] != current_chapter_id
-        current_chapter_id = release_stack.first[:id]
-        release_stack.last[:use_chapter_link] = true
-      end
+    # if level value is greater || stack is empty
+    ## if current stack is valid release
+    ### push stack in feed
+    ## push on the stack
+    # elsif level value is not greater
+    ## push stack into feed
+    ## then pop items from stack until it is greater or stack empty
+    ## push current element onto stack
+    # push remaining stack to feed
 
+    if release_stack.empty? || sub_release[:level] > release_stack.last[:level]
+      feed.push(release_stack.clone) if !release_stack.empty? && valid_release?(release_stack.last)
+      release_stack.push(sub_release)
+    elsif sub_release[:level] <= release_stack.last[:level]
       feed.push(release_stack.clone)
 
       release_stack.reverse.each do |element|
@@ -274,10 +273,24 @@ def rss_feed
   end
 
   feed.push(release_stack.clone)
+
+  feed.each do |release|
+    use_chapter_link = release.last[:order] - release.size == -2
+
+    release.each do |element|
+      next if element == release.last
+      use_chapter_link = use_chapter_link && !valid_release?(element)
+    end
+
+    if use_chapter_link
+      release.last[:use_chapter_link] = true
+    end
+  end
+
   feed
 end
 
-def valid_release(sub_release)
+def valid_release?(sub_release)
   !sub_release[:content].empty? || sub_release[:isInteractive]
 end
 
