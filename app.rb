@@ -5,7 +5,6 @@ require 'rss'
 require 'logger'
 require 'time'
 require 'yaml'
-require 'pry'
 require 'net/http'
 require 'securerandom'
 require './config/environments'
@@ -27,6 +26,8 @@ set :session_secret, secrets['session'] || SecureRandom.hex(64)
 ENVIRONMENT = secrets['app_env'] || 'development'
 databases = YAML.load(ERB.new(File.read('config/database.yml')).result)
 ActiveRecord::Base.establish_connection(databases[ENVIRONMENT])
+
+require 'pry' if ENVIRONMENT == 'development'
 
 Logger.class_eval { alias :write :'<<' }
 app_log = File.join(File.dirname(File.expand_path(__FILE__)), 'var', 'log', 'app.log')
