@@ -82,6 +82,7 @@ This checklist represents the bare minimum functionality that each tester should
     - [ ] Book controls/scrolling/input disabled when overlay is open
     - [ ] Arrow keys don't turn page when a text input is focused
     - [ ] Interactive entry headings are colored red, have an interactive icon (gamepad) next to them, and open in a new tab when clicked
+    - [ ] Clicking an interactive entry heading sets it as the selected entry
 
 ## Expected Reader Functionality
 
@@ -235,7 +236,7 @@ The social media share buttons (found in the footer of the page as well as in th
 
 ### Interactive Entries
 
-Interactive entries should be denoted by a [gamepad icon](http://fontawesome.io/icon/gamepad/) both next to the entry in the table of contents and next to the heading in the book. Clicking on the interactive heading should open the interactive segment in a new tab.
+Interactive entries should be denoted by a [gamepad icon](http://fontawesome.io/icon/gamepad/) both next to the entry in the table of contents and next to the heading in the book. Clicking on the interactive heading should open the interactive segment in a new tab as well as make the entry the selected entry.
 
 ### Page Footer
 
