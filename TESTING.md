@@ -70,6 +70,7 @@ This checklist represents the bare minimum functionality that each tester should
     - [ ] Unread bolded
     - [ ] Selected entry highlighted
     - [ ] "new!" next to most recent unread entries
+    - [ ] Interactive icon (gamepad) next to interactive entries
 - [ ] Footer
     - [ ] Contact Link
     - [ ] Credits Link
@@ -80,6 +81,7 @@ This checklist represents the bare minimum functionality that each tester should
     - [ ] Forward arrow replaced with proper text on last page
     - [ ] Book controls/scrolling/input disabled when overlay is open
     - [ ] Arrow keys don't turn page when a text input is focused
+    - [ ] Interactive entry headings are colored red, have an interactive icon (gamepad) next to them, and open in a new tab when clicked
 
 ## Expected Reader Functionality
 
@@ -230,6 +232,10 @@ Clicking this link should open a full screen modal with share options centered o
 ### Social Media Share Buttons
 
 The social media share buttons (found in the footer of the page as well as in the Share modal), should open popups when clicked that allow you to share Midnight Murder Party from social media. Some browsers, like Internet Explorer, block these popups by default. This is worth noting, but not considered a bug. If the links otherwise don’t work for some reason, please report it.
+
+### Interactive Entries
+
+Interactive entries should be denoted by a [gamepad icon](http://fontawesome.io/icon/gamepad/) both next to the entry in the table of contents and next to the heading in the book. Clicking on the interactive heading should open the interactive segment in a new tab.
 
 ### Page Footer
 
