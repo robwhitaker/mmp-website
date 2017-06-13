@@ -63,10 +63,6 @@ get '/editor' do
   send_file File.join(settings.public_folder, 'editor.html')
 end
 
-get '/extras/halloween2015/play' do
-  send_file File.join(settings.public_folder, '/extras/halloween2015/index.html')
-end
-
 get '/api/chapters' do # public chapters
   content_type :json
   success_response

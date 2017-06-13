@@ -12,6 +12,7 @@ var replace = require('gulp-replace');
 var stripDebug = require('gulp-strip-debug');
 var ifElse = require('gulp-if-else');
 var purescript = require('gulp-purescript');
+var gutil = require('gulp-util');
 var argv = require('yargs').argv;
 
 var env = argv.prod ? "prod" : "dev";
@@ -41,26 +42,26 @@ var injectConfig = function() {
 };
 
 gulp.task('build:reader-css', function() {
-    gulp.src('public/static/css/reader.css')
+    gulp.src('src/css/reader.css')
         .pipe(autoprefixer())
         .pipe(minifyCSS())
         .pipe(rename({
             suffix: '.min'
          }))
-        .pipe(gulp.dest('public/static/build/css'));
+        .pipe(gulp.dest('public/dist/css'));
 
-    gulp.src('public/static/css/renderer.css')
+    gulp.src('src/css/renderer.css')
         .pipe(autoprefixer())
         .pipe(minifyCSS())
         .pipe(rename({
             suffix: '.min'
          }))
-        .pipe(gulp.dest('public/static/build/css'));
+        .pipe(gulp.dest('public/dist/css'));
 });
 
 gulp.task('build:reader-js', ['build:reader-elm'], function() {
 
-    gulp.src(['tmp-elm/Main.js','public/static/js/RendererInterface.js','public/static/js/disqus-include.js','public/static/js/ga-include.js','public/static/js/ImagePreloader.js'])
+    gulp.src(['tmp-elm/Main.js','src/js/RendererInterface.js','src/js/disqus-include.js','src/js/ga-include.js','src/js/ImagePreloader.js'])
         .pipe(concat('reader.js'))
         .pipe(injectConfig())
         .pipe(ifElse(env === "prod", stripDebug))
@@ -68,34 +69,34 @@ gulp.task('build:reader-js', ['build:reader-elm'], function() {
         .pipe(rename({
             suffix: '.min'
          }))
-        .pipe(gulp.dest('public/static/build/js'));
+        .pipe(gulp.dest('public/dist/js'));
 
-    gulp.src('public/static/js/Renderer.js')
+    gulp.src('src/js/Renderer.js')
         .pipe(rename('renderer.js'))
         .pipe(injectConfig())
         .pipe(ifElse(env === "prod", stripDebug))
-        .pipe(uglifyJS({ mangle: false }))
+        .pipe(uglifyJS({ mangle: false }).on('error', gutil.log))
         .pipe(rename({
             suffix: '.min'
          }))
-        .pipe(gulp.dest('public/static/build/js'));
+        .pipe(gulp.dest('public/dist/js'));
 });
 
 gulp.task('build:reader-html', function() {
-    return gulp.src(['public/static/html/reader.html','public/static/html/renderer.html'])
+    return gulp.src(['src/html/reader.html','src/html/renderer.html'])
         .pipe(injectConfig())
         .pipe(gulp.dest('public'));
 });
 
 gulp.task('build:reader-elm', function() {
-    return gulp.src('public/elm/Reader/Main.elm')
+    return gulp.src('src/elm/Reader/Main.elm')
         .pipe(elm())
         .pipe(gulp.dest('tmp-elm'));
 });
 
 gulp.task('build:countdown-js', ['build:countdown-elm'], function() {
 
-    gulp.src(['tmp-elm/ReleaseCountdown.js','public/static/js/ga-include.js'])
+    gulp.src(['tmp-elm/ReleaseCountdown.js','src/js/ga-include.js'])
         .pipe(concat('countdown.js'))
         .pipe(injectConfig())
         .pipe(ifElse(env === "prod", stripDebug))
@@ -103,33 +104,33 @@ gulp.task('build:countdown-js', ['build:countdown-elm'], function() {
         .pipe(rename({
             suffix: '.min'
          }))
-        .pipe(gulp.dest('public/static/build/js'));
+        .pipe(gulp.dest('public/dist/js'));
 });
 
 gulp.task('build:countdown-html', function() {
-    return gulp.src(['public/static/html/coming_soon.html'])
+    return gulp.src(['src/html/coming_soon.html'])
         .pipe(injectConfig())
         .pipe(gulp.dest('public'));
 });
 
 gulp.task('build:countdown-css', function() {
-    gulp.src('public/static/css/countdown.css')
+    gulp.src('src/css/countdown.css')
         .pipe(autoprefixer())
         .pipe(minifyCSS())
         .pipe(rename({
             suffix: '.min'
          }))
-        .pipe(gulp.dest('public/static/build/css'));
+        .pipe(gulp.dest('public/dist/css'));
 });
 
 gulp.task('build:countdown-elm', function() {
-    return gulp.src('public/elm/ReleaseCountdown.elm')
+    return gulp.src('src/elm/ReleaseCountdown.elm')
         .pipe(elm())
         .pipe(gulp.dest('tmp-elm'));
 });
 
 var sources = [
-  "purescript/**/*.purs",
+  "src/purescript/**/*.purs",
   "bower_components/purescript-*/src/**/*.purs",
 ];
 
@@ -142,19 +143,19 @@ gulp.task('build:editor-ps', function() {
 });
 
 gulp.task('build:editor-html', function() {
-    return gulp.src(['public/static/html/editor.html'])
+    return gulp.src(['src/html/editor.html'])
         .pipe(injectConfig())
         .pipe(gulp.dest('public'));
 });
 
 gulp.task('build:editor-css', function() {
-    gulp.src('public/static/css/editor.css')
+    gulp.src('src/css/editor.css')
         .pipe(autoprefixer())
         .pipe(minifyCSS())
         .pipe(rename({
             suffix: '.min'
          }))
-        .pipe(gulp.dest('public/static/build/css'));
+        .pipe(gulp.dest('public/dist/css'));
 });
 
 gulp.task('build:editor', ['build:editor-html','build:editor-css','build:editor-ps'], function() {
@@ -162,7 +163,7 @@ gulp.task('build:editor', ['build:editor-html','build:editor-css','build:editor-
         { src: "output/**/*.js"
         , module: "Editor.Main"
         , main: "Editor.Main"
-        , output: "public/static/build/js/editor.js" 
+        , output: "public/dist/js/editor.js" 
         });
 });
 

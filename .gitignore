@@ -15,7 +15,7 @@ repl-temp-*
 
 ## Static artifacts
 /node_modules
-public/static/build
+public/dist
 public/*.html
 /elm/elm-stuff
 repl-temp-*

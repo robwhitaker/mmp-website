@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <base target="_blank" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/dist/css/renderer.min.css?nocache={{% gen.buildNum %}}">
+    <style id="dynamic-style">
+        /* THE ORDER THESE ARE DEFINED MATTERS TO THE REGEX REPLACE */
+        #scroll-container {
+            width: 0px;
+            height: 0px;
+        }
+
+        #text-container {
+            -webkit-column-width: 0px;
+            -moz-column-width: 0px;
+            column-width: 0px;
+            width: 0px;
+            height: 0px;
+        }
+
+    </style>
+</head>
+<body>
+<script src="//{{% disqus.siteName %}}.disqus.com/count.js" id="dsq-count-scr"></script>
+<script src="/dist/js/renderer.min.js?nocache={{% gen.buildNum %}}"></script>
+</body>
+</html>
