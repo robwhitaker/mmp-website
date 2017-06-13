@@ -54,7 +54,6 @@ var Renderer = window.Renderer = (function() {
     }
 
     function goToPage(pageNum) {
-        var storyTextArea = document.getElementById("text-container");
         setScrollLeft(getViewport().width * pageNum);
         currentPositionPercentage = getScrollLeft() / getScrollWidth();
         updateReflowCheckpointId();
@@ -202,9 +201,6 @@ var Renderer = window.Renderer = (function() {
 
         refreshCommentCount(true);
 
-        //make sure Firefox is displaying columns when we do this next part
-        firefoxReset();
-
         setTimeout(function renderIfReady() {
             //remove any placeholders before rerendering anything
             Array.prototype.map.call(storyTextArea.getElementsByClassName("placeholder"), function(placeholder) {
@@ -226,7 +222,7 @@ var Renderer = window.Renderer = (function() {
                 var headingRect = getBoundingClientRect(heading);
                 if(heading == null || headingRect == null) return;
                 var placeholder = document.createElement("div");
-                placeholder.style.height = (document.getElementById("text-container").getBoundingClientRect().height - headingRect.top) + "px";
+                placeholder.style.height = (getViewport().height - headingRect.top) + "px";
                 placeholder.className = "placeholder";
                 (heading.parentElement || heading.parentNode).insertBefore(placeholder,heading); //TODO: double check on Element vs Node stuff
             }
@@ -244,7 +240,6 @@ var Renderer = window.Renderer = (function() {
                 if(isDangling(heading) && currentId != headingIds[0]) {
                     console.log("Found dangling heading: " + headingIds[0] + "; bumping to next page...");
                     prependPlaceholder(heading);
-                    firefoxReset(); //adding a placeholder may have spooked Firefox. Ensure correctness.
                     currentId = headingIds[0];
                 } else if(!isDangling(heading)) {
                     headingIds.shift();
@@ -258,9 +253,6 @@ var Renderer = window.Renderer = (function() {
 
             function renderIfReadyP2() {
                 console.log("No more dangling headings: Continuing...");
-
-                //Force Firefox to draw as columns like every other browser
-                firefoxReset();
 
                 //---- TRY TO PLACE READER BACK NEAR PROPER PAGE ----
                 //---- GET IMPORTANT VALUES FROM RENDER AND PASS TO CALLBACK ----
@@ -280,9 +272,6 @@ var Renderer = window.Renderer = (function() {
                         currentPage = Math.round(numPages * currentPositionPercentage);
                 } else
                     currentPage = isPageTurnBack ? (numPages - 1) : (getPageOfId(eId) || 0);
-
-                //reset columns for FireFox again because we might have changed something
-                firefoxReset();
 
                 setScrollLeft(currentPage * getViewport().width);
 
@@ -329,7 +318,7 @@ var Renderer = window.Renderer = (function() {
     function refreshCommentCount(forceFF) {
         try {
             if(isFirefox() && !forceFF) return; //hack because Firefox is broken
-            if(!(DISQUSWIDGETS && DISQUSWIDGETS.getCount)) {
+            if(typeof DISQUSWIDGETS === "undefined" || !(DISQUSWIDGETS && DISQUSWIDGETS.getCount)) {
                 console.log("Error: DISQUSWIDGETS not defined.");
             } else {
                 console.log("Refreshing comment counts.");
@@ -337,19 +326,6 @@ var Renderer = window.Renderer = (function() {
             }
         } catch(e) {
             listeners["error"](e.stack);
-        }
-    }
-
-    function firefoxReset() {
-        //Force Firefox to draw as columns like every other browser
-        var storyTextArea = document.getElementById("text-container");
-        var scrollContainer = document.getElementById("scroll-container");
-        if(isFirefox() && !!storyTextArea) {
-            console.log("Firefox detected: Checking for columns...");
-            if(getScrollHeight() > scrollContainer.getBoundingClientRect().height) {
-                console.log("No columns found: Forcing Firefox to redraw...");
-                storyTextArea.appendChild(document.createElement("div"));
-            }
         }
     }
 
@@ -373,9 +349,14 @@ var Renderer = window.Renderer = (function() {
 
     function updateDynamicStylesheet() {
         var dynamicStyle  = document.getElementById("dynamic-style");
-        dynamicStyle.innerHTML =
-            dynamicStyle.innerHTML.replace(/width:\s*[0-9]+/gi, "width: " + getViewport().width)
-                                  .replace(/height:\s*[0-9]+/gi, "height: " + getViewport().height);
+        dynamicStyle.innerHTML = dynamicStyle.innerHTML
+            .replace(/\swidth:\s*[0-9]+/gi, " width: " + getViewport().width * 2) //times 2 because Firefox won't render columns in this case 
+                                                                                  //unless the width of the container is at least twice the
+                                                                                  //width of the column
+            .replace(/-width:\s*[0-9]+/gi, "-width: " + getViewport().width)
+            .replace(/\swidth:\s*[0-9]+/i, " width: " + getViewport().width) //to correct the scroll container width after the Firefox hack above
+                                                                             //NOTE: #scroll-container must be defined first in stylesheet 
+            .replace(/height:\s*[0-9]+/gi, "height: " + getViewport().height);
     }
 
     var preventHold = false;
@@ -432,9 +413,8 @@ var Renderer = window.Renderer = (function() {
     }
 
     var collidesWithBook = function(item) {
-        var storyTextArea = document.getElementById("text-container");
         var itemRect = getBoundingClientRect(item);
-        if(storyTextArea == null || itemRect == null) return false;
+        if(itemRect == null) return false;
         var bookRect = getViewport();
 
         var result = !(bookRect.width * 0.75 <= itemRect.left || bookRect.width * 0.25 >= itemRect.right);
@@ -443,10 +423,9 @@ var Renderer = window.Renderer = (function() {
     };
 
     var getBoundingClientRect = function(item) {
-        var storyTextArea = document.getElementById("text-container");
-        if(storyTextArea == null || item == null || !item.getBoundingClientRect) return null;
+        if(item == null || !item.getBoundingClientRect) return null;
 
-        var bookRect = storyTextArea.getBoundingClientRect();
+        var bookRect = { width: getViewport().width, height: getViewport().height };
         var itemRect = item.getBoundingClientRect();
 
         var top = itemRect.top;
