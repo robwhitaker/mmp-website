@@ -12,6 +12,8 @@ var RendererInterface = (function() {
     var rendererFrame;
     var Renderer;
     var receivedPingback = false;
+    var isScrolling = false;
+    var deferredDisqusData;
     var Reader = window.Reader = Elm.Reader.Main.fullscreen(
         { localStorage : getLocalStorage()
         , progStartTime : new Date().getTime()
@@ -128,9 +130,17 @@ var RendererInterface = (function() {
             Renderer.on("linkClick", function(link, id) {
                 switch(link) {
                     case "comments":
-                        scrollToElem(document.getElementById("comments-box"), function() {
-                            Reader.ports.inlineLinkClicked.send(id);
-                        });
+                        isScrolling = true;
+                        Reader.ports.inlineLinkClicked.send(id);
+                        setTimeout(function() {                        
+                            scrollToElem(document.getElementById("comments-box"), function() {
+                                isScrolling = false;
+                                if(!!deferredDisqusData) {
+                                    switchDisqusThread(deferredDisqusData);
+                                    deferredDisqusData = null;
+                                }
+                            });
+                        }, 250); // janky timeout to account for the time `send` needs to take effect                        
                         sendAnalyticEvent(
                             { category : "Book"
                             , action   : "Inline Comments Link Click"
@@ -140,9 +150,17 @@ var RendererInterface = (function() {
                         );
                         break;
                     case "authorsnote":
-                        scrollToElem(document.getElementById("authors-note"), function() {
-                            Reader.ports.inlineLinkClicked.send(id);
-                        });
+                        isScrolling = true;
+                        Reader.ports.inlineLinkClicked.send(id);
+                        setTimeout(function() {
+                            scrollToElem(document.getElementById("authors-note"), function() {
+                                isScrolling = false;
+                                if(!!deferredDisqusData) { 
+                                    switchDisqusThread(deferredDisqusData);
+                                    deferredDisqusData = null;
+                                }
+                            });
+                        }, 250); // janky timeout to account for the time `send` needs to take effect
                         break;
                     case "share":
                         Reader.ports.inlineShareClicked.send(id);
@@ -233,9 +251,13 @@ var RendererInterface = (function() {
         Renderer.goToPage(pageNum);
     });
 
-    Reader.ports.switchDisqusThread.subscribe(function(disqusData) {
+    function switchDisqusThread(disqusData) {
         try {
-            if(!DISQUS || !DISQUS.reset) return;
+            if(typeof DISQUS === "undefined" || !DISQUS || !DISQUS.reset) return;
+            if(isScrolling) {
+                deferredDisqusData = disqusData;
+                return;
+            }
             DISQUS.reset({
               reload: true,
               config: function () {
@@ -247,7 +269,9 @@ var RendererInterface = (function() {
         } catch(e) {
             handleError(e.stack);
         }
-    });
+    }
+
+    Reader.ports.switchDisqusThread.subscribe(switchDisqusThread);
 
     Reader.ports.setTitle.subscribe(function(title) {
         document.title = title;
