@@ -508,7 +508,11 @@ var Renderer = window.Renderer = (function() {
     }
 
     function getScrollWidth() {
-        return document.getElementById('scroll-container').scrollWidth;
+        var storyTextArea = document.getElementById("text-container") || {};
+        var firstRect = getBoundingClientRect(storyTextArea.firstElementChild);
+        var lastRect = getBoundingClientRect(storyTextArea.lastElementChild);
+        if(!firstRect || !lastRect) return document.getElementById('scroll-container').scrollWidth;
+        return lastRect.right - firstRect.left;
     }
 
     function setScrollLeft(newScrollLeft) {
