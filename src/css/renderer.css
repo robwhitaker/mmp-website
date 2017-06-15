@@ -6,9 +6,8 @@ html,body {
 }
 
 #text-container {
-    -webkit-column-gap: 0px;
-    -moz-column-gap: 0px; /* Firefox */
     column-gap: 0px;
+    column-fill: auto;
 }
 
 #scroll-container {
