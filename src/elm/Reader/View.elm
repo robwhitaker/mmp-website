@@ -175,7 +175,7 @@ follow =
                     , name "mc-embedded-subscribe-form"
                     , novalidate True
                     , target "_blank"
-                    , onWithOptions "keydown" { defaultOptions | stopPropagation = True } (Json.map (always NoOp) keyCode)
+                    -- , onWithOptions "keydown" { defaultOptions | stopPropagation = True } (Json.map (always NoOp) keyCode)
                     ]
                     [ div [ id "mc_embed_signup_scroll" ]
                         [ input [ class "email", id "mce-EMAIL", name "EMAIL", placeholder "email address", required True, type_ "email", value "" ] []
