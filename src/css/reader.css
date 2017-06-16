@@ -710,6 +710,7 @@ footer .share-btn {
     text-shadow: 1px 1px black;
     min-width: 75px;
     max-width: 75px;
+    transform: translateZ(0);
 }
 
 .share-btn img {
