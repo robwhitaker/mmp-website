@@ -30,20 +30,6 @@ Bower and Gulp are both installed as `npm` dependencies in order to avoid global
 
 **Note:** To use the `--prod` flag when building the reader (which enables stripping logs/alerts/debuggers on build and uses prod config), `npm run gulp build:reader` cannot be used. Instead, run Gulp directly with `./node_modules/.bin/gulp build:reader --prod`.
 
-### Add database config
-Add `config/database.yml` file with the following contents:
-```yaml
-defaults: &defaults
-  host: localhost
-  encoding: utf8
-
-development:
-  adapter: sqlite3
-  database: db/development.sqlite3
-  pool: 5
-  timeout: 5000
-```
-
 ### Running the Server
 - `ruby app.rb`
 - Visit `localhost:4567`/`localhost:4567/editor` in your browser
