@@ -3,10 +3,10 @@ source 'http://rubygems.org'
 gem 'sinatra', '~>2.0.0'
 gem 'sinatra-contrib', '~>2.0.0'
 gem 'sinatra-activerecord', '~>2.0.0'
-gem 'puma', '~>3.8.0'
+gem 'puma', '~>3.9.0'
 gem 'rake', '~>12.0.0'
 gem 'builder', '~>3.2.0'
-gem 'nokogiri', '~>1.7.1.0'
+gem 'nokogiri', '~>1.8.0'
 gem 'pony', '~>1.0'
 
 group :development do
@@ -15,5 +15,5 @@ group :development do
 end
 
 group :production do
-  gem 'pg', '~>0.20.0'
+  gem 'pg', '~>0.21.0'
 end
