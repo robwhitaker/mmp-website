@@ -164,34 +164,7 @@ follow =
         prependIcons =
             (++) (List.map mkIcon icons)
     in
-        div [] <| prependIcons
-            [ div
-                [ id "mc_embed_signup" ]
-                [ Html.form
-                    [ action "//{{% mailchimp.subdomain %}}.us11.list-manage.com/subscribe/post?u={{% mailchimp.u %}}&amp;id={{% mailchimp.listId.weeklyUpdate %}}"
-                    , class "validate"
-                    , id "mc-embedded-subscribe-form"
-                    , method "post"
-                    , name "mc-embedded-subscribe-form"
-                    , novalidate True
-                    , target "_blank"
-                    , onWithOptions "keydown" { defaultOptions | stopPropagation = True } (Json.succeed NoOp)
-                    , onWithOptions "submit" defaultOptions (Json.succeed <| SendFollowAnalytic FollowEmail)
-                    ]
-                    [ div [ id "mc_embed_signup_scroll" ]
-                        [ input [ class "email", id "mce-EMAIL", name "EMAIL", placeholder "email address", required True, type_ "email", value "" ] []
-                        , div
-                            [ attribute "aria-hidden" "true", attribute "style" "position: absolute; left: -5000px;" ]
-                            [ input [ name "b_{{% mailchimp.u %}}_{{% mailchimp.listId.weeklyUpdate %}}", tabindex -1, type_ "text", value "" ] [] ]
-                        , button
-                            [ class "button", id "mc-embedded-subscribe", name "subscribe", type_ "submit" ]
-                            [ i [ class "fa fa-envelope-o", attribute "aria-hidden" "true" ] []
-                            , text " Subscribe"
-                            ]
-                        ]
-                    ]
-                ]
-            ]
+        div [] (prependIcons [ iframe [ src "mailchimp-signup.html", id "mailchimp-signup" ] [] ])
 
 share =
     Html.map OpenSharePopup
