@@ -83,7 +83,7 @@ gulp.task('build:reader-js', ['build:reader-elm'], function() {
 });
 
 gulp.task('build:reader-html', function() {
-    return gulp.src(['src/html/reader.html','src/html/renderer.html'])
+    return gulp.src(['src/html/reader.html','src/html/renderer.html','src/html/mailchimp-signup.html'])
         .pipe(injectConfig())
         .pipe(gulp.dest('public'));
 });
