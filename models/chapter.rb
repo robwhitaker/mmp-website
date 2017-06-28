@@ -18,4 +18,17 @@ class Chapter < ActiveRecord::Base
   def has_content?
     !self.content.blank?
   end
+
+  def with_entries(type = 'all')
+    chapter_with_entries = self.attributes
+
+    entries = if type == 'released'
+                self.entries.select { |entry| entry.releaseDate && entry.releaseDate <= DateTime.now }
+              else
+                self.entries
+              end
+
+    chapter_with_entries[:entries] = entries
+    chapter_with_entries
+  end
 end

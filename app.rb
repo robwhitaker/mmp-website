@@ -176,19 +176,6 @@ def authorized?
   session[:authorized] || ENVIRONMENT == 'development'
 end
 
-def with_entries(chapter, type = 'all')
-  chapter_with_entries = chapter.attributes
-
-  entries = if type == 'released'
-              chapter.entries.select { |entry| entry.releaseDate && entry.releaseDate <= DateTime.now }
-            else
-              chapter.entries
-            end
-
-  chapter_with_entries[:entries] = entries
-  chapter_with_entries
-end
-
 def all_chapters_with_entries(type = 'all')
   chapters_with_entries = []
 
@@ -199,7 +186,7 @@ def all_chapters_with_entries(type = 'all')
   end
 
   chapters.each do |chapter|
-    chapters_with_entries.push(with_entries(chapter, type))
+    chapters_with_entries.push(chapter.with_entries(type))
   end
 
   chapters_with_entries
