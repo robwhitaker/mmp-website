@@ -2,7 +2,6 @@ module Editor.Utils.GoogleServices
     ( awaitGapi
     , loadAuth2
     , loadFilePicker
-    , initAuth2
     , googleLogin
     , initPicker
     , showPicker
@@ -23,8 +22,6 @@ module Editor.Utils.GoogleServices
     , FilePicker
     , Gapi
     , Auth2
-    , Ready
-    , NotReady
     , GooglePickerObject
     , FileId
     , ClientId
@@ -53,9 +50,7 @@ foreign import data GAPI :: Effect
 foreign import data FilePicker :: Type
 
 foreign import data Gapi :: # Type -> Type
-foreign import data Auth2 :: Type -> Type
-foreign import data Ready :: Type
-foreign import data NotReady :: Type
+foreign import data Auth2 :: Type
 foreign import data GooglePickerObject :: Type
 
 foreign import data Scope :: # Type -> Type
@@ -70,7 +65,7 @@ foreign import awaitGapi :: forall eff. Aff (gapi :: GAPI | eff) (Gapi ())
 
 foreign import _load :: forall eff. String -> Aff (gapi :: GAPI | eff) Unit
 
-loadAuth2 :: forall eff g. Gapi g -> Aff (gapi :: GAPI | eff) (Gapi (auth2 :: Auth2 NotReady | g))
+loadAuth2 :: forall eff g. Gapi g -> Aff (gapi :: GAPI | eff) (Gapi (auth2 :: Auth2 | g))
 loadAuth2 _ = do
     _load "auth2"
     pure $ unsafeCoerce unit
@@ -79,10 +74,6 @@ loadFilePicker :: forall eff g. Gapi g -> Aff (gapi :: GAPI | eff) (Gapi (filepi
 loadFilePicker _ = do
     _load "picker"
     pure $ unsafeCoerce unit
-
-foreign import initAuth2 :: forall eff g. ClientId 
-                                       -> Gapi (auth2 :: Auth2 NotReady | g) 
-                                       -> Aff (gapi :: GAPI | eff) (Gapi (auth2 :: Auth2 Ready | g))
 
 foreign import _googleLogin :: forall a scopes eff. Fn5 (Maybe a) 
                                                         (a -> Maybe a) 
@@ -94,7 +85,7 @@ foreign import _googleLogin :: forall a scopes eff. Fn5 (Maybe a)
 googleLogin :: forall scopes eff g. ClientId 
                                  -> Scope scopes 
                                  -> ResponseType 
-                                 -> Gapi (auth2 :: Auth2 Ready | g)
+                                 -> Gapi (auth2 :: Auth2 | g)
                                  -> (Aff (gapi :: GAPI | eff) (GoogleAuthData scopes))
 googleLogin clientId scope responseType _ = 
     runFn5 _googleLogin Nothing Just clientId scope responseType

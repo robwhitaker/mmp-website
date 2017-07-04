@@ -33,20 +33,6 @@ exports._load = function(service) {
     }
 }
 
-exports.initAuth2 = function(clientId) {
-    return function() {
-        return function(success, error) {
-            try {
-                gapi.auth2.init({ clientId: clientId });
-            } catch(e) {
-                error("Unable to init auth2.");
-                return;
-            }
-            success();
-        }
-    }
-}
-
 exports._googleLogin = function(nothing, just, clientId, scope, responseType) {
     return function(success, error) {
         gapi.auth2.authorize(

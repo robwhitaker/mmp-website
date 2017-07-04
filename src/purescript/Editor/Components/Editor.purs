@@ -33,7 +33,7 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested (tuple3, (/\))
 import Editor.Models.Chapter (Chapter(..), LocalChapter)
 import Editor.Models.Session (Session, GoogleServices)
-import Editor.Utils.GoogleServices (AccessToken, Auth2, FilePicker, GAPI, Gapi, GooglePickerObject, Ready, awaitGapi, driveReadOnlyScope, emailScope, googleLogin, initAuth2, initPicker, loadAuth2, loadFilePicker, profileScope, (<+>))
+import Editor.Utils.GoogleServices (AccessToken, Auth2, FilePicker, GAPI, Gapi, GooglePickerObject, awaitGapi, driveReadOnlyScope, emailScope, googleLogin, initPicker, loadAuth2, loadFilePicker, profileScope, (<+>))
 import Editor.Utils.Requests (authorize)
 import Halogen (lifecycleParentComponent)
 import Halogen (Action)
@@ -153,8 +153,7 @@ editor =
                 gapiDef <- H.liftAff $ 
                     awaitGapi >>=
                     loadAuth2 >>=
-                    loadFilePicker >>=
-                    initAuth2 "361874213844-33mf5b41pp4p0q38q26u8go81cod0h7f.apps.googleusercontent.com"
+                    loadFilePicker
                 H.modify _ { googleServices = { gapi : Just gapiDef, filepicker : Nothing } }
                 pure next
 
