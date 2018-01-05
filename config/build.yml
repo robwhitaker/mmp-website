@@ -37,7 +37,7 @@ metadata: &metadata
   ogurl: "http://www.midnightmurderparty.com"
   ogtype: website
   ogimage: "http://www.midnightmurderparty.com/static/assets/img/mmpavatar.png"
-  copy: © 2017 **Midnight Murder Party** All rights reserved
+  copy: © 2018 **Midnight Murder Party** All rights reserved
 
 social: &social
   facebook: MMPWebSeries
