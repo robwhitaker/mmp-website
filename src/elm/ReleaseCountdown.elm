@@ -108,23 +108,33 @@ view model =
                     [ class "banner" ]
                     [ a [ href "/" ] [ div [ class "banner-logo" ] [] ] ]
                 , timerView model
-                , Markdown.toHtml [ class "summary-blurb" ] summaryBlurb
-                , div
-                    [ class "preview-sub" ]
-                    [ div
-                        [ class "preview" ]
-                        [ iframe
-                            [ src "{{% countdown.video %}}"
-                            , attribute "frameborder" "0"
-                            , attribute "allowfullscreen" ""
-                            ] []
-                        ]
-                    , div [ class "spacer" ] []
+                , div 
+                    [ class "summary-blurb" ]
+                    [ Markdown.toHtml [] summaryHeader
+                    , img [ src "/static/img/tea-room.png", class "tea-room-img" ] []
+                    , Markdown.toHtml [ class "blurb" ] summaryBlurb
+                    , div [ style [("clear", "both")] ] []
+                                    
                     , div
-                        [ class "subscribe" ]
-                        [ mailchimpForm ]
+                        [ class "preview-sub" ]
+                        [ 
+                            -- [ iframe
+                            --     [ src "{{% countdown.video %}}"
+                            --     , attribute "frameborder" "0"
+                            --     , attribute "allowfullscreen" ""
+                            --     ] []
+                            -- ]
+                        -- , div [ class "spacer" ] []
+                        -- , 
+                        div
+                            [ class "subscribe" ]
+                            [ mailchimpForm ]
+                        ]
                     ]
                 , testimonialsView
+                , a 
+                    [ href "#mc_embed_signup", class "button"]
+                    [ text "Join the Party!" ]
                 , footer
                     []
                     [ Markdown.toHtml
@@ -160,7 +170,8 @@ timerView { nextReleaseDate, currentTime } =
                     div [ id "countdown-timer" ]
                         [ h1 [] [ text str ] ] 
                 else
-                    div [] []
+                    div [ id "countdown-timer" ] 
+                        [ h1 [] [ text "Coming 2018"] ]
             Ok releaseDate ->
                 div [ id "countdown-timer" ]
                     [ h1
@@ -215,7 +226,7 @@ mailchimpForm =
                             []
                         ]
                     , div [ class "clear" ]
-                        [ input [ class "button", id "mc-embedded-subscribe", name "subscribe", type_ "submit", value "Subscribe" ]
+                        [ input [ class "button", id "mc-embedded-subscribe", name "subscribe", type_ "submit", value "Join the Party!" ]
                             []
                         ]
                     ]
@@ -274,12 +285,11 @@ port openSharePopup       : ShareButtons.Data -> Cmd msg
 
 -- Static data that should be elsewhere
 
-summaryBlurb : String
-summaryBlurb = """
-### _Midnight Murder Party_ {{% countdown.summaryBlurb.headline %}}
+summaryHeader : String
+summaryHeader = """### _Midnight Murder Party_ {{% countdown.summaryBlurb.headline %}}"""
 
-{{% countdown.summaryBlurb.description %}}
-"""
+summaryBlurb : String
+summaryBlurb = """{{% countdown.summaryBlurb.description %}}"""
 
 testimonials : List (String, String)
 testimonials = List.map2 (,)
