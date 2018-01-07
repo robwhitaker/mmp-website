@@ -104,20 +104,23 @@ view model =
                         ] [ text "Share" ]
                     , follow
                     ]
-                , div
-                    [ class "banner" ]
-                    [ a [ href "/" ] [ div [ class "banner-logo" ] [] ] ]
+                , a [ href "/", class "banner-img" ] 
+                    [ img [ src "/static/img/MMPLogoFinal.png" ] [] ] 
                 , timerView model
                 , div 
                     [ class "summary-blurb" ]
                     [ Markdown.toHtml [] summaryHeader
-                    , img [ src "/static/img/tea-room.png", class "tea-room-img" ] []
+                    , div 
+                        [ class "tea-room-img" ] 
+                        [ img [ src "/static/img/tea-room.png" ] []
+                        , span [] [ text "Art by Soupery" ]
+                        ]
                     , Markdown.toHtml [ class "blurb" ] summaryBlurb
                     , div [ style [("clear", "both")] ] []
                                     
-                    , div
-                        [ class "preview-sub" ]
-                        [ 
+                    , -- div
+                        -- [ class "preview-sub" ]
+                        -- [ 
                             -- [ iframe
                             --     [ src "{{% countdown.video %}}"
                             --     , attribute "frameborder" "0"
@@ -129,7 +132,7 @@ view model =
                         div
                             [ class "subscribe" ]
                             [ mailchimpForm ]
-                        ]
+                        --]
                     ]
                 , testimonialsView
                 , a 

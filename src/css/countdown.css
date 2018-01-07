@@ -37,23 +37,19 @@ section {
     min-height: 100%;
 }
 
-.banner {
-    height: 15vh;
-    width: 70.5vh;
-    max-width: 100%;
+a.banner-img {
+    display: block;
+    margin-top: 21px;
+}
+
+a.banner-img img {
+    display: block;
+    width: 75%;
     margin: 0 auto;
 }
 
-.banner-logo {
-    background-image: url("/static/img/MMPLogoFinal.png");
-    background-size: 100% 100%;
-    height: 100%;
-    max-width: 100%;
-    cursor: pointer;
-}
-
 #countdown-timer {
-    margin: 1em auto 2em auto;
+    margin: 0em auto 2em auto;
     text-align: center;
 }
 
@@ -175,6 +171,26 @@ section {
 
     float: left;
     border-radius: 0.4em;
+    overflow: hidden;
+}
+
+.tea-room-img img {
+    display: block;
+    width: 100%;
+}
+
+.tea-room-img span {
+    display: block;
+    background: rgba(0,0,0,0.4);
+    color: #aaa;
+    font-size: 11px;
+    padding: 4px;
+    text-align: center;
+    font-style: italic;
+}
+
+.subscribe {
+    margin-top: 1.5em;
 }
 
 #mc_embed_signup .button, a.button {
@@ -459,8 +475,12 @@ a.button:hover {
     cursor: pointer;
 }
 
-@media screen and (max-width: 500px) {
+@media screen and (max-width: 600px) {
     .tea-room-img {
+        width: 100%;
+    }
+
+    a.banner-img img {
         width: 100%;
     }
 }
