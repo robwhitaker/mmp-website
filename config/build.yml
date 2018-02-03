@@ -36,7 +36,7 @@ metadata: &metadata
     - present tense
   ogurl: "http://www.midnightmurderparty.com"
   ogtype: website
-  ogimage: "http://www.midnightmurderparty.com/static/assets/img/mmpavatar.png"
+  ogimage: "http://www.midnightmurderparty.com/static/img/mmpavatar.png"
   copy: © 2018 **Midnight Murder Party** All rights reserved
 
 social: &social
