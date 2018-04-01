@@ -2,9 +2,9 @@
 _Elm, PureScript, JavaScript, Ruby, Sinatra, SQLite3 (dev), PostgreSQL (prod)_
 
 ### Requires
-- [Ruby](https://www.ruby-lang.org/en/) v2.3.1
-- [Bundler](http://bundler.io/#getting-started)
-- [NodeJS/NPM](https://nodejs.org/en/)
+- [Ruby](https://www.ruby-lang.org/en/) v2.5.1
+- [Bundler](http://bundler.io/#getting-started) v1.16.1
+- [NodeJS/NPM](https://nodejs.org/en/) Any LTS release
 - An OS that supports GHC 7.10.1+ (though you shouldn't have to install this yourself)
 
 ### Dev Setup
