@@ -11,7 +11,7 @@ gem 'pony', '~>1.0'
 
 group :development do
   gem 'sqlite3', '~>1.3.0'
-  gem 'pry'
+  gem 'pry', '~>0.11.0'
 end
 
 group :production do
