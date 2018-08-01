@@ -20,6 +20,9 @@ EOM
 
 echo "Installing dependencies..."
 
+nix-shell -p bundix --run "bundix -l"
+
+nix-shell shell.nix --pure --run '
 npm install
 psc-package install
 
@@ -37,3 +40,4 @@ echo "Building the countdown page..."
 gulp build:countdown
 
 echo "Success!"
+'
