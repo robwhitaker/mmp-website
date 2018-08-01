@@ -20,21 +20,20 @@ EOM
 
 echo "Installing dependencies..."
 
-bundle install > /dev/null
-npm install > /dev/null
-npm run bower install > /dev/null
+npm install
+psc-package install
 
 echo "Setting up the database..."
 
-bundle exec rake db:setup > /dev/null
+rake db:setup
 
 echo "Building the editor..."
-npm run gulp build:editor > /dev/null
+gulp build:editor
 
 echo "Building the reader..."
-npm run gulp build:reader > /dev/null
+gulp build:reader
 
 echo "Building the countdown page..."
-npm run gulp build:countdown > /dev/null
+gulp build:countdown
 
 echo "Success!"
