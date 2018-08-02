@@ -2,7 +2,7 @@
 _Elm, PureScript, JavaScript, Ruby, Sinatra, Nix, SQLite3 (dev), PostgreSQL (prod)_
 
 ### Requires
-- [Nix](https://nixos.org/nix/download.html):
+- [Nix](https://nixos.org/nix/download.html)
 
 ### Dev Setup
 - Install Nix
@@ -29,7 +29,7 @@ Once you run the setup script, you can create a dev environment with all the dep
 
 ### Manually Installing Dependencies
 - Reader: `npm install`
-- Editor: `psc-package install`
+- Editor: `bower install`
 - Server: (from outside the Nix shell) `nix-shell -p bundix --run "bundix -l"`
 
 ### Building the Front End
