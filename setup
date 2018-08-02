@@ -24,7 +24,7 @@ nix-shell -p bundix --run "bundix -l"
 
 nix-shell shell.nix --pure --run '
 npm install
-psc-package install
+bower install
 
 echo "Setting up the database..."
 

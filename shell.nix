@@ -17,7 +17,6 @@ in stdenv.mkDerivation {
     sqlite
     postgresql
     nodejs
-    psc-package
     nixos.purescript
     nixos.elmPackages.elm
   ];

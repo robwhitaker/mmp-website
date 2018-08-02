@@ -31,7 +31,8 @@ import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Newtype (unwrap)
 import Data.Newtype (over)
 import Data.NonEmpty (fromNonEmpty)
-import Data.String (joinWith, null, split, Pattern(..))
+import Data.String (joinWith, null)
+import Data.String.Utils (words)
 import Data.Traversable (for, sequence, traverse)
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested (tuple3)
@@ -210,9 +211,6 @@ chapterList =
 
             getReleaseGroupIsInteractive :: ReleaseGroup -> Boolean
             getReleaseGroupIsInteractive = fromReleaseGroup _.isInteractive
-
-            words :: String -> Array String
-            words = split (Pattern " ")
 
             -- Silly magic numbers to make the word count line up closer with the Google Docs word count
             wordCount :: LocalChapter -> Int

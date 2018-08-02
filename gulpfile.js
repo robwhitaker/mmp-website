@@ -131,7 +131,7 @@ gulp.task('build:countdown-elm', function() {
 
 var sources = [
   "src/purescript/**/*.purs",
-  ".psc-package/psc-0.11.7/*/v*/src/**/*.purs" 
+  "bower_components/purescript-*/src/**/*.purs"
 ];
 
 gulp.task('build:ps-deps', function() {
