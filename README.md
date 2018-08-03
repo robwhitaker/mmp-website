@@ -7,7 +7,7 @@ _Elm, PureScript, JavaScript, Ruby, Sinatra, Nix, SQLite3 (dev), PostgreSQL (pro
 ### Dev Setup
 - Install Nix
     ```
-    $ curl https://nixos.org/nix/install | sh`
+    $ curl https://nixos.org/nix/install | sh
     $ . $HOME/.nix-profile/etc/profile.d/nix.sh
     ```
 - Add the necessary Nix channels (nixos-18.03, nixpkgs-unstable), and add them to your `$NIX_PATH`:
