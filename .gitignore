@@ -28,7 +28,6 @@ log
 var
 *.xcf
 xmlrpc.php
-gemset.nix
 
 ### Ruby ###
 ## Assorted

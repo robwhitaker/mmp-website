@@ -20,11 +20,8 @@ EOM
 
 echo "Installing dependencies..."
 
-nix-shell -p bundix --run "bundix -l"
-
 nix-shell shell.nix --pure --run '
 npm install
-bower install
 
 echo "Setting up the database..."
 

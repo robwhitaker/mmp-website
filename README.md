@@ -28,9 +28,15 @@ The setup script will create the necessary files/folders, install dependencies, 
 Once you run the setup script, you can create a dev environment with all the dependencies installed by running `nix-shell --pure`. Unless otherwise noted, all of the following commands will assume you're running in the Nix shell.
 
 ### Manually Installing Dependencies
-- Reader: `npm install`
-- Editor: `bower install`
-- Server: (from outside the Nix shell) `nix-shell -p bundix --run "bundix -l"`
+
+If you update the dependencies in `bower.json` or the `Gemfile`, you must generate the corresponding Nix file(s) again (bower-packages.nix and gemset.nix, respectively). To do so, leave the Nix shell and enter one or more of the following commands:
+
+- bower.json: `nix-shell -p nodePackages.bower2nix --run "bower2nix > bower-packages.nix"`
+- Gemfile: `nix-shell -p bundix --run "bundix -l"`
+
+Once you enter the Nix shell again, those changes will automatically be installed.
+
+To update the Reader dependencies, you can still run `npm install` from within the Nix shell.
 
 ### Building the Front End
 - Reader: `gulp build:reader`
