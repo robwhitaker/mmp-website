@@ -19,7 +19,6 @@ public/dist
 public/*.html
 /elm/elm-stuff
 repl-temp-*
-Gemfile.lock
 
 ### Assorted ###
 config/database.yml
@@ -30,20 +29,11 @@ var
 xmlrpc.php
 
 ### Ruby ###
-## Assorted
 *.gem
 /db/*.sqlite3
 /db/*.sqlite3-journal
 /shared
 .ruby-version
-## Capistrano deploys
-releases
-current
-repo
-revisions.log
-rvm1scripts
-/vendor
-/db/debug_http.rb
 
 ## Documentation cache and generated files:
 /.yardoc/
