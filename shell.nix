@@ -27,7 +27,6 @@ in stdenv.mkDerivation {
     git
     vim
     sqlite
-    postgresql
     nodejs
     nixos.purescript
     nixos.elmPackages.elm
