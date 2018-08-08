@@ -3,11 +3,8 @@
   "version": "1.0.0",
   "description": "Elm, Sinatra, SQLite3 (dev), PostgreSQL (prod)",
   "main": "index.js",
-  "dependencies": {
-    "google-client-api": "^1.0.4"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "bower": "^1.8.4",
     "gulp": "^3.9.1",
     "gulp-autoprefixer": "^3.1.0",
     "gulp-clean-css": "^2.0.12",
