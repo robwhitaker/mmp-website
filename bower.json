@@ -1,21 +1,21 @@
-{
-  "name": "mmp-website",
-  "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "output"
-  ],
-  "dependencies": {
-    "purescript-prelude": "^3.0.0",
-    "purescript-console": "^3.0.0",
-    "purescript-halogen": "^2.0.1",
-    "purescript-datetime": "^3.0.0",
-    "purescript-affjax": "^4.0.0",
-    "purescript-formatters": "^1.0.0",
-    "purescript-argonaut": "^3.0.0",
-    "purescript-now": "^3.0.0",
-    "purescript-stringutils": "^0.0.6"
+{	
+  "name": "mmp-website",	
+  "ignore": [	
+    "**/.*",	
+    "node_modules",	
+    "bower_components",	
+    "output"	
+  ],	
+  "dependencies": {	
+    "purescript-prelude": "^3.0.0",	
+    "purescript-console": "^3.0.0",	
+    "purescript-halogen": "^2.0.1",	
+    "purescript-datetime": "^3.0.0",	
+    "purescript-affjax": "^4.0.0",	
+    "purescript-formatters": "^1.0.0",	
+    "purescript-argonaut": "^3.0.0",	
+    "purescript-now": "^3.0.0",	
+    "purescript-stringutils": "^0.0.6"	
   },
-  "devDependencies": {}
+  "devDependencies": {}	
 }

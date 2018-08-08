@@ -1,35 +1,58 @@
 # Midnight Murder Party v2
-_Elm, PureScript, JavaScript, Ruby, Sinatra, SQLite3 (dev), PostgreSQL (prod)_
+_Elm, PureScript, JavaScript, Ruby, Sinatra, Nix, SQLite3 (dev), PostgreSQL (prod)_
 
 ### Requires
-- [Ruby](https://www.ruby-lang.org/en/) v2.5.1
-- [Bundler](http://bundler.io/#getting-started) v1.16.3
-- [NodeJS/NPM](https://nodejs.org/en/) Any LTS release
-- An OS that supports GHC 7.10.1+ (though you shouldn't have to install this yourself)
+- [Nix](https://nixos.org/nix/download.html)
 
 ### Dev Setup
-- Install above prerequistites
-- Clone repository
-- `cd` into repository
-- Run `./setup` (if your OS doesn't support bash scripts, follow the steps within the script manually)
+- Install Nix
+    ```
+    $ curl https://nixos.org/nix/install | sh
+    $ . $HOME/.nix-profile/etc/profile.d/nix.sh
+    ```
+- Add the necessary Nix channels (nixos-18.03, nixpkgs-unstable), and add them to your `$NIX_PATH`:
+    ```
+    $ nix-channel --add https://nixos.org/channels/nixos-18.03 nixos
+    $ nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs
+    $ nix-channel --update
+    $ export NIX_PATH=nixos=$HOME/.nix-defexpr/channels/nixos:nixpkgs=$HOME/.nix-defexpr/channels/nixpkgs:$NIX_PATH
+    $ # ^ you may want to add this line to your `.bashrc` or `.profile`
+    ```
+- Clone and `cd` into the repository
+- Run `./setup`
 
 The setup script will create the necessary files/folders, install dependencies, setup the database, and build the reader, editor, and countdown page.
 
-### Using Bower/Gulp
-Bower and Gulp are both installed as `npm` dependencies in order to avoid global installs. After the initial setup, they can be run with `npm run bower` and `npm run gulp`, respectively.
+### Dev Environment
+
+Once you run the setup script, you can create a dev environment with all the dependencies installed by running `nix-shell --pure`. Unless otherwise noted, all of the following commands will assume you're running in the Nix shell.
 
 ### Manually Installing Dependencies
-- Reader: `npm install`
-- Editor: `npm run bower install`
-- Server: `bundle install`
+
+If you update the dependencies in `bower.json` or the `Gemfile`, you must generate the corresponding Nix file(s) again (bower-packages.nix and gemset.nix, respectively). To do so, leave the Nix shell and enter one or more of the following commands:
+
+- bower.json: `nix-shell -p nodePackages.bower2nix --run "bower2nix > bower-packages.nix"`
+- Gemfile: `nix-shell -p bundix --run "bundix -l"`
+
+Once you enter the Nix shell again, those changes will automatically be installed.
+
+To update the Reader dependencies, you can still run `npm install` from within the Nix shell.
 
 ### Building the Front End
-- Reader: `npm run gulp build:reader`
-- Editor: `npm run gulp build:editor`
-- Countdown: `npm run gulp build:countdown`
+- Reader: `gulp build:reader`
+- Editor: `gulp build:editor`
+- Countdown: `gulp build:countdown`
 
-**Note:** To use the `--prod` flag when building the reader (which enables stripping logs/alerts/debuggers on build and uses prod config), `npm run gulp build:reader` cannot be used. Instead, run Gulp directly with `./node_modules/.bin/gulp build:reader --prod`.
+**Note:** You may use the `--prod` flag while building the Reader to enable stripping logs/alerts/debuggers and to use prod config.
 
 ### Running the Server
 - `ruby app.rb`
 - Visit `localhost:4567`/`localhost:4567/editor` in your browser
+
+### A Note On `nix-shell`
+
+You don't technically have to be in a Nix shell session to run the above commands, but it will save you some key strokes. You could also run most commands with `nix-shell shell.nix --pure --run "COMMAND"`. For example, to start the server from outside the Nix shell:
+
+```
+$ nix-shell shell.nix --pure --run "ruby app.rb"
+```
