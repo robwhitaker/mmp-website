@@ -26,8 +26,6 @@ in lib.overrideDerivation haskellEnv (old: {
   buildInputs = old.buildInputs ++ [
     gems
     ruby
-    git
-    vim
     sqlite
     nodejs
     nixos.purescript
