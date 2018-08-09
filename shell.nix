@@ -13,7 +13,9 @@ let
     gemdir = ./.;
   };
 
-in stdenv.mkDerivation {
+  haskellEnv = (haskellPackages.callPackage ./cabal.nix {}).env;
+
+in lib.overrideDerivation haskellEnv (old: {
   name = "midnight-murder-party";
   src = mmpApp;
   bowerComponents = buildBowerComponents {
@@ -21,7 +23,7 @@ in stdenv.mkDerivation {
     generated = ./bower-packages.nix;
     src = mmpApp; 
   };
-  buildInputs = [
+  buildInputs = old.buildInputs ++ [
     gems
     ruby
     git
@@ -30,10 +32,12 @@ in stdenv.mkDerivation {
     nodejs
     nixos.purescript
     nixos.elmPackages.elm
+    cabal-install
   ];
   shellHook = ''
     cp --reflink=auto --no-preserve=mode -r $bowerComponents/bower_components .
     export PATH=./node_modules/.bin:$PATH
+    cabal configure
   '';
-}
+})
 
