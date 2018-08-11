@@ -10,12 +10,11 @@ _Elm, PureScript, JavaScript, Ruby, Sinatra, Nix, SQLite3 (dev), PostgreSQL (pro
     $ curl https://nixos.org/nix/install | sh
     $ . $HOME/.nix-profile/etc/profile.d/nix.sh
     ```
-- Add the necessary Nix channels (nixos-18.03, nixpkgs-unstable), and add them to your `$NIX_PATH`:
+- Add the necessary Nix channels (nixos-18.03), and add them to your `$NIX_PATH`:
     ```
     $ nix-channel --add https://nixos.org/channels/nixos-18.03 nixos
-    $ nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs
     $ nix-channel --update
-    $ export NIX_PATH=nixos=$HOME/.nix-defexpr/channels/nixos:nixpkgs=$HOME/.nix-defexpr/channels/nixpkgs:$NIX_PATH
+    $ export NIX_PATH=nixos=$HOME/.nix-defexpr/channels/nixos:$NIX_PATH
     $ # ^ you may want to add this line to your `.bashrc` or `.profile`
     ```
 - Clone and `cd` into the repository
@@ -25,7 +24,7 @@ The setup script will create the necessary files/folders, install dependencies, 
 
 ### Dev Environment
 
-Once you run the setup script, you can create a dev environment with all the dependencies installed by running `nix-shell --pure`. Unless otherwise noted, all of the following commands will assume you're running in the Nix shell.
+Once you run the setup script, you can create a dev environment with all the dependencies installed by running `nix-shell`. Unless otherwise noted, all of the following commands will assume you're running in the Nix shell.
 
 ### Manually Installing Dependencies
 
@@ -34,9 +33,11 @@ If you update the dependencies in `bower.json` or the `Gemfile`, you must genera
 - bower.json: `nix-shell -p nodePackages.bower2nix --run "bower2nix > bower-packages.nix"`
 - Gemfile: `nix-shell -p bundix --run "bundix -l"`
 
-Once you enter the Nix shell again, those changes will automatically be installed.
+Once you enter the Nix shell again, those changes will take effect.
 
-To update the Reader dependencies, you can still run `npm install` from within the Nix shell.
+If you update the dependencies in `mmp-website.cabal`, those dependencies will be automatically installed the next time you enter the Nix shell.
+
+To update the Reader dependencies, you can just run `npm install` from within the Nix shell.
 
 ### Building the Front End
 - Reader: `gulp build:reader`

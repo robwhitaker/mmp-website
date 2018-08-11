@@ -15,6 +15,7 @@ repl-temp-*
 
 ## Haskell
 dist/
+.shake/
 
 ## Static artifacts
 /node_modules

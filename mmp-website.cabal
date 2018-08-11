@@ -19,6 +19,8 @@ executable mmp-website
   main-is:             Build.hs
   -- other-modules:
   -- other-extensions:
-  build-depends:       base >=4.11 && <4.12
-  hs-source-dirs:      src
+  build-depends:       base >=4.10 && <4.12
+                     , shake
+                     , hjsmin
+  hs-source-dirs:      .  
   default-language:    Haskell2010
