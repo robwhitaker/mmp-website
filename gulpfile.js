@@ -42,6 +42,10 @@ var injectConfig = function() {
     });
 };
 
+var buildCss = function(stylesheet) {  
+    exec('mkdir -p public/dist/css');
+    exec('cabal run style ' + stylesheet + ' | tail -n 1 1> public/dist/css/' + stylesheet  + '.min.css');
+};
 
 gulp.task('build:reader-css', function() {
     gulp.src('src/css/reader.css')
@@ -52,13 +56,8 @@ gulp.task('build:reader-css', function() {
          }))
         .pipe(gulp.dest('public/dist/css'));
 
-    gulp.src('src/css/renderer.css')
-        .pipe(autoprefixer())
-        .pipe(minifyCSS())
-        .pipe(rename({
-            suffix: '.min'
-         }))
-        .pipe(gulp.dest('public/dist/css'));
+    buildCss("renderer");
+
 });
 
 gulp.task('build:reader-js', ['build:reader-elm'], function() {
@@ -116,8 +115,7 @@ gulp.task('build:countdown-html', function() {
 });
 
 gulp.task('build:countdown-css', function() {
-    exec('mkdir -p public/dist/css');
-    exec('cabal run style countdown | tail -n 1 1> public/dist/css/countdown.min.css');
+    buildCss("countdown");
 });
 
 gulp.task('build:countdown-elm', function() {

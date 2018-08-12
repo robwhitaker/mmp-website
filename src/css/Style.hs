@@ -8,6 +8,7 @@ import qualified Data.Text.Lazy.IO as T
 import           System.Environment (getArgs)
 
 import qualified Countdown as Countdown
+import qualified Renderer as Renderer
 
 main :: IO ()
 main = do
@@ -19,6 +20,6 @@ main = do
             case Prelude.head args of
                 "countdown" -> Countdown.stylesheet
                 "reader" -> undefined
-                "renderer" -> undefined
+                "renderer" -> Renderer.stylesheet
                 "editor" -> undefined
 

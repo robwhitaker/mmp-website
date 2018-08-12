@@ -21,7 +21,7 @@ shareButtons = do
         cursor pointer
         color white
         fontWeight bold
-        textShadow (px 1) (px 1) (px 5) black -- TODO: not sure px 5 is right, excluded in original CSS
+        textShadow (px 1) (px 1) (px 0) black
         minWidth (px 75)
         maxWidth (px 75)
 
