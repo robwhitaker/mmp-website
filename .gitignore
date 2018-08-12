@@ -44,6 +44,7 @@ xmlrpc.php
 /_yardoc/
 /doc/
 /rdoc/
+*.swp
 
 ## Environment normalization:
 /.bundle/

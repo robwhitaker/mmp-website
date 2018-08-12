@@ -240,7 +240,7 @@ stylesheet = do
 
     (h2 <> h3) ? do
         fontFamily [ "Verdana" ] [ sansSerif ]
-        fontWeight normal -- TODO: this needs !important for some reason
+        "font-weight" -: "normal !important"
 
     ".testimonials" ? do
         padding (em 1.5) (em 0) (em 0) (em 0)
