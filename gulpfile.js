@@ -14,6 +14,7 @@ var ifElse = require('gulp-if-else');
 var purescript = require('gulp-purescript');
 var gutil = require('gulp-util');
 var argv = require('yargs').argv;
+var exec = require('child_process').exec;
 
 var env = argv.prod ? "prod" : "dev";
 var config = yaml.safeLoad(fs.readFileSync('config/build.yml', 'utf8'));
@@ -40,6 +41,7 @@ var injectConfig = function() {
         return replaceVal;
     });
 };
+
 
 gulp.task('build:reader-css', function() {
     gulp.src('src/css/reader.css')
@@ -114,13 +116,8 @@ gulp.task('build:countdown-html', function() {
 });
 
 gulp.task('build:countdown-css', function() {
-    gulp.src('src/css/countdown.css')
-        .pipe(autoprefixer())
-        .pipe(minifyCSS())
-        .pipe(rename({
-            suffix: '.min'
-         }))
-        .pipe(gulp.dest('public/dist/css'));
+    exec('mkdir -p public/dist/css');
+    exec('cabal run style countdown | tail -n 1 1> public/dist/css/countdown.min.css');
 });
 
 gulp.task('build:countdown-elm', function() {
