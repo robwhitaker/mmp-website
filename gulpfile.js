@@ -144,13 +144,7 @@ gulp.task('build:editor-html', function() {
 });
 
 gulp.task('build:editor-css', function() {
-    gulp.src('src/css/editor.css')
-        .pipe(autoprefixer())
-        .pipe(minifyCSS())
-        .pipe(rename({
-            suffix: '.min'
-         }))
-        .pipe(gulp.dest('public/dist/css'));
+    buildCss("editor");
 });
 
 gulp.task('build:editor', ['build:editor-html','build:editor-css','build:editor-ps'], function() {

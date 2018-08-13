@@ -9,6 +9,7 @@ import           System.Environment (getArgs)
 
 import qualified Countdown as Countdown
 import qualified Renderer as Renderer
+import qualified Editor as Editor
 
 main :: IO ()
 main = do
@@ -21,5 +22,5 @@ main = do
                 "countdown" -> Countdown.stylesheet
                 "reader" -> undefined
                 "renderer" -> Renderer.stylesheet
-                "editor" -> undefined
+                "editor" -> Editor.stylesheet
 

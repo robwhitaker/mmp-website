@@ -110,3 +110,4 @@ padding' padTop padSide = padding padTop padSide padTop padSide
 margin' mTop mSide = margin mTop mSide mTop mSide
 noBorder = border solid (px 0) (rgba 0 0 0 0)
 noTextShadow = textShadow (px 0) (px 0) (px 0) (rgba 0 0 0 0)
+noOutline = outline solid (em 0) (rgba 0 0 0 0)
