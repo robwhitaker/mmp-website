@@ -27,7 +27,11 @@ executable mmp-website
 
 executable style
   main-is:             Style.hs
-  -- other-modules:
+  other-modules:       Common
+                     , Reader
+                     , Renderer
+                     , Countdown
+                     , Editor
   -- other-extensions:
   build-depends:       base >=4.10 && <4.12
                      , clay
