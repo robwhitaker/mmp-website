@@ -4,6 +4,7 @@ module Common where
 
 import Clay
 import Prelude hiding (span, (**))
+import Data.Monoid ((<>))
 
 shareButtons :: Css
 shareButtons = do
@@ -100,8 +101,6 @@ shareButtons = do
             backgroundColor (rgba 51 0 0 1)
             cursor pointer
 
-
-
 noPadding = padding (px 0) (px 0) (px 0) (px 0)
 noMargin  = margin (px 0) (px 0) (px 0) (px 0)
 centerMargin = margin (px 0) auto (px 0) auto
@@ -111,3 +110,15 @@ margin' mTop mSide = margin mTop mSide mTop mSide
 noBorder = border solid (px 0) (rgba 0 0 0 0)
 noTextShadow = textShadow (px 0) (px 0) (px 0) (rgba 0 0 0 0)
 noOutline = outline solid (em 0) (rgba 0 0 0 0)
+padding1 pad = padding pad pad pad pad
+margin1 mar = margin mar mar mar mar
+noBoxShadow = boxShadow (px 0) (px 0) (px 0) (rgba 0 0 0 0)
+listStyleNone = "list-style" -: "none"
+
+radialGradient' :: Loc l => l -> Radial -> Ramp -> BackgroundImage
+radialGradient' d r xs = other $ Value $
+    let Value v = "radial-gradient(" <> value [value r <> " at " <> value d, ramp xs] <> ")"
+    in 
+        browsers <> v
+  where ramp :: Ramp -> Value
+        ramp xs = value (Prelude.map (\(a, b) -> value (value a, value b)) xs)

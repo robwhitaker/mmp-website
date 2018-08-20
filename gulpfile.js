@@ -14,7 +14,7 @@ var ifElse = require('gulp-if-else');
 var purescript = require('gulp-purescript');
 var gutil = require('gulp-util');
 var argv = require('yargs').argv;
-var exec = require('child_process').exec;
+var exec = require('child_process').execSync;
 
 var env = argv.prod ? "prod" : "dev";
 var config = yaml.safeLoad(fs.readFileSync('config/build.yml', 'utf8'));
@@ -48,16 +48,10 @@ var buildCss = function(stylesheet) {
 };
 
 gulp.task('build:reader-css', function() {
-    gulp.src('src/css/reader.css')
-        .pipe(autoprefixer())
-        .pipe(minifyCSS())
-        .pipe(rename({
-            suffix: '.min'
-         }))
-        .pipe(gulp.dest('public/dist/css'));
-
+    console.log("Compiling Reader CSS.");
+    buildCss("reader");
+    console.log("Compiling Renderer CSS.");
     buildCss("renderer");
-
 });
 
 gulp.task('build:reader-js', ['build:reader-elm'], function() {

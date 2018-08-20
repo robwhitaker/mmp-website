@@ -10,6 +10,7 @@ import           System.Environment (getArgs)
 import qualified Countdown as Countdown
 import qualified Renderer as Renderer
 import qualified Editor as Editor
+import qualified Reader as Reader
 
 main :: IO ()
 main = do
@@ -20,7 +21,7 @@ main = do
         T.putStrLn . renderWith compact [] $
             case Prelude.head args of
                 "countdown" -> Countdown.stylesheet
-                "reader" -> undefined
+                "reader" -> Reader.stylesheet
                 "renderer" -> Renderer.stylesheet
                 "editor" -> Editor.stylesheet
 
