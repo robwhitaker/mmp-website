@@ -3,6 +3,7 @@
 module Renderer where
 
 import           Clay
+import           Clay.Stylesheet (prefixed)
 import           Prelude hiding (head, span, div, (**))
 import           Data.Monoid ((<>))
 import           Common
@@ -16,8 +17,8 @@ stylesheet = do
         overflow hidden
 
     "#text-container" ? do
-        "column-gap" -: "0px"
-        "column-fill" -: "auto"
+        prefixed (browsers <> "column-gap") (px 0)
+        prefixed (browsers <> "column-fill") (auto :: Value)
 
     "#scroll-container" ? do
         overflow hidden
