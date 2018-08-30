@@ -3,28 +3,28 @@
     dependencies = ["activesupport"];
     source = {
       remotes = ["http://rubygems.org"];
-      sha256 = "0b0j2yk2spw6zyqpcl4a6zzjg5cywvjgm88zjq8azslx1hj6isvs";
+      sha256 = "043nnxaf3cfq8jijls0jh1bg3a8v5zd9slc62zc2acp2n2wkjnd4";
       type = "gem";
     };
-    version = "5.2.0";
+    version = "5.2.1";
   };
   activerecord = {
     dependencies = ["activemodel" "activesupport" "arel"];
     source = {
       remotes = ["http://rubygems.org"];
-      sha256 = "193a3qr7dxxj5jac63jid9xn7fvn6ycai36izznl42pz1cgj2fl8";
+      sha256 = "0pc7cycvhzjpw0swil2inka6c0fvcxhln793czp52pidg0654g7g";
       type = "gem";
     };
-    version = "5.2.0";
+    version = "5.2.1";
   };
   activesupport = {
     dependencies = ["concurrent-ruby" "i18n" "minitest" "tzinfo"];
     source = {
       remotes = ["http://rubygems.org"];
-      sha256 = "1nkzg31x501l8d1hbygyh1lr4c3vnw88a3c1rxz5ifvvzb10i6zm";
+      sha256 = "0ziy6xk31k4fs115cdkba1ys4i8nzcyri7a2jig7nx7k5h7li6l2";
       type = "gem";
     };
-    version = "5.2.0";
+    version = "5.2.1";
   };
   arel = {
     source = {
@@ -70,10 +70,10 @@
     dependencies = ["concurrent-ruby"];
     source = {
       remotes = ["http://rubygems.org"];
-      sha256 = "1milplpsdpxlvn23q6pvir4jgxsphq2ps2jgdb3i29kzpc55gm7y";
+      sha256 = "0ppvmla21hssvrfm8g1n2fnb4lxn4yhy9qmmba0imanflgldrjmr";
       type = "gem";
     };
-    version = "1.0.1";
+    version = "1.1.0";
   };
   mail = {
     dependencies = ["mini_mime"];
@@ -95,10 +95,10 @@
   mini_mime = {
     source = {
       remotes = ["http://rubygems.org"];
-      sha256 = "1lwhlvjqaqfm6k3ms4v29sby9y7m518ylsqz2j74i740715yl5c8";
+      sha256 = "1q4pshq387lzv9m39jv32vwb8wrq3wc4jwgl4jk209r4l33v09d3";
       type = "gem";
     };
-    version = "1.0.0";
+    version = "1.0.1";
   };
   mini_portile2 = {
     source = {
@@ -127,10 +127,10 @@
   mustermann = {
     source = {
       remotes = ["http://rubygems.org"];
-      sha256 = "07sb7fckrraqh48fjnqf6yl7vxxabfx0qrsrhfdz67pd838g4k8g";
+      sha256 = "0lycgkmnyy0bf29nnd2zql5a6pcf8sp69g9v4xw0gcfcxgpwp7i1";
       type = "gem";
     };
-    version = "1.0.2";
+    version = "1.0.3";
   };
   nokogiri = {
     dependencies = ["mini_portile2"];
