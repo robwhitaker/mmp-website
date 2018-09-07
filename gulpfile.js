@@ -14,6 +14,7 @@ var ifElse = require('gulp-if-else');
 var purescript = require('gulp-purescript');
 var gutil = require('gulp-util');
 var argv = require('yargs').argv;
+var exec = require('child_process').execSync;
 
 var env = argv.prod ? "prod" : "dev";
 var config = yaml.safeLoad(fs.readFileSync('config/build.yml', 'utf8'));
@@ -41,22 +42,16 @@ var injectConfig = function() {
     });
 };
 
-gulp.task('build:reader-css', function() {
-    gulp.src('src/css/reader.css')
-        .pipe(autoprefixer())
-        .pipe(minifyCSS())
-        .pipe(rename({
-            suffix: '.min'
-         }))
-        .pipe(gulp.dest('public/dist/css'));
+var buildCss = function(stylesheet) {  
+    exec('mkdir -p public/dist/css');
+    exec('cabal run style ' + stylesheet + ' | tail -n 1 1> public/dist/css/' + stylesheet  + '.min.css');
+};
 
-    gulp.src('src/css/renderer.css')
-        .pipe(autoprefixer())
-        .pipe(minifyCSS())
-        .pipe(rename({
-            suffix: '.min'
-         }))
-        .pipe(gulp.dest('public/dist/css'));
+gulp.task('build:reader-css', function() {
+    console.log("Compiling Reader CSS.");
+    buildCss("reader");
+    console.log("Compiling Renderer CSS.");
+    buildCss("renderer");
 });
 
 gulp.task('build:reader-js', ['build:reader-elm'], function() {
@@ -114,13 +109,7 @@ gulp.task('build:countdown-html', function() {
 });
 
 gulp.task('build:countdown-css', function() {
-    gulp.src('src/css/countdown.css')
-        .pipe(autoprefixer())
-        .pipe(minifyCSS())
-        .pipe(rename({
-            suffix: '.min'
-         }))
-        .pipe(gulp.dest('public/dist/css'));
+    buildCss("countdown");
 });
 
 gulp.task('build:countdown-elm', function() {
@@ -149,13 +138,7 @@ gulp.task('build:editor-html', function() {
 });
 
 gulp.task('build:editor-css', function() {
-    gulp.src('src/css/editor.css')
-        .pipe(autoprefixer())
-        .pipe(minifyCSS())
-        .pipe(rename({
-            suffix: '.min'
-         }))
-        .pipe(gulp.dest('public/dist/css'));
+    buildCss("editor");
 });
 
 gulp.task('build:editor', ['build:editor-html','build:editor-css','build:editor-ps'], function() {

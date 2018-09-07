@@ -13,6 +13,10 @@ repl-temp-*
 /.psc*
 /.psa*
 
+## Haskell
+dist/
+.shake/
+
 ## Static artifacts
 /node_modules
 public/dist
@@ -40,6 +44,7 @@ xmlrpc.php
 /_yardoc/
 /doc/
 /rdoc/
+*.swp
 
 ## Environment normalization:
 /.bundle/

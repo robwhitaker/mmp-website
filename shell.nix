@@ -1,39 +1,40 @@
-with (import <nixpkgs> {});
+with (import <nixos> { config = import ./config.nix; });
 let
-
-  mmpApp = { outPath = ./.; name = "midnight-murder-party"; };
-
-  nixos = import <nixos> {};
+  mmpApp = { outPath = ./.; name = "mmp-website"; };
 
   ruby = ruby_2_5;
 
   gems = bundlerEnv {
-    name = "midnight-murder-party";
+    name = "mmp-website";
     inherit ruby;
     gemdir = ./.;
   };
-
-in stdenv.mkDerivation {
-  name = "midnight-murder-party";
-  src = mmpApp;
+  
   bowerComponents = buildBowerComponents {
-    name = "midnight-murder-party";
+    name = "mmp-website";
     generated = ./bower-packages.nix;
     src = mmpApp; 
   };
-  buildInputs = [
+
+  haskellEnv = (haskellPackages.callCabal2nix "mmp-website" ./. {}).env;
+
+in lib.overrideDerivation haskellEnv (old: {
+  name = "mmp-website";
+  src = mmpApp;
+  inherit bowerComponents;
+  buildInputs = old.buildInputs ++ [
     gems
     ruby
-    git
-    vim
     sqlite
     nodejs
-    nixos.purescript
-    nixos.elmPackages.elm
+    purescript
+    elmPackages.elm
+    cabal-install
   ];
   shellHook = ''
     cp --reflink=auto --no-preserve=mode -r $bowerComponents/bower_components .
     export PATH=./node_modules/.bin:$PATH
+    cabal configure
   '';
-}
+})
 
