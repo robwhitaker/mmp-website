@@ -1,37 +1,24 @@
 # Midnight Murder Party v2
-_Elm, PureScript, JavaScript, Ruby, Sinatra, Nix, SQLite3 (dev), PostgreSQL (prod)_
+_Elm, PureScript, JavaScript, Haskell, Ruby, Sinatra, Nix, SQLite3 (dev), PostgreSQL (prod)_
 
 ### Requires
 - [Nix](https://nixos.org/nix/download.html)
 
 ### Dev Setup
-- Install Nix
-    ```
-    $ curl https://nixos.org/nix/install | sh
-    $ . $HOME/.nix-profile/etc/profile.d/nix.sh
-    ```
-- Add the necessary Nix channels (nixos-18.03), and add them to your `$NIX_PATH`:
-    ```
-    $ nix-channel --add https://nixos.org/channels/nixos-18.03 nixos
-    $ nix-channel --update
-    $ export NIX_PATH=nixos=$HOME/.nix-defexpr/channels/nixos:$NIX_PATH
-    $ # ^ you may want to add this line to your `.bashrc` or `.profile`
-    ```
 - Clone and `cd` into the repository
 - Run `./setup`
 
-The setup script will create the necessary files/folders, install dependencies, setup the database, and build the reader, editor, and countdown page.
+The setup script will create the necessary files/folders, install dependencies via Nix, setup the database, and build the reader, editor, and countdown page. This will probably take between ten and twenty minutes the first time.
+
+_Optional:_ The setup script (and the `dev-shell` script) will create Nix roots for this project. This will allow you to use Nix's garbage collector without erasing all of your build output files (thus saving you from having another twenty minute install next time you use the Nix shell). However, to enable keeping the outputs, you must set `keep-outputs = true` in your [Nix config](https://nixos.org/nix/manual/#ch-files). 
 
 ### Dev Environment
 
-Once you run the setup script, you can create a dev environment with all the dependencies installed by running `nix-shell`. Unless otherwise noted, all of the following commands will assume you're running in the Nix shell.
+Once you run the setup script, you can create a dev environment with all the dependencies installed by running `./dev-shell`. Unless otherwise noted, all of the following commands will assume you're running in this shell.
 
-### Manually Installing Dependencies
+### Updating Dependencies
 
-If you update the dependencies in `bower.json` or the `Gemfile`, you must generate the corresponding Nix file(s) again (bower-packages.nix and gemset.nix, respectively). To do so, leave the Nix shell and enter one or more of the following commands:
-
-- bower.json: `nix-shell -p nodePackages.bower2nix --run "bower2nix > bower-packages.nix"`
-- Gemfile: `nix-shell -p bundix --run "bundix -l"`
+If you update the dependencies in `bower.json` or the `Gemfile`, you must generate the corresponding Nix file(s) again (bower-packages.nix and gemset.nix, respectively). To do so, leave the Nix shell and run `./update-deps`.
 
 Once you enter the Nix shell again, those changes will take effect.
 
@@ -49,11 +36,3 @@ To update the Reader dependencies, you can just run `npm install` from within th
 ### Running the Server
 - `ruby app.rb`
 - Visit `localhost:4567`/`localhost:4567/editor` in your browser
-
-### A Note On `nix-shell`
-
-You don't technically have to be in a Nix shell session to run the above commands, but it will save you some key strokes. You could also run most commands with `nix-shell shell.nix --pure --run "COMMAND"`. For example, to start the server from outside the Nix shell:
-
-```
-$ nix-shell shell.nix --pure --run "ruby app.rb"
-```
