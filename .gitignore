@@ -24,6 +24,9 @@ public/*.html
 /elm/elm-stuff
 repl-temp-*
 
+## Nix
+.gcroots/
+
 ### Assorted ###
 config/database.yml
 config/secrets.yml

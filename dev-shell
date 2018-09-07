@@ -1,0 +1,5 @@
+#!/bin/bash
+
+nix-instantiate shell.nix --indirect --add-root $(pwd)/.gcroots/shell.drv
+
+nix-shell

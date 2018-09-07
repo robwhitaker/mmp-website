@@ -36,5 +36,20 @@ gulp build:reader
 echo "Building the countdown page..."
 gulp build:countdown
 
-echo "Success!"
+echo "Project built!"
 '
+
+echo ""
+
+echo "Installing Nix roots..."
+
+nix-instantiate shell.nix --indirect --add-root $(pwd)/.gcroots/shell.drv
+
+echo ""
+
+echo "To make use of the Nix roots, set 'keep-outputs = true' in your Nix config (see: https://nixos.org/nix/manual/#ch-files).\
+ This will prevent Nix's garbage collector from erasing most of your build files."
+
+echo ""
+
+echo "Build complete! To start a dev shell, run './dev-shell'." 

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+nix-shell -p nodePackages.bower2nix -p bundix --run "bower2nix > bower-packages.nix; bundix -l"
