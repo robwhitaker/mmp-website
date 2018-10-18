@@ -37,10 +37,10 @@
   backports = {
     source = {
       remotes = ["http://rubygems.org"];
-      sha256 = "1ax5sqw30vdkvc7crjj2ikw9q0ayn86q2gb6yfzrkh865174vc2p";
+      sha256 = "1hshjxww2h7s0dk57njrygq4zpp0nlqrjfya7zwm27iq3rhc3y8g";
       type = "gem";
     };
-    version = "3.11.3";
+    version = "3.11.4";
   };
   builder = {
     source = {
@@ -70,19 +70,19 @@
     dependencies = ["concurrent-ruby"];
     source = {
       remotes = ["http://rubygems.org"];
-      sha256 = "0ppvmla21hssvrfm8g1n2fnb4lxn4yhy9qmmba0imanflgldrjmr";
+      sha256 = "1gcp1m1p6dpasycfz2sj82ci9ggz7lsskz9c9q6gvfwxrl8y9dx7";
       type = "gem";
     };
-    version = "1.1.0";
+    version = "1.1.1";
   };
   mail = {
     dependencies = ["mini_mime"];
     source = {
       remotes = ["http://rubygems.org"];
-      sha256 = "10dyifazss9mgdzdv08p47p344wmphp5pkh5i73s7c04ra8y6ahz";
+      sha256 = "00wwz6ys0502dpk8xprwcqfwyf3hmnx6lgxaiq6vj43mkx43sapc";
       type = "gem";
     };
-    version = "2.7.0";
+    version = "2.7.1";
   };
   method_source = {
     source = {
@@ -136,10 +136,10 @@
     dependencies = ["mini_portile2"];
     source = {
       remotes = ["http://rubygems.org"];
-      sha256 = "1h9nml9h3m0mpvmh8jfnqvblnz5n5y3mmhgfc38avfmfzdrq9bgc";
+      sha256 = "0byyxrazkfm29ypcx5q4syrv126nvjnf7z6bqi01sqkv4llsi4qz";
       type = "gem";
     };
-    version = "1.8.4";
+    version = "1.8.5";
   };
   pg = {
     source = {
@@ -170,10 +170,10 @@
   puma = {
     source = {
       remotes = ["http://rubygems.org"];
-      sha256 = "06qiqx1pcfwq4gi9pdrrq8r6hgh3rwl7nl51r67zpm5xmqlp0g10";
+      sha256 = "1k7dqxnq0dnf5rxkgs9rknclkn3ah7lsdrk6nrqxla8qzy31wliq";
       type = "gem";
     };
-    version = "3.11.4";
+    version = "3.12.0";
   };
   rack = {
     source = {
@@ -187,10 +187,10 @@
     dependencies = ["rack"];
     source = {
       remotes = ["http://rubygems.org"];
-      sha256 = "1z5598qipilmnf45428jnxi63ykrgvnyywa5ckpr52zv2vpd8jdp";
+      sha256 = "0ylx74ravz7nvnyygq0nk3v86qdzrmqxpwpayhppyy50l72rcajq";
       type = "gem";
     };
-    version = "2.0.3";
+    version = "2.0.4";
   };
   rake = {
     source = {
@@ -204,10 +204,10 @@
     dependencies = ["mustermann" "rack" "rack-protection" "tilt"];
     source = {
       remotes = ["http://rubygems.org"];
-      sha256 = "1kyi55q4k4idv31h7l53hw0mnh50dwwrrsfm35j52jy7fc993m9r";
+      sha256 = "1mxwlhx886s1b7pcnwa0qsadqanj5m548xaf34afn1lr5jyq981h";
       type = "gem";
     };
-    version = "2.0.3";
+    version = "2.0.4";
   };
   sinatra-activerecord = {
     dependencies = ["activerecord" "sinatra"];
@@ -222,10 +222,10 @@
     dependencies = ["activesupport" "backports" "multi_json" "mustermann" "rack-protection" "sinatra" "tilt"];
     source = {
       remotes = ["http://rubygems.org"];
-      sha256 = "1fk8pnvzlylqpnxnvd888ji217552xvvrfpzn8wh2njkz0pk28fc";
+      sha256 = "1q5bzjw85wi49yz1h7bxl0jkszkx8vk4k126kxvlf85zsgr3g5i4";
       type = "gem";
     };
-    version = "2.0.3";
+    version = "2.0.4";
   };
   sqlite3 = {
     source = {
