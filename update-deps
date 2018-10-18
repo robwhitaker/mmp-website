@@ -1,3 +1,3 @@
 #!/bin/bash
 
-nix-shell -p nodePackages.bower2nix -p bundix --run "bower2nix > bower-packages.nix; bundix -l"
+nix-shell utils.nix --run "rm Gemfile.lock; bower2nix > bower-packages.nix; bundix -l"
