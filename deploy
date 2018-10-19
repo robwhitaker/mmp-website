@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+
+if [ -z "$1" ]; then
+    echo "USAGE: deploy user@url [branch]"
+    exit 1
+fi
+
+ssh $1 "bash --login -c \"cd mmp && ./build $branch\""

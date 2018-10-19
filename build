@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -e
+
+if [ -z "$1" ]; then
+    branch="master"
+else
+    branch="$1"
+fi
+
+git checkout $branch
+git pull
+bundle install
+nix-shell shell.nix --run '
+    npm install
+    gulp build:editor
+    gulp build:reader --prod
+    gulp build:countdown
+'
+pumactl stop
+pumactl start
+
