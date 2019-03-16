@@ -4,6 +4,11 @@ with import (fetchTarball {
 }) { config = import ./config.nix; };
 
 let
+  pkgsWithElm019 = import (fetchGit {
+      url = https://github.com/NixOS/nixpkgs.git;
+      rev = "5082ab8335be9a0895ca78fe1ae81a5a186ae4a4";
+    }) {};
+
   mmpApp = { outPath = ./.; name = "mmp-website"; };
 
   ruby = ruby_2_5;
@@ -13,11 +18,11 @@ let
     inherit ruby;
     gemdir = ./.;
   };
-  
+
   bowerComponents = buildBowerComponents {
     name = "mmp-website";
     generated = ./bower-packages.nix;
-    src = mmpApp; 
+    src = mmpApp;
   };
 
   haskellEnv = (haskellPackages.callCabal2nix "mmp-website" ./. {}).env;
@@ -32,7 +37,8 @@ in lib.overrideDerivation haskellEnv (old: {
     sqlite
     nodejs
     purescript
-    elmPackages.elm
+    pkgsWithElm019.elmPackages.elm
+    pkgsWithElm019.elmPackages.elm-format
     cabal-install
   ];
   shellHook = ''
@@ -41,4 +47,3 @@ in lib.overrideDerivation haskellEnv (old: {
     cabal configure
   '';
 })
-
