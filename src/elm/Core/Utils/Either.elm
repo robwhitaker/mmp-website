@@ -1,5 +1,6 @@
-module Core.Utils.Either exposing (..)
+module Core.Utils.Either exposing (Either(..))
+
 
 type Either a b
-    = Left  a
+    = Left a
     | Right b
