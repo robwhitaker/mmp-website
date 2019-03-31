@@ -6,7 +6,7 @@ with import (fetchTarball {
 let
   mmpApp = { outPath = ./.; name = "mmp-website"; };
 
-  ruby = ruby_2_5;
+  ruby = ruby_2_6;
 
   gems = bundlerEnv {
     name = "mmp-website";
