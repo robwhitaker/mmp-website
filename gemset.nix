@@ -117,10 +117,10 @@
   mini_portile2 = {
     source = {
       remotes = ["http://rubygems.org"];
-      sha256 = "13d32jjadpjj6d2wdhkfpsmy68zjx90p49bgf8f7nkpz86r1fr11";
+      sha256 = "15zplpfw3knqifj9bpf604rb3wc1vhq6363pd6lvhayng8wql5vy";
       type = "gem";
     };
-    version = "2.3.0";
+    version = "2.4.0";
   };
   minitest = {
     source = {
@@ -150,10 +150,10 @@
     dependencies = ["mini_portile2"];
     source = {
       remotes = ["http://rubygems.org"];
-      sha256 = "0byyxrazkfm29ypcx5q4syrv126nvjnf7z6bqi01sqkv4llsi4qz";
+      sha256 = "0sy96cc8i5y4p67fhf4d9c6sg8ymrrva21zyvzw55l0pa1582wx2";
       type = "gem";
     };
-    version = "1.8.5";
+    version = "1.10.2";
   };
   pg = {
     source = {
@@ -178,10 +178,10 @@
     dependencies = ["coderay" "method_source"];
     source = {
       remotes = ["http://rubygems.org"];
-      sha256 = "1mh312k3y94sj0pi160wpia0ps8f4kmzvm505i6bvwynfdh7v30g";
+      sha256 = "00rm71x0r1jdycwbs83lf9l6p494m99asakbvqxh8rz7zwnlzg69";
       type = "gem";
     };
-    version = "0.11.3";
+    version = "0.12.2";
   };
   puma = {
     groups = ["default"];
@@ -258,10 +258,10 @@
   sqlite3 = {
     source = {
       remotes = ["http://rubygems.org"];
-      sha256 = "01ifzp8nwzqppda419c9wcvr8n82ysmisrs0hph9pdmv1lpa4f5i";
+      sha256 = "0pmgpqx2sg8pms54rk7kjjy8jwsw21g1f7mb02fggbdcqy8jk3fx";
       type = "gem";
     };
-    version = "1.3.13";
+    version = "1.4.0";
   };
   thread_safe = {
     source = {
