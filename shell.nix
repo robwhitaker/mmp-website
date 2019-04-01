@@ -1,44 +1,44 @@
-with import (fetchTarball {
-  url = https://github.com/NixOS/nixpkgs/archive/18.03.tar.gz;
-  sha256 = "0hk4y2vkgm1qadpsm4b0q1vxq889jhxzjx3ragybrlwwg54mzp4f";
-}) { config = import ./config.nix; };
-
+with import ./pinned-package-sets.nix;
 let
   mmpApp = { outPath = ./.; name = "mmp-website"; };
 
-  ruby = ruby_2_5;
-
-  gems = bundlerEnv {
+  rubyEnv = pkgs1903Beta.bundlerEnv {
     name = "mmp-website";
-    inherit ruby;
+    ruby = pkgs1903Beta.ruby_2_6;
     gemdir = ./.;
+	gemConfig = pkgs1903Beta.defaultGemConfig // {
+      tzinfo = attrs: {
+        preBuild = ''
+          sed -i 's!s\.files.*!!' tzinfo.gemspec
+        '';
+      };
+    };
   };
-  
-  bowerComponents = buildBowerComponents {
+
+  bowerComponents = pkgs1803.buildBowerComponents {
     name = "mmp-website";
     generated = ./bower-packages.nix;
-    src = mmpApp; 
+    src = mmpApp;
   };
 
-  haskellEnv = (haskellPackages.callCabal2nix "mmp-website" ./. {}).env;
+  haskellEnv = (pkgs1803.haskellPackages.callCabal2nix "mmp-website" ./. {}).env;
 
-in lib.overrideDerivation haskellEnv (old: {
+in pkgs1803.lib.overrideDerivation haskellEnv (old: {
   name = "mmp-website";
   src = mmpApp;
   inherit bowerComponents;
-  buildInputs = old.buildInputs ++ [
-    gems
-    ruby
+  buildInputs = old.buildInputs ++ (with pkgs1803; [
+    rubyEnv
+    rubyEnv.wrappedRuby
     sqlite
     nodejs
     purescript
     elmPackages.elm
     cabal-install
-  ];
+  ]);
   shellHook = ''
     cp --reflink=auto --no-preserve=mode -r $bowerComponents/bower_components .
     export PATH=./node_modules/.bin:$PATH
     cabal configure
   '';
 })
-
