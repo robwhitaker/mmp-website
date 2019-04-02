@@ -16,6 +16,15 @@ _Optional:_ If you plan on using Nix's garbage collector (`nix-collect-garbage`)
 
 Once you run the setup script, you can create a dev environment with all the dependencies installed by running `./dev-shell`. To exit this shell, just type `exit`. Unless otherwise noted, all of the following commands will assume you're running in this shell.
 
+### Dev Data
+
+If you'd like to add some basic data to your local app for testing/development purposes, you can run this simple command:
+```bash
+DISABLE_DATABASE_ENVIRONMENT_CHECK=1 bundle exec rake db:reset
+```
+Note, this command will drop your previous db, create new tables, run migrations, and insert data. The `DISABLE_DATABASE_ENVIRONMENT_CHECK=1` flag is a workaround for 
+[`ActiveRecord::EnvironmentMismatchError`](https://makandracards.com/makandra/47069-how-to-avoid-activerecord-environmentmismatcherror-on-rails-db-drop).
+
 ### Running the Server
 - Run `ruby app.rb`
 - Visit `localhost:4567`/`localhost:4567/editor` in your browser
