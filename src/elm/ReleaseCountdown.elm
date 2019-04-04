@@ -40,7 +40,7 @@ init =
         nextEntryRequest =
             Http.get
                 { url = "/api/next"
-                , expect = Http.expectString nextEntryRequestHandle
+                , expect = Http.expectJson nextEntryRequestHandle Json.string
                 }
 
         timezoneCmd =
