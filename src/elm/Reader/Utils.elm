@@ -1,14 +1,29 @@
-module Reader.Utils exposing (dateStringToTime, isOwnRelease, maxReleaseDateAsTime, selectedTitleFromSL, selectedTopParentId)
+module Reader.Utils exposing (dateStringToTime, isOwnRelease, matchNoMoreThan, maxReleaseDateAsTime, selectedTitleFromSL, selectedTopParentId, unsafeRegex)
 
 import Core.Utils.MaybeExtra exposing (..)
 import Core.Utils.SelectionList as SL exposing (SelectionList)
 import Core.Utils.String exposing (stripTags)
 import Iso8601
 import Reader.Aliases exposing (..)
-import Regex
+import Regex exposing (Regex)
 import String
 import Time exposing (Posix)
 import Tuple exposing (first)
+
+
+unsafeRegex : String -> Regex
+unsafeRegex =
+    Regex.fromString >> Maybe.withDefault Regex.never
+
+
+matchNoMoreThan : Int -> (Regex.Match -> String) -> (Regex.Match -> String)
+matchNoMoreThan n f =
+    \match ->
+        if match.number <= n then
+            f match
+
+        else
+            match.match
 
 
 selectedTitleFromSL : SelectionList { a | heading : String, level : Int } -> String
@@ -29,24 +44,12 @@ selectedTitleFromSL sl =
         |> List.foldl
             (\( lvl, heading ) ( section, title ) ->
                 let
-                    unsafeRegex =
-                        Regex.fromString >> Maybe.withDefault Regex.never
-
-                    withFirstMatch : (Regex.Match -> String) -> (Regex.Match -> String)
-                    withFirstMatch f =
-                        \match ->
-                            if match.number == 1 then
-                                f match
-
-                            else
-                                match.match
-
                     str =
                         String.trim heading
 
                     splitStr =
-                        Regex.replace (unsafeRegex "\\.\\s+") (withFirstMatch <| always "<~!~>^^%") str
-                            |> Regex.replace (unsafeRegex "[0-9]+\\s+") (withFirstMatch <| .match >> (\a -> (++) a "<~!~>^^%"))
+                        Regex.replace (unsafeRegex "\\.\\s+") (matchNoMoreThan 1 <| always "<~!~>^^%") str
+                            |> Regex.replace (unsafeRegex "[0-9]+\\s+") (matchNoMoreThan 1 <| .match >> (\a -> (++) a "<~!~>^^%"))
                             |> String.split "<~!~>^^%"
 
                     segSect =
