@@ -8,7 +8,7 @@ import Reader.Aliases exposing (..)
 import Reader.Components.ContactModal as ContactModal
 import Reader.Components.CreditsRoll as CreditsRoll
 import Reader.Components.ShareDialog as ShareDialog
-import Time exposing (Posix)
+import Time exposing (Posix, Zone)
 
 
 
@@ -49,6 +49,7 @@ type alias Model =
     , nextReleaseDate : Maybe Posix
     , bookDimensions : Maybe ( Float, Float )
     , navigationKey : Key
+    , userTimezone : Zone
     }
 
 
@@ -56,8 +57,8 @@ type alias Model =
 ---- EMPTY MODELS ----
 
 
-empty : Key -> Model
-empty navigationKey =
+empty : Key -> Zone -> Model
+empty navigationKey userTimezone =
     { toc = SL.fromList emptyRenderElement []
     , stylesheets = Dict.empty
     , pages = { current = 0, total = 0 }
@@ -73,6 +74,7 @@ empty navigationKey =
     , bookmark = LoadingBookmark
     , bookDimensions = Nothing
     , navigationKey = navigationKey
+    , userTimezone = userTimezone
     }
 
 

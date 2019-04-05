@@ -9,6 +9,7 @@ import Dict exposing (Dict)
 import Reader.Aliases exposing (..)
 import Reader.Model exposing (..)
 import Reader.Utils.Disqus exposing (toDisqusId)
+import Time
 
 
 toRenderElement : Either Chapter Entry -> Dict RenderElementID Bool -> RenderElement
@@ -50,7 +51,7 @@ toRenderElement item readEntries =
             }
 
 
-fromChapterList : List Chapter -> Dict RenderElementID Bool -> (Navigation.Key -> Model)
+fromChapterList : List Chapter -> Dict RenderElementID Bool -> (Navigation.Key -> Time.Zone -> Model)
 fromChapterList chapters readEntries =
     let
         getID =
@@ -77,10 +78,10 @@ fromChapterList chapters readEntries =
         tailElems =
             Maybe.withDefault [] <| List.tail elementList
     in
-    \navigationKey ->
+    \navigationKey userTimezone ->
         let
             emptyModel =
-                empty navigationKey
+                empty navigationKey userTimezone
         in
         { emptyModel
             | toc = SL.fromList firstElem tailElems

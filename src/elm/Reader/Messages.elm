@@ -1,39 +1,37 @@
-module Reader.Messages exposing (..)
+module Reader.Messages exposing (Msg(..), debugLog)
 
-import Reader.Model exposing (..)
-import Reader.Aliases exposing (..)
-import Reader.Utils.Analytics as Analytics
+import Browser.Dom exposing (Viewport)
 import Core.Models.Chapter exposing (Chapter)
-import Reader.Views.Dropdown as Dropdown
-import Reader.Views.ShareButtons as ShareButtons
+import Debug
+import Reader.Aliases exposing (..)
+import Reader.Components.ContactModal as ContactModal
+import Reader.Components.CreditsRoll as CreditsRoll
 import Reader.Components.Modal.Messages as Modal
 import Reader.Components.ShareDialog as ShareDialog
-import Reader.Components.CreditsRoll as CreditsRoll
-import Reader.Components.ContactModal as ContactModal
+import Reader.Model exposing (..)
+import Reader.Views.Dropdown as Dropdown
+import Reader.Views.ShareButtons as ShareButtons
+import Time exposing (Posix)
+import Url exposing (Url)
 
-import Navigation exposing (Location)
-import Window exposing (Size)
-import Time exposing (Time)
-import Date exposing (Date)
-import Debug
+
 
 ---- Messages ----
 
+
 type Msg
     = TurnPage Direction
-    | CoverOpen (Time -> Analytics.OpenMethod)
-    | UpdateWindowSize Size
-    | SendCoverOpenAnalytic (Time -> Analytics.OpenMethod) Time
-    | SendFollowAnalytic Analytics.LabelFollowMethod
+    | CoverOpen
+    | UpdateWindowSize Viewport
     | OpenSharePopup ShareButtons.Msg
     | ShowShareDialog RenderElementID
     | ShareDialogMsg (Modal.Msg ShareDialog.Msg)
     | CreditsRollMsg (Modal.Msg CreditsRoll.Msg)
     | ContactModalMsg (Modal.Msg ContactModal.Msg)
-    | Load (List Chapter) LocalStorageData Time Location
+    | Load (List Chapter) LocalStorageData Posix Url
     | ChapterHasRendered CurrentPage IdsByPage
     | ChapterHasReflowed CurrentPage IdsByPage
-    | SetNextReleaseDate Date
+    | SetNextReleaseDate Posix
     | ChangeSelectedHeading RenderElementID
     | Dropdown Dropdown.Msg
     | Dump String
@@ -41,10 +39,17 @@ type Msg
     | StartReflow
     | NoOp
 
+
 debugLog : String -> Msg -> Msg
 debugLog label msg =
-    let log = Debug.log label <| case msg of
-        Load _ _ _ _ -> "Load"
-        _ -> toString msg
+    let
+        log =
+            Debug.log label <|
+                case msg of
+                    Load _ _ _ _ ->
+                        "Load"
+
+                    _ ->
+                        Debug.toString msg
     in
-        msg
+    msg
