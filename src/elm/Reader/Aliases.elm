@@ -70,9 +70,7 @@ type alias LocalStorageData =
 
 
 type alias Flags =
-    { localStorage : LocalStorageData
-    , progStartTime : ProgramStartTime
-    }
+    { localStorage : LocalStorageData }
 
 
 type alias HeadingUpdate =

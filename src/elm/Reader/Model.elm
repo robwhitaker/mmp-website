@@ -57,8 +57,8 @@ type alias Model =
 ---- EMPTY MODELS ----
 
 
-empty : Key -> Zone -> Model
-empty navigationKey userTimezone =
+empty : Key -> Model
+empty navigationKey =
     { toc = SL.fromList emptyRenderElement []
     , stylesheets = Dict.empty
     , pages = { current = 0, total = 0 }
@@ -74,7 +74,10 @@ empty navigationKey userTimezone =
     , bookmark = LoadingBookmark
     , bookDimensions = Nothing
     , navigationKey = navigationKey
-    , userTimezone = userTimezone
+
+    -- TODO: this should really be a Maybe until it gets a value
+    --       instead of just using UTC as a default
+    , userTimezone = Time.utc
     }
 
 

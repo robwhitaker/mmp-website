@@ -1,4 +1,4 @@
-port module Reader.Ports exposing (RenderData, RenderResult, beginReflow, chapterReflowed, chapterRendered, inlineLinkClicked, inlineShareClicked, keyPressedInReader, mouseClickedInReader, openSharePopup, ping, pingback, reflowRequest, renderChapter, rollCredits, setBookmarkInStorage, setPage, setReadInStorage, setScrollEnabled, setSelectedId, setTitle, switchDisqusThread)
+port module Reader.Ports exposing (RenderData, RenderResult, beginReflow, chapterReflowed, chapterRendered, inlineLinkClicked, inlineShareClicked, keyPressedInReader, mouseClickedInReader, openSharePopup, ping, pingback, reflowRequest, renderChapter, rollCredits, setBookmarkInStorage, setPage, setReadInStorage, setScrollEnabled, setSelectedId, switchDisqusThread)
 
 --import Reader.Model exposing (..)
 --import Reader.Messages exposing (..)
@@ -64,9 +64,6 @@ port renderChapter : RenderData -> Cmd msg
 
 
 port switchDisqusThread : DisqusData -> Cmd msg
-
-
-port setTitle : String -> Cmd msg
 
 
 port setReadInStorage : RenderElementID -> Cmd msg

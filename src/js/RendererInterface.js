@@ -132,7 +132,7 @@ var RendererInterface = (function() {
                     case "comments":
                         isScrolling = true;
                         Reader.ports.inlineLinkClicked.send(id);
-                        setTimeout(function() {                        
+                        setTimeout(function() {
                             scrollToElem(document.getElementById("comments-box"), function() {
                                 isScrolling = false;
                                 if(!!deferredDisqusData) {
@@ -140,7 +140,7 @@ var RendererInterface = (function() {
                                     deferredDisqusData = null;
                                 }
                             });
-                        }, 250); // janky timeout to account for the time `send` needs to take effect                        
+                        }, 250); // janky timeout to account for the time `send` needs to take effect
                         sendAnalyticEvent(
                             { category : "Book"
                             , action   : "Inline Comments Link Click"
@@ -155,7 +155,7 @@ var RendererInterface = (function() {
                         setTimeout(function() {
                             scrollToElem(document.getElementById("authors-note"), function() {
                                 isScrolling = false;
-                                if(!!deferredDisqusData) { 
+                                if(!!deferredDisqusData) {
                                     switchDisqusThread(deferredDisqusData);
                                     deferredDisqusData = null;
                                 }
@@ -178,7 +178,7 @@ var RendererInterface = (function() {
                             { category : "Book"
                             , action   : "Interactive Heading Click"
                             , label    : id
-                            , value    : null                                
+                            , value    : null
                             }
                         );
                         break;
@@ -272,10 +272,6 @@ var RendererInterface = (function() {
     }
 
     Reader.ports.switchDisqusThread.subscribe(switchDisqusThread);
-
-    Reader.ports.setTitle.subscribe(function(title) {
-        document.title = title;
-    });
 
     Reader.ports.openSharePopup.subscribe(function(data) {
         var elem = document.getElementsByClassName(data.srcBtnClass)[0];

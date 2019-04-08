@@ -1,4 +1,4 @@
-module Reader.Utils.Cmd exposing (SelectionSwitchFlags, ShouldForce(..), genRenderBlob_, renderCmd, setDisqusThread, setTitleCmd, switchSelectedIdCmd)
+module Reader.Utils.Cmd exposing (SelectionSwitchFlags, ShouldForce(..), genRenderBlob_, renderCmd, setDisqusThread, switchSelectedIdCmd)
 
 import Browser.Navigation as Navigation
 import Core.Utils.MaybeExtra exposing (..)
@@ -54,13 +54,6 @@ switchSelectedIdCmd { forceSelectionChange } oldModel newModel =
             else
                 setDisqusThread newModel
 
-        titleUpdate =
-            if oldModel.toc.selected.id == newModel.toc.selected.id && oldModel.showCover == newModel.showCover && not forceChange then
-                Cmd.none
-
-            else
-                setTitleCmd newModel
-
         selectedUpdate =
             if oldModel.toc.selected.id == newModel.toc.selected.id && not forceChange then
                 Cmd.none
@@ -77,20 +70,9 @@ switchSelectedIdCmd { forceSelectionChange } oldModel newModel =
     in
     Cmd.batch
         [ disqusUpdate
-        , titleUpdate
         , selectedUpdate
         , hashUpdate
         ]
-
-
-setTitleCmd : Model -> Cmd msg
-setTitleCmd model =
-    setTitle <|
-        if model.showCover then
-            "Midnight Murder Party"
-
-        else
-            selectedTitleFromSL model.toc ++ " | Midnight Murder Party"
 
 
 setDisqusThread : Model -> Cmd msg

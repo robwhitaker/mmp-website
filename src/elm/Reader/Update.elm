@@ -1,6 +1,8 @@
 module Reader.Update exposing (getAllOnPage, getHeadingsOnPage, gotoHeading, jumpToEntry, markSelectedRead, untilContent, update)
 
 import Array
+import Browser
+import Browser.Dom as Dom
 import Browser.Navigation as Navigation
 import Core.Models.Chapter exposing (Chapter)
 import Core.Utils.MaybeExtra exposing (..)
@@ -19,7 +21,7 @@ import Reader.Model exposing (..)
 import Reader.Model.Helpers
 import Reader.Ports exposing (..)
 import Reader.Utils exposing (..)
-import Reader.Utils.Cmd as CmdHelpers exposing (renderCmd, setDisqusThread, setTitleCmd, switchSelectedIdCmd)
+import Reader.Utils.Cmd as CmdHelpers exposing (renderCmd, setDisqusThread, switchSelectedIdCmd)
 import Reader.Utils.Disqus as Disqus
 import Regex
 import String
@@ -34,7 +36,7 @@ import Url
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case debugLog "msg" msg of
+    case msg of
         CoverOpen ->
             let
                 newModel =
@@ -46,7 +48,7 @@ update msg model =
                     Navigation.replaceUrl model.navigationKey <| "#!/" ++ selectedTopParentId newModel.toc
             in
             ( newModel
-            , Cmd.batch [ setTitleCmd newModel, setDisqusThread newModel, coverOpenHashEvent ]
+            , Cmd.batch [ setDisqusThread newModel, coverOpenHashEvent ]
             )
 
         UpdateWindowSize viewport ->
@@ -81,6 +83,11 @@ update msg model =
             in
             ( { model | bookDimensions = newSize }
             , Cmd.none
+            )
+
+        WindowResized ->
+            ( model
+            , Task.perform UpdateWindowSize Dom.getViewport
             )
 
         OpenSharePopup sharePopupSettings ->
@@ -280,7 +287,7 @@ update msg model =
                                         Navigation.replaceUrl model.navigationKey "/"
                                 in
                                 ( newModel
-                                , Cmd.batch [ setTitleCmd newModel, hideHashCmd ]
+                                , Cmd.batch [ hideHashCmd ]
                                 )
 
                             else
@@ -380,20 +387,13 @@ update msg model =
                         [ cmds ]
                     )
 
-        Load chapters { readEntries, bookmark } progStartTime location navigationKey userTimezone ->
+        Load chapters { readEntries, bookmark } location userTimezone ->
             let
-                loadedModel_ =
-                    Reader.Model.Helpers.fromChapterList chapters
-                        (Dict.fromList readEntries)
-                        navigationKey
-                        userTimezone
-
                 loadedModel =
-                    --to make sure the async load doesn't throw away the results from the nextReleaseDate HTTP request
-                    { loadedModel_
-                        | nextReleaseDate = model.nextReleaseDate
-                        , bookDimensions = model.bookDimensions
-                    }
+                    Reader.Model.Helpers.fromChapterList
+                        chapters
+                        (Dict.fromList readEntries)
+                        { model | userTimezone = userTimezone }
 
                 loc =
                     Maybe.withDefault "" location.fragment
@@ -557,14 +557,17 @@ update msg model =
             , Cmd.none
             )
 
-        Dump message ->
-            let
-                dump =
-                    Debug.log "Dump: " message
-            in
-            ( model
-            , Cmd.none
-            )
+        HandleUrlRequest urlRequest ->
+            case urlRequest of
+                Browser.Internal url ->
+                    ( model
+                    , Cmd.none
+                    )
+
+                Browser.External url ->
+                    ( model
+                    , Navigation.load url
+                    )
 
         Ping ->
             ( model

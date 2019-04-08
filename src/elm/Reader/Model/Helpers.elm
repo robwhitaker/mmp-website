@@ -23,7 +23,6 @@ toRenderElement item readEntries =
         Left chapter ->
             { emptyRenderElement
                 | id = idToString "c" chapter.id
-                , disqusId = toDisqusId (idToString "c" chapter.id)
                 , heading = chapter.title
                 , body = chapter.content
                 , isInteractive = chapter.isInteractive
@@ -51,8 +50,8 @@ toRenderElement item readEntries =
             }
 
 
-fromChapterList : List Chapter -> Dict RenderElementID Bool -> (Navigation.Key -> Time.Zone -> Model)
-fromChapterList chapters readEntries =
+fromChapterList : List Chapter -> Dict RenderElementID Bool -> Model -> Model
+fromChapterList chapters readEntries model =
     let
         getID =
             .id >> Maybe.withDefault -1
@@ -78,12 +77,7 @@ fromChapterList chapters readEntries =
         tailElems =
             Maybe.withDefault [] <| List.tail elementList
     in
-    \navigationKey userTimezone ->
-        let
-            emptyModel =
-                empty navigationKey userTimezone
-        in
-        { emptyModel
-            | toc = SL.fromList firstElem tailElems
-            , stylesheets = stylesheetDict
-        }
+    { model
+        | toc = SL.fromList firstElem tailElems
+        , stylesheets = stylesheetDict
+    }

@@ -1,5 +1,6 @@
-module Reader.Messages exposing (Msg(..), debugLog)
+module Reader.Messages exposing (Msg(..))
 
+import Browser
 import Browser.Dom exposing (Viewport)
 import Browser.Navigation as Navigation
 import Core.Models.Chapter exposing (Chapter)
@@ -24,33 +25,19 @@ type Msg
     = TurnPage Direction
     | CoverOpen
     | UpdateWindowSize Viewport
+    | WindowResized
     | OpenSharePopup ShareButtons.Msg
     | ShowShareDialog RenderElementID
     | ShareDialogMsg (Modal.Msg ShareDialog.Msg)
     | CreditsRollMsg (Modal.Msg CreditsRoll.Msg)
     | ContactModalMsg (Modal.Msg ContactModal.Msg)
-    | Load (List Chapter) LocalStorageData Posix Url Navigation.Key Time.Zone
+    | Load (List Chapter) LocalStorageData Url Time.Zone
     | ChapterHasRendered CurrentPage IdsByPage
     | ChapterHasReflowed CurrentPage IdsByPage
     | SetNextReleaseDate Posix
+    | HandleUrlRequest Browser.UrlRequest
     | ChangeSelectedHeading RenderElementID
     | Dropdown Dropdown.Msg
-    | Dump String
     | Ping
     | StartReflow
     | NoOp
-
-
-debugLog : String -> Msg -> Msg
-debugLog label msg =
-    let
-        log =
-            Debug.log label <|
-                case msg of
-                    Load _ _ _ _ _ _ ->
-                        "Load"
-
-                    _ ->
-                        Debug.toString msg
-    in
-    msg
