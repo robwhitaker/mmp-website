@@ -564,6 +564,14 @@ update msg model =
                     , Cmd.none
                     )
 
+                -- For some reason, Elm treats anchor tags with no
+                -- href attribute as External URLs with a href of
+                -- empty string, so we need this extra check.
+                Browser.External "" ->
+                    ( model
+                    , Cmd.none
+                    )
+
                 Browser.External url ->
                     ( model
                     , Navigation.load url
