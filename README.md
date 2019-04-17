@@ -27,7 +27,7 @@ Once you run the setup script, you can create a dev environment with all the dep
 - Editor: `gulp build:editor`
 - Countdown: `gulp build:countdown`
 
-**Note:** You may use the `--prod` flag while building the Reader to enable stripping logs/alerts/debuggers and to use prod config.
+**Note:** You may use the `--prod` flag while building the Reader and Countdown pages to enable stripping logs/alerts/debuggers, tell the Elm compiler to use the --optimize flag, and use prod config.
 
 ### Updating Dependencies
 
