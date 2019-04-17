@@ -25,7 +25,7 @@ type alias InnerModel =
 
 
 type Msg
-    = ToggleShareFromHeading Bool
+    = ToggleShareFromHeading
     | OpenSharePopup ShareButtons.Msg
     | Close
     | NoOp
@@ -69,8 +69,11 @@ initInnerModel shareId locationHost sectionTitle model =
 update : Msg -> InnerModel -> ( InnerModel, Cmd Msg, Modal.ExpMsg )
 update msg model =
     case msg of
-        ToggleShareFromHeading val ->
-            ( { model | shareFromHeading = val }, Cmd.none, Modal.None )
+        ToggleShareFromHeading ->
+            ( { model | shareFromHeading = not model.shareFromHeading }
+            , Cmd.none
+            , Modal.None
+            )
 
         OpenSharePopup popupSettings ->
             ( model, Cmd.batch [ openSharePopup popupSettings.data ], Modal.None )
@@ -105,7 +108,7 @@ view model =
         , input
             [ type_ "checkbox"
             , checked model.shareFromHeading
-            , onCheck ToggleShareFromHeading
+            , onCheck (always ToggleShareFromHeading)
             ]
             []
         , span [] [ text <| "Share from current heading " ]
