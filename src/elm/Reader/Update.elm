@@ -560,9 +560,15 @@ update msg model =
         HandleUrlRequest urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
-                    ( model
-                    , Cmd.none
-                    )
+                    if url.path == "/" then
+                        ( model
+                        , Navigation.load url.path
+                        )
+
+                    else
+                        ( model
+                        , Cmd.none
+                        )
 
                 -- For some reason, Elm treats anchor tags with no
                 -- href attribute as External URLs with a href of
