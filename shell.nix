@@ -33,7 +33,8 @@ in pkgs1803.lib.overrideDerivation haskellEnv (old: {
     sqlite
     nodejs
     purescript
-    elmPackages.elm
+    pkgs1903Beta.elmPackages.elm
+    pkgs1903Beta.elmPackages.elm-format
     cabal-install
   ]);
   shellHook = ''

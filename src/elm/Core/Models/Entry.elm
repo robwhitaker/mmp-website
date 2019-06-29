@@ -1,39 +1,45 @@
-module Core.Models.Entry exposing (..)
+module Core.Models.Entry exposing (Entry, decoder, empty)
 
 import Json.Decode as Decoder exposing (Decoder, field)
 import Json.Encode as Encoder exposing (Value)
 
+
 type alias Entry =
-    { id             : Maybe Int
-    , chapter        : Int
-    , level          : Int
-    , order          : Int
-    , isInteractive  : Bool
+    { id : Maybe Int
+    , chapter : Int
+    , level : Int
+    , order : Int
+    , isInteractive : Bool
     , interactiveUrl : String
-    , title          : String
-    , content        : String
-    , releaseDate    : String
-    , authorsNote    : String
+    , title : String
+    , content : String
+    , releaseDate : String
+    , authorsNote : String
     }
+
 
 empty : Entry
 empty =
-    { id             = Nothing
-    , chapter        = -1
-    , level          = -1
-    , order          = -1
-    , isInteractive  = False
+    { id = Nothing
+    , chapter = -1
+    , level = -1
+    , order = -1
+    , isInteractive = False
     , interactiveUrl = ""
-    , title          = ""
-    , content        = ""
-    , releaseDate    = ""
-    , authorsNote    = ""
+    , title = ""
+    , content = ""
+    , releaseDate = ""
+    , authorsNote = ""
     }
+
 
 decoder : Decoder Entry
 decoder =
-    let apply = Decoder.andThen << flip Decoder.map
-    in Decoder.map Entry
+    let
+        apply =
+            Decoder.andThen << (\b a -> Decoder.map a b)
+    in
+    Decoder.map Entry
         (field "id" <| Decoder.maybe Decoder.int)
         |> apply (field "chapterId" Decoder.int)
         |> apply (field "level" Decoder.int)

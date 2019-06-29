@@ -1,64 +1,80 @@
-module Core.Utils.SelectionList exposing (..)
+module Core.Utils.SelectionList exposing (SelectionList, fromList, goto, indexOf, length, mapSelected, next, previous, selectedIndex, toList, traverseFromSelectedUntil)
+
 
 type alias SelectionList a =
     { previous : List a
     , selected : a
-    , next     : List a
+    , next : List a
     }
+
 
 next : SelectionList a -> SelectionList a
 next sl =
     if List.length sl.next > 0 then
-        { sl |
-            previous = sl.selected :: sl.previous,
-            selected = List.head sl.next |> Maybe.withDefault sl.selected,
-            next     = List.drop 1 sl.next
+        { sl
+            | previous = sl.selected :: sl.previous
+            , selected = List.head sl.next |> Maybe.withDefault sl.selected
+            , next = List.drop 1 sl.next
         }
+
     else
         sl
+
 
 previous : SelectionList a -> SelectionList a
 previous sl =
     if List.length sl.previous > 0 then
-        { sl |
-            previous = List.drop 1 sl.previous,
-            selected = List.head sl.previous |> Maybe.withDefault sl.selected,
-            next     = sl.selected :: sl.next
+        { sl
+            | previous = List.drop 1 sl.previous
+            , selected = List.head sl.previous |> Maybe.withDefault sl.selected
+            , next = sl.selected :: sl.next
         }
+
     else
         sl
+
 
 length : SelectionList a -> Int
 length sl =
     List.length sl.previous + 1 + List.length sl.next
 
+
 selectedIndex : SelectionList a -> Int
 selectedIndex sl =
     List.length sl.previous
 
+
 goto : Int -> SelectionList a -> SelectionList a
 goto index sl =
-    let currentIndex = selectedIndex sl
+    let
+        currentIndex =
+            selectedIndex sl
     in
-        if index == currentIndex then
-            sl
-        else if index < currentIndex && List.length sl.previous > 0 then
-            goto index (previous sl)
-        else if index > currentIndex && List.length sl.next > 0 then
-            goto index (next sl)
-        else
-            sl
+    if index == currentIndex then
+        sl
+
+    else if index < currentIndex && List.length sl.previous > 0 then
+        goto index (previous sl)
+
+    else if index > currentIndex && List.length sl.next > 0 then
+        goto index (next sl)
+
+    else
+        sl
+
 
 fromList : a -> List a -> SelectionList a
 fromList x xs =
     { previous = []
     , selected = x
-    , next     = xs
+    , next = xs
     }
+
 
 toList : SelectionList a -> List a
 toList sl =
-    List.reverse sl.previous ++ [sl.selected] ++ sl.next
+    List.reverse sl.previous ++ [ sl.selected ] ++ sl.next
+
 
 indexOf : (a -> Bool) -> SelectionList a -> Maybe Int
 indexOf pred sl =
@@ -68,11 +84,15 @@ indexOf pred sl =
                 Just head ->
                     if pred head then
                         Just index
+
                     else
-                        indexOf_ (index+1) (Maybe.withDefault [] <| List.tail list)
-                Nothing -> Nothing
+                        indexOf_ (index + 1) (Maybe.withDefault [] <| List.tail list)
+
+                Nothing ->
+                    Nothing
     in
-        indexOf_ 0 (toList sl)
+    indexOf_ 0 (toList sl)
+
 
 traverseFromSelectedUntil : (SelectionList a -> SelectionList a) -> (a -> Bool) -> SelectionList a -> Maybe (SelectionList a)
 traverseFromSelectedUntil traverse pred sl =
@@ -80,12 +100,15 @@ traverseFromSelectedUntil traverse pred sl =
         go list =
             if pred list.selected then
                 Just list
+
             else if traverse list /= list then
                 go (traverse list)
+
             else
                 Nothing
     in
-        go (traverse sl)
+    go (traverse sl)
+
 
 mapSelected : (a -> a) -> SelectionList a -> SelectionList a
 mapSelected fn sl =

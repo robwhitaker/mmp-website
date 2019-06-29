@@ -42,7 +42,7 @@ var injectConfig = function() {
     });
 };
 
-var buildCss = function(stylesheet) {  
+var buildCss = function(stylesheet) {
     exec('mkdir -p public/dist/css');
     exec('cabal run style ' + stylesheet + ' | tail -n 1 1> public/dist/css/' + stylesheet  + '.min.css');
 };
@@ -85,7 +85,7 @@ gulp.task('build:reader-html', function() {
 
 gulp.task('build:reader-elm', function() {
     return gulp.src('src/elm/Reader/Main.elm')
-        .pipe(elm())
+        .pipe(elm({ optimize: env === "prod" }))
         .pipe(gulp.dest('tmp-elm'));
 });
 
@@ -114,7 +114,7 @@ gulp.task('build:countdown-css', function() {
 
 gulp.task('build:countdown-elm', function() {
     return gulp.src('src/elm/ReleaseCountdown.elm')
-        .pipe(elm())
+        .pipe(elm({ optimize: env === "prod" }))
         .pipe(gulp.dest('tmp-elm'));
 });
 
@@ -146,7 +146,7 @@ gulp.task('build:editor', ['build:editor-html','build:editor-css','build:editor-
         { src: "output/**/*.js"
         , module: "Editor.Main"
         , main: "Editor.Main"
-        , output: "public/dist/js/editor.js" 
+        , output: "public/dist/js/editor.js"
         });
 });
 

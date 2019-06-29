@@ -14,11 +14,9 @@ var RendererInterface = (function() {
     var receivedPingback = false;
     var isScrolling = false;
     var deferredDisqusData;
-    var Reader = window.Reader = Elm.Reader.Main.fullscreen(
-        { localStorage : getLocalStorage()
-        , progStartTime : new Date().getTime()
-        }
-    );
+    var Reader = window.Reader = Elm.Reader.Main.init({
+        flags: { localStorage : getLocalStorage() }
+    });
 
     // window.location.hash = "";
 
@@ -58,10 +56,7 @@ var RendererInterface = (function() {
 
     function showErrorPopup(err) {
         if(!receivedPingback) {
-            sendAnalyticError(err,true);
             document.getElementById("error-popup").style.display = "block";
-        } else {
-            sendAnalyticError(err,false);
         }
     }
 
@@ -132,7 +127,7 @@ var RendererInterface = (function() {
                     case "comments":
                         isScrolling = true;
                         Reader.ports.inlineLinkClicked.send(id);
-                        setTimeout(function() {                        
+                        setTimeout(function() {
                             scrollToElem(document.getElementById("comments-box"), function() {
                                 isScrolling = false;
                                 if(!!deferredDisqusData) {
@@ -140,14 +135,7 @@ var RendererInterface = (function() {
                                     deferredDisqusData = null;
                                 }
                             });
-                        }, 250); // janky timeout to account for the time `send` needs to take effect                        
-                        sendAnalyticEvent(
-                            { category : "Book"
-                            , action   : "Inline Comments Link Click"
-                            , label    : id
-                            , value    : null
-                            }
-                        );
+                        }, 250); // janky timeout to account for the time `send` needs to take effect
                         break;
                     case "authorsnote":
                         isScrolling = true;
@@ -155,7 +143,7 @@ var RendererInterface = (function() {
                         setTimeout(function() {
                             scrollToElem(document.getElementById("authors-note"), function() {
                                 isScrolling = false;
-                                if(!!deferredDisqusData) { 
+                                if(!!deferredDisqusData) {
                                     switchDisqusThread(deferredDisqusData);
                                     deferredDisqusData = null;
                                 }
@@ -164,23 +152,9 @@ var RendererInterface = (function() {
                         break;
                     case "share":
                         Reader.ports.inlineShareClicked.send(id);
-                        sendAnalyticEvent(
-                            { category : "Book"
-                            , action   : "Inline Share Link Click"
-                            , label    : id
-                            , value    : null
-                            }
-                        );
                         break;
                     case "interactive":
                         Reader.ports.inlineLinkClicked.send(id);
-                        sendAnalyticEvent(
-                            { category : "Book"
-                            , action   : "Interactive Heading Click"
-                            , label    : id
-                            , value    : null                                
-                            }
-                        );
                         break;
                     default:
                         console.log(link, id);
@@ -273,10 +247,6 @@ var RendererInterface = (function() {
 
     Reader.ports.switchDisqusThread.subscribe(switchDisqusThread);
 
-    Reader.ports.setTitle.subscribe(function(title) {
-        document.title = title;
-    });
-
     Reader.ports.openSharePopup.subscribe(function(data) {
         var elem = document.getElementsByClassName(data.srcBtnClass)[0];
         if(!elem) return;
@@ -325,39 +295,6 @@ var RendererInterface = (function() {
         }
     });
 
-    function sendAnalyticEvent(analyticData) {
-        console.log("-----------------ANALYTIC---------------------");
-        console.log(analyticData);
-        console.log("----------------------------------------------");
-        try {
-            ga('send',
-                { hitType : 'event'
-                , eventCategory : analyticData.category
-                , eventAction   : analyticData.action
-                , eventLabel    : analyticData.label
-                , eventValue    : analyticData.value
-                }
-            );
-        } catch(e) {
-            console.error(e);
-        }
-    }
-
-    function sendAnalyticError(msg, isFatal) {
-        console.log("--------------ERROR ANALYTIC------------------");
-        console.log(msg, isFatal);
-        console.log("----------------------------------------------");
-        try {
-            ga('send','exception',
-                { exDescription : msg
-                , exFatal : !!isFatal
-                }
-              );
-        } catch(e) {
-            console.error(e);
-        }
-    }
-
     Reader.ports.setScrollEnabled.subscribe(function(isEnabled) {
         if(isEnabled)
             document.body.classList.remove("no-scroll");
@@ -372,8 +309,6 @@ var RendererInterface = (function() {
     Reader.ports.pingback.subscribe(function() {
         receivedPingback = true;
     });
-
-    Reader.ports.sendAnalyticEvent.subscribe(sendAnalyticEvent);
 
     Reader.ports.beginReflow.subscribe(function() {
         Renderer.reflow();

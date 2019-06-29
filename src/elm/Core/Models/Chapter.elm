@@ -1,40 +1,45 @@
-module Core.Models.Chapter exposing (..)
+module Core.Models.Chapter exposing (Chapter, decoder, empty)
 
 import Core.Models.Entry as Entry exposing (Entry)
-
 import Json.Decode as Decoder exposing (Decoder, field)
 
+
 type alias Chapter =
-    { id             : Maybe Int
-    , order          : Int
-    , isInteractive  : Bool
+    { id : Maybe Int
+    , order : Int
+    , isInteractive : Bool
     , interactiveUrl : String
-    , stylesheet     : String
-    , title          : String
-    , content        : String
-    , releaseDate    : String
-    , authorsNote    : String
-    , entries_       : List Entry
+    , stylesheet : String
+    , title : String
+    , content : String
+    , releaseDate : String
+    , authorsNote : String
+    , entries_ : List Entry
     }
+
 
 empty : Chapter
 empty =
-    { id             = Nothing
-    , order          = -1
-    , isInteractive  = False
+    { id = Nothing
+    , order = -1
+    , isInteractive = False
     , interactiveUrl = ""
-    , stylesheet     = ""
-    , title          = ""
-    , content        = ""
-    , releaseDate    = ""
-    , authorsNote    = ""
-    , entries_       = []
+    , stylesheet = ""
+    , title = ""
+    , content = ""
+    , releaseDate = ""
+    , authorsNote = ""
+    , entries_ = []
     }
+
 
 decoder : Decoder Chapter
 decoder =
-    let apply = Decoder.andThen << flip Decoder.map
-    in Decoder.map Chapter 
+    let
+        apply =
+            Decoder.andThen << (\b a -> Decoder.map a b)
+    in
+    Decoder.map Chapter
         (field "id" <| Decoder.maybe Decoder.int)
         |> apply (field "order" Decoder.int)
         |> apply (field "isInteractive" Decoder.bool)

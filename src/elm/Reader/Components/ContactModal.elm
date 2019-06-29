@@ -1,43 +1,50 @@
-module Reader.Components.ContactModal exposing (Model,empty,Msg(..))
+module Reader.Components.ContactModal exposing (Model, Msg(..), empty)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Json
 import Markdown
-
-import Reader.Components.Modal.Model as Modal exposing (modal)
 import Reader.Components.Modal.ExportMessages as Modal
+import Reader.Components.Modal.Model as Modal exposing (modal)
 import Reader.Components.Modal.Utils as Modal
+
 
 type alias Model =
     Modal.Model InnerModel Msg
 
+
 type alias InnerModel =
     String
+
 
 type Msg
     = Close
     | NoOp
 
+
 empty : Model
 empty =
-    modal 400 "contact-modal"
+    modal 400
+        "contact-modal"
         { model = ""
         , update = update
         , view = view
-        , onShow = \model -> (model, Cmd.none)
-        , onFade = \model -> (model, Cmd.none)
-        , onHide = \model -> (model, Cmd.none)
+        , onShow = \model -> ( model, Cmd.none )
+        , onFade = \model -> ( model, Cmd.none )
+        , onHide = \model -> ( model, Cmd.none )
         }
 
-update : Msg -> InnerModel -> (InnerModel, Cmd Msg, Modal.ExpMsg)
+
+update : Msg -> InnerModel -> ( InnerModel, Cmd Msg, Modal.ExpMsg )
 update msg _ =
     case msg of
         Close ->
-            ("", Cmd.none, Modal.TriggerFade)
+            ( "", Cmd.none, Modal.TriggerFade )
+
         NoOp ->
-            ("", Cmd.none, Modal.None)
+            ( "", Cmd.none, Modal.None )
+
 
 view : InnerModel -> Html Msg
 view _ =

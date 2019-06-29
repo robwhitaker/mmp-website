@@ -1,24 +1,25 @@
 port module ReleaseCountdown exposing (main)
 
-import Date
-import Date.Format as Date
+import Browser
+import Browser.Navigation as Navigation
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
+import Iso8601
 import Json.Decode as Json
 import Markdown
-import Navigation
-import Reader.Utils.Analytics as Analytics exposing (..)
 import Reader.Views.ShareButtons as ShareButtons
-import Time exposing (Time)
+import Task
+import Time exposing (Month(..), Posix)
 
 
+main : Program () Model Msg
 main =
-    Html.program
-        { init = init
+    Browser.element
+        { init = \_ -> init
         , update = update
-        , subscriptions = \_ -> Time.every Time.second SetCurrentTime
+        , subscriptions = \_ -> Time.every 1000 SetCurrentTime
         , view = view
         }
 
@@ -30,20 +31,22 @@ main =
 init : ( Model, Cmd Msg )
 init =
     let
-        nextEntryRequest =
-            Http.get "/api/next" Json.string
-
         nextEntryRequestHandle =
-            Result.mapError toString
-                --to make the type signature of andThen match
-                >> Result.andThen Date.fromString
-                >> Result.map Date.toTime
+            Result.mapError (always [])
+                >> Result.andThen Iso8601.toTime
+                >> Result.mapError (always "")
                 >> SetNextReleaseDate
 
-        requestCmd =
-            Http.send nextEntryRequestHandle nextEntryRequest
+        nextEntryRequest =
+            Http.get
+                { url = "/api/next"
+                , expect = Http.expectJson nextEntryRequestHandle Json.string
+                }
+
+        timezoneCmd =
+            Task.perform SetTimezone Time.here
     in
-    ( empty, requestCmd )
+    ( empty, Cmd.batch [ nextEntryRequest, timezoneCmd ] )
 
 
 
@@ -51,17 +54,19 @@ init =
 
 
 type alias Model =
-    { nextReleaseDate : Result String Time
-    , currentTime : Time
+    { nextReleaseDate : Result String Posix
+    , currentTime : Posix
     , showShare : Bool
+    , timezone : Time.Zone
     }
 
 
 empty : Model
 empty =
     { nextReleaseDate = Err "Loading..."
-    , currentTime = 0
+    , currentTime = Time.millisToPosix 0
     , showShare = False
+    , timezone = Time.utc
     }
 
 
@@ -70,8 +75,9 @@ empty =
 
 
 type Msg
-    = SetNextReleaseDate (Result String Time)
-    | SetCurrentTime Time
+    = SetNextReleaseDate (Result String Posix)
+    | SetCurrentTime Posix
+    | SetTimezone Time.Zone
     | OpenSharePopup ShareButtons.Msg
     | ToggleShowShare
 
@@ -79,31 +85,40 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        SetTimezone zone ->
+            ( { model | timezone = zone }
+            , Cmd.none
+            )
+
         SetNextReleaseDate timeResult ->
-            { model | nextReleaseDate = timeResult }
-                ! []
+            ( { model | nextReleaseDate = timeResult }
+            , Cmd.none
+            )
 
         SetCurrentTime time ->
-            { model | currentTime = time }
-                ! [ case model.nextReleaseDate of
-                        Err _ ->
-                            Cmd.none
+            ( { model | currentTime = time }
+            , case model.nextReleaseDate of
+                Err _ ->
+                    Cmd.none
 
-                        Ok releaseDate ->
-                            if releaseDate - time <= 0 then
-                                Navigation.reloadAndSkipCache
-                            else
-                                Cmd.none
-                  ]
+                Ok releaseDate ->
+                    if Time.posixToMillis releaseDate - Time.posixToMillis time <= 0 then
+                        Navigation.reloadAndSkipCache
+
+                    else
+                        Cmd.none
+            )
 
         -- DUPLICATED FROM Reader.Update
         OpenSharePopup sharePopupSettings ->
-            model
-                ! [ openSharePopup sharePopupSettings.data ]
+            ( model
+            , openSharePopup sharePopupSettings.data
+            )
 
         ToggleShowShare ->
-            { model | showShare = not model.showShare }
-                ! []
+            ( { model | showShare = not model.showShare }
+            , Cmd.none
+            )
 
 
 
@@ -139,7 +154,7 @@ view model =
                         , span [] [ text "Art by Soupery" ]
                         ]
                     , Markdown.toHtml [ class "blurb" ] summaryBlurb
-                    , div [ style [ ( "clear", "both" ) ] ] []
+                    , div [ style "clear" "both" ] []
                     , -- div
                       -- [ class "preview-sub" ]
                       -- [
@@ -173,10 +188,19 @@ view model =
 
 
 timerView : Model -> Html Msg
-timerView { nextReleaseDate, currentTime } =
+timerView { nextReleaseDate, currentTime, timezone } =
     let
+        second =
+            1000
+
+        minute =
+            second * 60
+
+        hour =
+            minute * 60
+
         day =
-            Time.hour * 24
+            hour * 24
 
         showTimer time =
             Tuple.second <|
@@ -184,19 +208,21 @@ timerView { nextReleaseDate, currentTime } =
                     (\( unit, label ) ( t, htmlOutList ) ->
                         let
                             timeInUnit =
-                                floor (t / unit)
+                                t // unit
 
                             pluralizedLabel =
                                 if timeInUnit == 1 then
                                     label
+
                                 else
                                     label ++ "s"
 
                             timeString =
-                                if String.length (toString timeInUnit) == 1 then
-                                    "0" ++ toString timeInUnit
+                                if String.length (String.fromInt timeInUnit) == 1 then
+                                    "0" ++ String.fromInt timeInUnit
+
                                 else
-                                    toString timeInUnit
+                                    String.fromInt timeInUnit
 
                             outHtml =
                                 div [ class "timer-field" ]
@@ -205,18 +231,67 @@ timerView { nextReleaseDate, currentTime } =
                                     ]
 
                             newT =
-                                t - (toFloat timeInUnit * unit)
+                                t - (timeInUnit * unit)
                         in
                         ( newT, htmlOutList ++ [ outHtml ] )
                     )
                     ( time, [] )
-                    [ ( day, "day" ), ( Time.hour, "hour" ), ( Time.minute, "minute" ), ( Time.second, "second" ) ]
+                    [ ( day, "day" ), ( hour, "hour" ), ( minute, "minute" ), ( second, "second" ) ]
+
+        formatDate time =
+            let
+                releaseYear =
+                    String.fromInt (Time.toYear timezone time)
+
+                releaseMonth =
+                    case Time.toMonth timezone time of
+                        Jan ->
+                            "01"
+
+                        Feb ->
+                            "02"
+
+                        Mar ->
+                            "03"
+
+                        Apr ->
+                            "04"
+
+                        May ->
+                            "05"
+
+                        Jun ->
+                            "06"
+
+                        Jul ->
+                            "07"
+
+                        Aug ->
+                            "08"
+
+                        Sep ->
+                            "09"
+
+                        Oct ->
+                            "10"
+
+                        Nov ->
+                            "11"
+
+                        Dec ->
+                            "12"
+
+                releaseDay =
+                    String.right 2 ("0" ++ String.fromInt (Time.toDay timezone time))
+            in
+            releaseMonth ++ "/" ++ releaseDay ++ "/" ++ releaseYear
     in
     case nextReleaseDate of
         Err str ->
             if str == "Loading..." then
                 div [ id "countdown-timer" ]
                     [ h1 [] [ text str ] ]
+
             else
                 div [ id "countdown-timer" ]
                     [ h1 [] [ text "Coming October 2019" ] ]
@@ -228,11 +303,11 @@ timerView { nextReleaseDate, currentTime } =
                     [ text "{{% countdown.preDateText %}} "
                     , span
                         [ class "highlight-color" ]
-                        [ text <| Date.format "%m/%d/%y" (Date.fromTime releaseDate) ]
+                        [ text <| formatDate releaseDate ]
                     ]
                 , div
                     [ class "timer" ]
-                    (showTimer <| releaseDate - currentTime)
+                    (showTimer <| Time.posixToMillis releaseDate - Time.posixToMillis currentTime)
                 ]
 
 
@@ -324,8 +399,9 @@ testimonialsView =
                 (\i ( dialogue, char ) ->
                     div
                         [ class <|
-                            if i % 2 == 0 then
+                            if modBy 2 i == 0 then
                                 "left-align"
+
                             else
                                 "right-align"
                         ]
@@ -367,7 +443,7 @@ summaryBlurb =
 
 testimonials : List ( String, String )
 testimonials =
-    List.map2 (,)
+    List.map2 (\a b -> ( a, b ))
         [ "{{% countdown.testimonials.content.0.text %}}"
         , "{{% countdown.testimonials.content.1.text %}}"
         , "{{% countdown.testimonials.content.2.text %}}"

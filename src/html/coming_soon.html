@@ -21,7 +21,9 @@
 <body>
 <script src="/dist/js/countdown.min.js?nocache={{% gen.buildNum %}}"></script>
 <script>
-    var Countdown = Elm.ReleaseCountdown.fullscreen();
+    var Countdown = Elm.ReleaseCountdown.init({
+        node: document.body
+    });
     // COPIED FROM RendererInterface.js
     Countdown.ports.openSharePopup.subscribe(function(data) {
         var elem = document.getElementsByClassName(data.srcBtnClass)[0];
@@ -39,4 +41,3 @@
 <script type="text/javascript" src="/static/js/ga-include.js"></script>
 </body>
 </html>
-
