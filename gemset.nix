@@ -145,10 +145,10 @@
     platforms = [];
     source = {
       remotes = ["http://rubygems.org"];
-      sha256 = "0v2cpqmw6dmysa91ffzl736kgjjzmnf4xlgz6g16fk4yqhn71340";
+      sha256 = "1bi1r1xvlxpkghvmk1js88djlw7vi4ky6ildk8akn73hkf5phd2j";
       type = "gem";
     };
-    version = "2.4.0";
+    version = "2.5.1";
   };
   nokogiri = {
     dependencies = ["mini_portile2"];
@@ -216,10 +216,10 @@
     platforms = [];
     source = {
       remotes = ["http://rubygems.org"];
-      sha256 = "15167q25rmxipqwi6hjqj3i1byi9iwl3xq9b7mdar7qiz39pmjsk";
+      sha256 = "0xcvf6lxwdfls6mk1pc6kyw37gr9jyyal83vc6cnlscyp7zafh8j";
       type = "gem";
     };
-    version = "2.0.5";
+    version = "2.0.7";
   };
   rake = {
     groups = ["default"];
@@ -237,19 +237,21 @@
     platforms = [];
     source = {
       remotes = ["http://rubygems.org"];
-      sha256 = "1gasgn5f15myv08k10i16p326pchxjsy37pgqfw0xm66kcc5d7ry";
+      sha256 = "1zmi68iv2lsp9lj6vpmwd9grga2v4hsphagjkzqb908v83539jbw";
       type = "gem";
     };
-    version = "2.0.5";
+    version = "2.0.7";
   };
   sinatra-activerecord = {
     dependencies = ["activerecord" "sinatra"];
+    groups = ["default"];
+    platforms = [];
     source = {
       remotes = ["http://rubygems.org"];
-      sha256 = "0l41ls664v4nypd04hkwmrrw42rm70kplmjpwcl8zs1qjif9bjmp";
+      sha256 = "04dbhx03fqq2yawki5kr2k5jph2qvbkjcr7vz9arckdmpd91q77c";
       type = "gem";
     };
-    version = "2.0.13";
+    version = "2.0.14";
   };
   sinatra-contrib = {
     dependencies = ["backports" "multi_json" "mustermann" "rack-protection" "sinatra" "tilt"];
@@ -257,10 +259,10 @@
     platforms = [];
     source = {
       remotes = ["http://rubygems.org"];
-      sha256 = "093blvpfy5n7s8knaav9a4pm4j7kck9zidwz942qqd4g99fnk443";
+      sha256 = "026s6z315dahy9j4lkm48hfm07l6b35sdnwn673al997nmvyp5r8";
       type = "gem";
     };
-    version = "2.0.5";
+    version = "2.0.7";
   };
   sqlite3 = {
     groups = ["development"];
@@ -304,9 +306,9 @@
     platforms = [];
     source = {
       remotes = ["http://rubygems.org"];
-      sha256 = "0gaiqg207j99cvqpgmn4ps6a14hz1rrh5zaxfdkiiavapbc5vpzw";
+      sha256 = "0h1gxg302dvh8rvwi6bvgbcn7cwf2z5pbk533i1hkdr2jr7kw3f0";
       type = "gem";
     };
-    version = "2.1.9";
+    version = "2.1.10";
   };
 }
