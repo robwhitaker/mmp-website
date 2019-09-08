@@ -40,6 +40,6 @@ in pkgs1803.lib.overrideDerivation haskellEnv (old: {
   shellHook = ''
     cp --reflink=auto --no-preserve=mode -r $bowerComponents/bower_components .
     export PATH=./node_modules/.bin:$PATH
-    cabal configure
+    cabal --config-file=/dev/null configure
   '';
 })

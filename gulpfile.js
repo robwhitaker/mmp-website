@@ -44,7 +44,7 @@ var injectConfig = function() {
 
 var buildCss = function(stylesheet) {
     exec('mkdir -p public/dist/css');
-    exec('cabal run style ' + stylesheet + ' | tail -n 1 1> public/dist/css/' + stylesheet  + '.min.css');
+    exec('cabal --config-file=/dev/null run style ' + stylesheet + ' | tail -n 1 1> public/dist/css/' + stylesheet  + '.min.css');
 };
 
 gulp.task('build:reader-css', function() {
