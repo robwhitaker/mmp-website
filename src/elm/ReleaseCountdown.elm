@@ -293,8 +293,7 @@ timerView { nextReleaseDate, currentTime, timezone } =
                     [ h1 [] [ text str ] ]
 
             else
-                div [ id "countdown-timer" ]
-                    [ h1 [] [ text "Coming October 2019" ] ]
+                div [] []
 
         Ok releaseDate ->
             div [ id "countdown-timer" ]
