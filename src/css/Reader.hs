@@ -14,7 +14,7 @@ stylesheet = do
     importUrl "https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300"
     importUrl "https://fonts.googleapis.com/css?family=Droid+Serif"
 
-    -- ======== GENERAL ======== 
+    -- ======== GENERAL ========
 
     star ? do
         noPadding
@@ -31,13 +31,26 @@ stylesheet = do
 
         (div <> (div |> div)) <? height (pct 100)
 
-    div ? do 
+    -- Low res image swapping
+    body # ".wood-bg-loaded" ** (section # ".reader") ? do
+            backgroundImage (url "/static/img/wood-bg-11.png")
+
+    body # ".banner-logo-loaded" ** ".banner-logo" ? do
+        backgroundImage (url "/static/img/MMPLogoFinal.png")
+
+    body # ".book-cover-loaded" ** (".loader" # ".cover") ? do
+        backgroundImage (url "/static/img/book-new-5.png")
+
+    body # ".book-back-loaded" ** ".book" ** ".book-back" ? do
+        backgroundImage (url "/static/img/book-back.png") --INSIDE
+
+    div ? do
         "#fb-root" & do
             display none
 
         "#error-popup" & do
             position fixed
-            right (em 1) 
+            right (em 1)
             top (em 1)
             width (pct 20)
             height (px 0)
@@ -68,7 +81,7 @@ stylesheet = do
                     textAlign (alignSide sideRight)
 
 
-    -- ======== PAGE SECTIONS ======== 
+    -- ======== PAGE SECTIONS ========
 
     section ? do
         minHeight (pct 100)
@@ -87,12 +100,9 @@ stylesheet = do
             alignItems (AlignItemValue $ value $ placed sideCenter sideTop)
             flexFlow row FB.wrap
 
-    (body # ".wood-bg-loaded") ** (section # ".reader") ? do
-        backgroundImage (url "/static/img/wood-bg-11.png")
+    -- ======== READER SECTION ========
 
-    -- ======== READER SECTION ======== 
-
-    -- ---- Banner ---- 
+    -- ---- Banner ----
 
     ".banner" ? do
         height (vh 15)
@@ -108,10 +118,7 @@ stylesheet = do
         maxWidth (pct 100)
 
 
-    (body # ".banner-logo-loaded") ** ".banner-logo" ? do
-        backgroundImage (url "/static/img/MMPLogoFinal.png")
-
-    -- ---- Book Display ---- 
+    -- ---- Book Display ----
 
     ".book" ? do
         minHeight (px 256)
@@ -125,7 +132,7 @@ stylesheet = do
             position absolute
             borderRadius' (px 4)
             background (rgba 0 0 0 0.7)
-            top (px 0) 
+            top (px 0)
             left (px 0)
             right (px 0)
             bottom (px 0)
@@ -135,7 +142,7 @@ stylesheet = do
             display flex
             flexDirection column
             position absolute
-            top (pct 2) 
+            top (pct 2)
             bottom (pct 2)
             left (pct 12)
             right (pct 12)
@@ -146,7 +153,7 @@ stylesheet = do
 
             iframe ? do
                 FB.flex 1 1 (px 1)
-                noBorder 
+                noBorder
                 width (pct 100)
 
             ".bottom-bar" ? do
@@ -193,13 +200,13 @@ stylesheet = do
             fontSize (px 15)
             color (rgba 68 68 68 1)
 
-        -- ---- Book Display > Loader Overlay ---- 
+        -- ---- Book Display > Loader Overlay ----
 
         ".loader" ? do
             position absolute
-            top (px 0) 
+            top (px 0)
             right (px 0)
-            bottom (px 0) 
+            bottom (px 0)
             left (px 0)
             backgroundSize (by (pct 100) (pct 100))
             display none
@@ -226,8 +233,8 @@ stylesheet = do
                     left (pct 6)
                     right (px 0)
                     bottom (px 0)
-                    backgroundImage (radialGradient' sideCenter (circle farthestCorner) 
-                                    [ ( rgba 203 128 14 0.25, pct 0) 
+                    backgroundImage (radialGradient' sideCenter (circle farthestCorner)
+                                    [ ( rgba 203 128 14 0.25, pct 0)
                                     , ( rgba 203 128 14 0.4, pct 23)
                                     , ( rgba 0 0 0 0.4, pct 58)
                                     ])
@@ -240,7 +247,7 @@ stylesheet = do
 
                     hover & do
                         opacity 0.7
-                        animation "fadeInFrom" 0.2 linear 0 (iterationCount 1) alternate forwards 
+                        animation "fadeInFrom" 0.2 linear 0 (iterationCount 1) alternate forwards
                         backgroundImage (radialGradient' sideCenter (circle farthestCorner)
                                         [ ( rgba 203 128 14 0.35, pct 0)
                                         , ( rgba 203 128 14 0.45, pct 23)
@@ -273,26 +280,20 @@ stylesheet = do
             ".loading-label" ? do
                 textAlign (alignSide sideCenter)
 
-        (body # ".book-cover-loaded") ** (".loader" # ".cover") ? do
-            backgroundImage (url "/static/img/book-new-5.png")
-            
         ".book-back" ? do
             zIndex 1
             backgroundImage (url "/static/img/book-back-low.png") --INSIDE
             position absolute
             backgroundSize (by(pct 100) (pct 100))
-            top (px 0) 
+            top (px 0)
             bottom (px 0)
             left (px 0)
             right (px 0)
 
-        (body # ".book-back-loaded") ** ".book" ** ".book-back" ? do
-            backgroundImage (url "/static/img/book-back.png") --INSIDE
-
     ".forward-btn" ** star ? do
         marginLeft auto
 
-    -- ---- Book Display > Dropdown Menu ---- 
+    -- ---- Book Display > Dropdown Menu ----
 
     ".drop-down-container" ? do
         display inlineBlock
@@ -322,7 +323,7 @@ stylesheet = do
 
             ul ? do
                 border solid (px 1) (rgba 153 153 153 1)
-                borderTop solid (px 0) (rgba 0 0 0 0) 
+                borderTop solid (px 0) (rgba 0 0 0 0)
                 maxHeight (vh 60)
 
                 (li # ".latest") ** ".alert" ? do
@@ -426,8 +427,8 @@ stylesheet = do
 
                 ".unread" & do
                     fontWeight bold
-                    
-    -- ======== COMMENTS / AUTHOR'S NOTE SECTION ======== 
+
+    -- ======== COMMENTS / AUTHOR'S NOTE SECTION ========
 
     ("#comments-box" <> "#authors-note") ? do
         borderRadius' (em 0.4)
@@ -473,29 +474,29 @@ stylesheet = do
     ".authors-note-text" ** p ? do
         marginBottom (em 1.4)
 
-    a ? do 
-        color (rgba 229 178 73 1) 
-        textDecoration none 
+    a ? do
+        color (rgba 229 178 73 1)
+        textDecoration none
 
-        hover & textDecoration underline 
+        hover & textDecoration underline
 
     (section # ".comments") ** (span # ".highlight-color") ? do
         color (rgba 229 178 73 1)
 
-    -- ======== FOOTER ======== 
+    -- ======== FOOTER ========
 
     footer ? do
         background black
         boxSizing borderBox
         padding (em 2) (em 0) (em 0.2) (em 0)
-        fontSize (px 14) 
+        fontSize (px 14)
         fontFamily [ "Helvetica", "Arial" ] [ sansSerif ]
 
         ".footer-link-block" ? do
             display flex
             flexFlow row FB.wrap
 
-        ul ? do listStyleNone 
+        ul ? do listStyleNone
 
         h2 # ".fancy-heading" ? do
             margin (em 0) (em 0) (em 0.2) (em 0)
@@ -539,7 +540,7 @@ stylesheet = do
         marginTop (em 1)
         display block
 
-    -- ======== MAILCHIMP ======== 
+    -- ======== MAILCHIMP ========
 
     iframe # "#mailchimp-signup" ? do
         noBorder
@@ -549,7 +550,7 @@ stylesheet = do
         height (px 80)
 
     "#mc_embed_signup" ? do
-        fontSize (px 14) 
+        fontSize (px 14)
         fontFamily [ "Open Sans Condensed" ] [ sansSerif ]
         width (px 200)
         centerMargin
@@ -591,11 +592,11 @@ stylesheet = do
     "#mc_embed_signup_scroll" ? do
         centerMargin
 
-    -- ======== Share Buttons ======== 
+    -- ======== Share Buttons ========
 
     shareButtons
 
-    -- ======== SHARE DIALOG ======== 
+    -- ======== SHARE DIALOG ========
 
     ".modal" # ".share-dialog-container" ? do
         display flex
@@ -604,9 +605,9 @@ stylesheet = do
 
         ".overlay" ? do
             position absolute
-            top (px 0) 
-            bottom (px 0) 
-            left (px 0) 
+            top (px 0)
+            bottom (px 0)
+            left (px 0)
             right (px 0)
             zIndex 1500
             backgroundColor (rgba 0 0 0 0.9)
@@ -620,14 +621,14 @@ stylesheet = do
         position relative
         zIndex 1501
         cursor cursorText
-        fontSize (px 18) 
+        fontSize (px 18)
         fontFamily [ "Helvetica", "Arial" ] [ sansSerif ]
         overflow auto
         maxHeight (pct 100)
 
         ".url-container" ? do
             marginBottom (em 1)
-            
+
             input ? do
                 width (pct 100)
                 borderRadius' (em 0.4)
@@ -674,49 +675,49 @@ stylesheet = do
     -- ======= ANIMATIONS ======
 
     keyframes "glow-fade"
-        [ (0, opacity 0.93) 
-        , (20, opacity 1) 
+        [ (0, opacity 0.93)
+        , (20, opacity 1)
         , (21, opacity 0.9)
         , (22, opacity 1)
         , (23, opacity 0.93)
-        , (24, opacity 1) 
-        , (30, opacity 0.93) 
-        , (34, opacity 1) 
-        , (50, opacity 1) 
-        , (51, opacity 0.9) 
-        , (52, opacity 1) 
-        , (53, opacity 0.93) 
-        , (54, opacity 1) 
-        , (70, opacity 1) 
-        , (71, opacity 0.93) 
-        , (72, opacity 1) 
-        , (73, opacity 0.93) 
-        , (74, opacity 1) 
-        , (90, opacity 1) 
-        , (91, opacity 0.93) 
-        , (92, opacity 1) 
-        , (93, opacity 0.93) 
-        , (94, opacity 1) 
-        , (100, opacity 1) 
+        , (24, opacity 1)
+        , (30, opacity 0.93)
+        , (34, opacity 1)
+        , (50, opacity 1)
+        , (51, opacity 0.9)
+        , (52, opacity 1)
+        , (53, opacity 0.93)
+        , (54, opacity 1)
+        , (70, opacity 1)
+        , (71, opacity 0.93)
+        , (72, opacity 1)
+        , (73, opacity 0.93)
+        , (74, opacity 1)
+        , (90, opacity 1)
+        , (91, opacity 0.93)
+        , (92, opacity 1)
+        , (93, opacity 0.93)
+        , (94, opacity 1)
+        , (100, opacity 1)
         ]
 
-    keyframes "fadeInFrom" 
-        [ (0,  opacity 0.7) 
+    keyframes "fadeInFrom"
+        [ (0,  opacity 0.7)
         , (100, opacity 1)
         ]
 
     keyframesFromTo "fadein" (opacity 0) (opacity 1)
     keyframesFromTo "fadeout" (opacity 1) (opacity 0)
 
-    -- ======= CREDITS ====== 
+    -- ======= CREDITS ======
 
     ".modal" # ".credits-overlay" ? do
         backgroundColor black
-        animation "fadein" 2 linear 0 (iterationCount 1) alternate forwards 
+        animation "fadein" 2 linear 0 (iterationCount 1) alternate forwards
 
     ".credits-container" ? do
         fontWeight (weight 300)
-        fontSize (px 30) 
+        fontSize (px 30)
         fontFamily [ "Open Sans Condensed" ] [ sansSerif ]
         textAlign (alignSide sideCenter)
         color (rgba 255 255 255 1)
@@ -750,7 +751,7 @@ stylesheet = do
     ".end-credits-btn" ? do
         position fixed
         zIndex 10000000000000001
-        top (px 5) 
+        top (px 5)
         right (px 5)
         border solid (px 1) white
         borderRadius' (em 0.2)
@@ -763,7 +764,7 @@ stylesheet = do
             color (rgba 229 178 73 1)
             borderColor (rgba 229 178 73 1)
 
-    -- ===== CONTACT ME ===== 
+    -- ===== CONTACT ME =====
 
     ".contact-modal-container" ? do
         width (pct 100)
@@ -778,7 +779,7 @@ stylesheet = do
         maxWidth (px 500)
         padding1 (em 1)
         cursor cursorText
-        fontSize (px 18) 
+        fontSize (px 18)
         fontFamily [ "Open Sans Condensed" ] [ sansSerif ]
         overflow auto
         maxHeight (pct 100)
@@ -795,14 +796,14 @@ stylesheet = do
             fontSize (px 19)
             color white
 
-    -- ======== MODAL ======= 
+    -- ======== MODAL =======
 
     ".modal" ? do
         backgroundColor (rgba 0 0 0 0.9)
         position fixed
-        top (px 0) 
-        bottom (px 0) 
-        left (px 0) 
+        top (px 0)
+        bottom (px 0)
+        left (px 0)
         right (px 0)
         zIndex 10000000000000000
         overflow hidden
@@ -823,11 +824,10 @@ stylesheet = do
             hover & do
                 transform (scale 1.2 1.2)
 
-    -- ======== MISC ======== 
+    -- ======== MISC ========
 
-    ".hidden" ? visibility hidden 
+    ".hidden" ? visibility hidden
 
     ".no-display" ? ("display" -: "none !important")
 
     ".no-scroll" ? ("overflow" -: "hidden !important")
-
