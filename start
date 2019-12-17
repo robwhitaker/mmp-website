@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+source /home/deploy/.bash_profile
+cd /home/deploy/mmp
+pumactl start
