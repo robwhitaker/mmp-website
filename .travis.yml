@@ -29,14 +29,14 @@ deploy:
       bundle install;
       rm -rf public;
       mv ../public .;
-      if [ -f var/run/puma.pid ]; then pumactl stop; fi;
+      if [ -f var/run/puma.pid ]; then bundle exec pumactl stop; fi;
       if [ -S /tmp/puma.sock ]; then rm /tmp/puma.sock; fi;
       '" &&
     ssh "$user@$staging" '
       set -e;
       . /home/$user/.rvm/scripts/rvm;
       cd mmp;
-      pumactl start > /tmp/puma-start 2>&1 &
+      bundle exec pumactl start > /tmp/puma-start 2>&1 &
       sleep 30;
       grep -C 10 "Daemonizing" /tmp/puma-start;
       ';
