@@ -171,12 +171,14 @@
     version = "1.10.7";
   };
   pg = {
+    groups = ["production"];
+    platforms = [];
     source = {
       remotes = ["http://rubygems.org"];
-      sha256 = "00vhasqwc4f98qb4wxqn2h07fjwzhp5lwyi41j2gndi2g02wrdqh";
+      sha256 = "1r01bqqhnk272dsyhg3cqx6j0aiwbcdnrwp7vxzc969mb5dgnnrl";
       type = "gem";
     };
-    version = "0.21.0";
+    version = "1.2.2";
   };
   pony = {
     dependencies = ["mail"];
