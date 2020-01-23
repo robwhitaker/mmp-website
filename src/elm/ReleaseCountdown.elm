@@ -159,7 +159,7 @@ view model =
                       -- [ class "preview-sub" ]
                       -- [
                       -- [ iframe
-                      --     [ src "{{% countdown.video %}}"
+                      --     [ src "{{countdown.video}}"
                       --     , attribute "frameborder" "0"
                       --     , attribute "allowfullscreen" ""
                       --     ] []
@@ -180,7 +180,7 @@ view model =
                     []
                     [ Markdown.toHtml
                         []
-                        "{{% countdown.metadata.copy %}}"
+                        "{{countdown.metadata.copy}}"
                     ]
                 ]
             ]
@@ -299,7 +299,7 @@ timerView { nextReleaseDate, currentTime, timezone } =
             div [ id "countdown-timer" ]
                 [ h1
                     []
-                    [ text "{{% countdown.preDateText %}} "
+                    [ text "{{countdown.preDateText}} "
                     , span
                         [ class "highlight-color" ]
                         [ text <| formatDate releaseDate ]
@@ -313,12 +313,12 @@ timerView { nextReleaseDate, currentTime, timezone } =
 mailchimpForm : Html Msg
 mailchimpForm =
     div [ id "mc_embed_signup" ]
-        [ Html.form [ action "//{{% mailchimp.subdomain %}}.us11.list-manage.com/subscribe/post?u={{% mailchimp.u %}}&id={{% mailchimp.listId.initialRelease %}}", class "validate", id "mc-embedded-subscribe-form", method "post", name "mc-embedded-subscribe-form", attribute "novalidate" "", target "_blank" ]
+        [ Html.form [ action "//{{mailchimp.subdomain}}.us11.list-manage.com/subscribe/post?u={{mailchimp.u}}&id={{mailchimp.listId.initialRelease}}", class "validate", id "mc-embedded-subscribe-form", method "post", name "mc-embedded-subscribe-form", attribute "novalidate" "", target "_blank" ]
             [ div [ id "mc_embed_signup_scroll" ]
                 [ h2 []
-                    [ text "{{% countdown.formAcceptText1 %}} "
+                    [ text "{{countdown.formAcceptText1}} "
                     , span [ class "mmp-title" ] [ text "Midnight Murder Party" ]
-                    , text " {{% countdown.formAcceptText2 %}}"
+                    , text " {{countdown.formAcceptText2}}"
                     ]
                 , div [ class "mc-field-group" ]
                     [ label [ for "mce-EMAIL", class "header-label" ]
@@ -335,7 +335,7 @@ mailchimpForm =
                             [ input [ id "mce-group[16105]-16105-0", name "group[16105][1]", type_ "checkbox", value "1" ]
                                 []
                             , label [ for "mce-group[16105]-16105-0" ]
-                                [ text "{{% countdown.notifyReleaseText %}}" ]
+                                [ text "{{countdown.notifyReleaseText}}" ]
                             ]
                         ]
                     ]
@@ -346,7 +346,7 @@ mailchimpForm =
                         []
                     ]
                 , div [ attribute "aria-hidden" "true", attribute "style" "position: absolute; left: -5000px;" ]
-                    [ input [ name "b_{{% mailchimp.u %}}_{{% mailchimp.listId.initialRelease %}}", attribute "tabindex" "-1", type_ "text", value "" ]
+                    [ input [ name "b_{{mailchimp.u}}_{{mailchimp.listId.initialRelease}}", attribute "tabindex" "-1", type_ "text", value "" ]
                         []
                     ]
                 , div [ class "clear" ]
@@ -381,9 +381,9 @@ follow =
                 [ img [ src <| "/static/img/" ++ iconUrl ] [] ]
 
         icons =
-            [ ( "facebook-icon.png", "https://www.facebook.com/{{% social.facebook %}}/" )
-            , ( "twitter-icon.png", "https://twitter.com/{{% social.twitter %}}" )
-            , ( "ello-icon.jpg", "https://ello.co/{{% social.ello %}}" )
+            [ ( "facebook-icon.png", "https://www.facebook.com/{{social.facebook}}/" )
+            , ( "twitter-icon.png", "https://twitter.com/{{social.twitter}}" )
+            , ( "ello-icon.jpg", "https://ello.co/{{social.ello}}" )
             , ( "rss-icon.png", "/rss" )
             ]
     in
@@ -411,11 +411,11 @@ testimonialsView =
                 testimonials
     in
     div [ class "testimonials" ] <|
-        h2 [] [ text "{{% countdown.testimonials.intro %}} " ]
+        h2 [] [ text "{{countdown.testimonials.intro}} " ]
             :: testimonialsHtml
             ++ [ Markdown.toHtml
                     [ class "center-align" ]
-                    "\"_**{{% countdown.testimonials.final %}}**_\""
+                    "\"_**{{countdown.testimonials.final}}**_\""
                ]
 
 
@@ -432,38 +432,38 @@ port openSharePopup : ShareButtons.Data -> Cmd msg
 
 summaryHeader : String
 summaryHeader =
-    """### _Midnight Murder Party_ {{% countdown.summaryBlurb.headline %}}"""
+    """### _Midnight Murder Party_ {{countdown.summaryBlurb.headline}}"""
 
 
 summaryBlurb : String
 summaryBlurb =
-    """{{% countdown.summaryBlurb.description %}}"""
+    """{{countdown.summaryBlurb.description}}"""
 
 
 testimonials : List ( String, String )
 testimonials =
     List.map2 (\a b -> ( a, b ))
-        [ "{{% countdown.testimonials.content.0.text %}}"
-        , "{{% countdown.testimonials.content.1.text %}}"
-        , "{{% countdown.testimonials.content.2.text %}}"
-        , "{{% countdown.testimonials.content.3.text %}}"
-        , "{{% countdown.testimonials.content.4.text %}}"
-        , "{{% countdown.testimonials.content.5.text %}}"
-        , "{{% countdown.testimonials.content.6.text %}}"
-        , "{{% countdown.testimonials.content.7.text %}}"
-        , "{{% countdown.testimonials.content.8.text %}}"
-        , "{{% countdown.testimonials.content.9.text %}}"
-        , "{{% countdown.testimonials.content.10.text %}}"
+        [ "{{countdown.testimonials.content.0.text}}"
+        , "{{countdown.testimonials.content.1.text}}"
+        , "{{countdown.testimonials.content.2.text}}"
+        , "{{countdown.testimonials.content.3.text}}"
+        , "{{countdown.testimonials.content.4.text}}"
+        , "{{countdown.testimonials.content.5.text}}"
+        , "{{countdown.testimonials.content.6.text}}"
+        , "{{countdown.testimonials.content.7.text}}"
+        , "{{countdown.testimonials.content.8.text}}"
+        , "{{countdown.testimonials.content.9.text}}"
+        , "{{countdown.testimonials.content.10.text}}"
         ]
-        [ "{{% countdown.testimonials.content.0.by %}}"
-        , "{{% countdown.testimonials.content.1.by %}}"
-        , "{{% countdown.testimonials.content.2.by %}}"
-        , "{{% countdown.testimonials.content.3.by %}}"
-        , "{{% countdown.testimonials.content.4.by %}}"
-        , "{{% countdown.testimonials.content.5.by %}}"
-        , "{{% countdown.testimonials.content.6.by %}}"
-        , "{{% countdown.testimonials.content.7.by %}}"
-        , "{{% countdown.testimonials.content.8.by %}}"
-        , "{{% countdown.testimonials.content.9.by %}}"
-        , "{{% countdown.testimonials.content.10.by %}}"
+        [ "{{countdown.testimonials.content.0.by}}"
+        , "{{countdown.testimonials.content.1.by}}"
+        , "{{countdown.testimonials.content.2.by}}"
+        , "{{countdown.testimonials.content.3.by}}"
+        , "{{countdown.testimonials.content.4.by}}"
+        , "{{countdown.testimonials.content.5.by}}"
+        , "{{countdown.testimonials.content.6.by}}"
+        , "{{countdown.testimonials.content.7.by}}"
+        , "{{countdown.testimonials.content.8.by}}"
+        , "{{countdown.testimonials.content.9.by}}"
+        , "{{countdown.testimonials.content.10.by}}"
         ]

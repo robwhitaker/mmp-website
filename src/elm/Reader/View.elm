@@ -64,18 +64,18 @@ view model =
                             [ text <|
                                 case model.bookmark of
                                     HasBookmark ->
-                                        "{{% reader.book.continue %}}"
+                                        "{{reader.book.continue}}"
 
                                     NoBookmark ->
-                                        "{{% reader.book.start %}}"
+                                        "{{reader.book.start}}"
 
                                     LoadingBookmark ->
-                                        "{{% reader.book.loading %}}"
+                                        "{{reader.book.loading}}"
                             ]
                         , if model.bookmark == NoBookmark then
                             div
                                 [ class "cover-txt start-reading-txt" ]
-                                [ text "{{% reader.book.helperPrompt %}}" ]
+                                [ text "{{reader.book.helperPrompt}}" ]
 
                           else
                             div [] []
@@ -123,7 +123,7 @@ view model =
                                 [ div [ class "last-page-txt" ] <|
                                     case model.nextReleaseDate of
                                         Just date ->
-                                            [ text "{{% reader.book.nextRelease %}}"
+                                            [ text "{{reader.book.nextRelease}}"
                                             , br [] []
                                             , text <|
                                                 DateFormat.format
@@ -140,7 +140,7 @@ view model =
                                             ]
 
                                         Nothing ->
-                                            [ text <| "{{% reader.book.noReleaseScheduled %}}" ]
+                                            [ text <| "{{reader.book.noReleaseScheduled}}" ]
                                 , i [ class "fa fa-angle-right" ] []
                                 ]
                             ]
@@ -165,7 +165,7 @@ view model =
             ]
         , footer []
             [ div [ class "footer-link-block" ] <| List.map2 mkFooterSection footerHeadings footerContent
-            , div [ class "copy" ] [ Markdown.toHtml [] "{{% reader.metadata.copy %}}" ]
+            , div [ class "copy" ] [ Markdown.toHtml [] "{{reader.metadata.copy}}" ]
             ]
         , Html.map CreditsRollMsg <| Modal.view model.creditsRoll
         , Html.map ContactModalMsg <| Modal.view model.contactModal
@@ -195,9 +195,9 @@ follow =
                 [ img [ src <| "/static/img/" ++ iconUrl ] [] ]
 
         icons =
-            [ ( "facebook-icon.png", "https://www.facebook.com/{{% social.facebook %}}" )
-            , ( "twitter-icon.png", "https://twitter.com/{{% social.twitter %}}" )
-            , ( "ello-icon.jpg", "https://ello.co/{{% social.ello %}}" )
+            [ ( "facebook-icon.png", "https://www.facebook.com/{{social.facebook}}" )
+            , ( "twitter-icon.png", "https://twitter.com/{{social.twitter}}" )
+            , ( "ello-icon.jpg", "https://ello.co/{{social.ello}}" )
             , ( "rss-icon.png", "/rss" )
             ]
 

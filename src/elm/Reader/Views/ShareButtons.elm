@@ -100,7 +100,7 @@ facebook =
             Url.crossOrigin
                 "https://www.facebook.com"
                 [ "sharer", "sharer.php" ]
-                [ Url.string "u" "{{% reader.metadata.ogurl %}}" ]
+                [ Url.string "u" "{{reader.metadata.ogurl}}" ]
         , cssClass = "facebook-share-btn"
         }
 
@@ -114,10 +114,10 @@ twitter =
             Url.crossOrigin
                 "https://twitter.com"
                 [ "intent", "tweet" ]
-                [ Url.string "text" "{{% social.share.twitterText %}}"
+                [ Url.string "text" "{{social.share.twitterText}}"
                 , Url.string "tw_p" "tweetbutton"
-                , Url.string "url" "{{% reader.metadata.ogurl %}}"
-                , Url.string "via" "{{% social.twitter %}}"
+                , Url.string "url" "{{reader.metadata.ogurl}}"
+                , Url.string "via" "{{social.twitter}}"
                 ]
         , cssClass = "twitter-share-btn"
         }
@@ -133,9 +133,9 @@ tumblr =
                 "https://www.tumblr.com"
                 [ "widgets", "share", "tool" ]
                 [ Url.string "posttype" "link"
-                , Url.string "title" "{{% reader.metadata.title %}}"
-                , Url.string "content" "{{% reader.metadata.ogurl %}}"
-                , Url.string "canonicalUrl" "{{% reader.metadata.ogurl %}}"
+                , Url.string "title" "{{reader.metadata.title}}"
+                , Url.string "content" "{{reader.metadata.ogurl}}"
+                , Url.string "canonicalUrl" "{{reader.metadata.ogurl}}"
                 ]
         , cssClass = "tumblr-share-btn"
         }
@@ -150,7 +150,7 @@ gplus =
             Url.crossOrigin
                 "//plus.google.com"
                 [ "share" ]
-                [ Url.string "url" "{{% reader.metadata.ogurl %}}" ]
+                [ Url.string "url" "{{reader.metadata.ogurl}}" ]
         , cssClass = "gplus-share-btn"
         }
 
@@ -164,6 +164,6 @@ reddit =
             Url.crossOrigin
                 "http://www.reddit.com"
                 [ "submit" ]
-                [ Url.string "url" "{{% reader.metadata.ogurl %}}" ]
+                [ Url.string "url" "{{reader.metadata.ogurl}}" ]
         , cssClass = "reddit-share-btn"
         }

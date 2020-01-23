@@ -3,23 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{% metadata.title %}}</title>
-    <meta name="description" content="{{% metadata.description %}}">
-    <meta name="keywords" content="{{% metadata.keywords %}}">
+    <title>{{metadata.title}}</title>
+    <meta name="description" content="{{metadata.description}}">
+    <meta name="keywords" content="{{metadata.keywords}}">
 
-    <meta property="og:title" content="{{% metadata.title %}}">
-    <meta property="og:url" content="{{% metadata.ogurl %}}">
-    <meta property="og:type" content="{{% metadata.ogtype %}}">
-    <meta property="og:image" content="{{% metadata.ogimage %}}">
-    <meta property="og:description" content="{{% metadata.description %}}">
+    <meta property="og:title" content="{{metadata.title}}">
+    <meta property="og:url" content="{{metadata.ogurl}}">
+    <meta property="og:type" content="{{metadata.ogtype}}">
+    <meta property="og:image" content="{{metadata.ogimage}}">
+    <meta property="og:description" content="{{metadata.description}}">
     <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon">
     <link href="//cdn-images.mailchimp.com/embedcode/classic-10_7.css" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="/dist/css/countdown.min.css?nocache={{% gen.buildNum %}}">
+    <link rel="stylesheet" href="/dist/css/countdown.min.css?nocache={{gen.buildNum}}">
     <script src="https://use.fontawesome.com/87f7558537.js"></script>
 </head>
 <body>
-<script src="/dist/js/countdown.min.js?nocache={{% gen.buildNum %}}"></script>
+<script src="/dist/js/countdown.min.js?nocache={{gen.buildNum}}"></script>
 <script>
     var Countdown = Elm.ReleaseCountdown.init({
         node: document.body

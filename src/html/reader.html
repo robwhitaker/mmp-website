@@ -3,30 +3,30 @@
 <head>
   	<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-  	<title>{{% reader.metadata.title %}}</title>
-    <meta name="description" content="{{% reader.metadata.description %}}">
-    <meta name="keywords" content="{{% reader.metadata.keywords %}}">
+  	<title>{{reader.metadata.title}}</title>
+    <meta name="description" content="{{reader.metadata.description}}">
+    <meta name="keywords" content="{{reader.metadata.keywords}}">
 
-    <meta property="og:title" content="{{% reader.metadata.title %}}">
-    <meta property="og:url" content="{{% reader.metadata.ogurl %}}">
-    <meta property="og:type" content="{{% reader.metadata.ogtype %}}">
-    <meta property="og:image" content="{{% reader.metadata.ogimage %}}">
-    <meta property="og:description" content="{{% reader.metadata.description %}}">
+    <meta property="og:title" content="{{reader.metadata.title}}">
+    <meta property="og:url" content="{{reader.metadata.ogurl}}">
+    <meta property="og:type" content="{{reader.metadata.ogtype}}">
+    <meta property="og:image" content="{{reader.metadata.ogimage}}">
+    <meta property="og:description" content="{{reader.metadata.description}}">
     <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon">
     <link href="//cdn-images.mailchimp.com/embedcode/horizontal-slim-10_7.css" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="/dist/css/reader.min.css?nocache={{% gen.buildNum %}}">
+    <link rel="stylesheet" href="/dist/css/reader.min.css?nocache={{gen.buildNum}}">
     <script src="https://use.fontawesome.com/87f7558537.js"></script>
 </head>
 <body>
     <div id="error-popup">
-      <h2>{{% reader.errorPopup.heading %}}</h2>
-      <p>{{% reader.errorPopup.preEmail %}}</p>
-      <p><a href="mailto:{{% author.email %}}?subject=BUG REPORT: " target="_BLANK">{{% author.email %}}</a>
-      <p>{{% reader.errorPopup.postEmail %}}</p>
+      <h2>{{reader.errorPopup.heading}}</h2>
+      <p>{{reader.errorPopup.preEmail}}</p>
+      <p><a href="mailto:{{author.email}}?subject=BUG REPORT: " target="_BLANK">{{author.email}}</a>
+      <p>{{reader.errorPopup.postEmail}}</p>
       <p class="close"><a href="#" onclick="document.getElementById('error-popup').style.display = 'none'; return false;">Close</a></p>
     </div>
-  	<script src="/dist/js/reader.min.js?nocache={{% gen.buildNum %}}"></script>
+  	<script src="/dist/js/reader.min.js?nocache={{gen.buildNum}}"></script>
     <script>
         RendererInterface.init("book-text-frame");
     </script>
