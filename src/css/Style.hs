@@ -3,14 +3,13 @@
 module Main where
 
 import           Clay
-import           Data.Text (Text)
-import qualified Data.Text.Lazy.IO as T
+import           Data.Text          (Text)
+import qualified Data.Text.Lazy.IO  as T
 import           System.Environment (getArgs)
 
-import qualified Countdown as Countdown
-import qualified Renderer as Renderer
-import qualified Editor as Editor
-import qualified Reader as Reader
+import qualified Countdown          as Countdown
+import qualified Reader             as Reader
+import qualified Renderer           as Renderer
 
 main :: IO ()
 main = do
@@ -21,7 +20,6 @@ main = do
         T.putStrLn . renderWith compact [] $
             case Prelude.head args of
                 "countdown" -> Countdown.stylesheet
-                "reader" -> Reader.stylesheet
-                "renderer" -> Renderer.stylesheet
-                "editor" -> Editor.stylesheet
+                "reader"    -> Reader.stylesheet
+                "renderer"  -> Renderer.stylesheet
 

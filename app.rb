@@ -59,10 +59,6 @@ get '/read.html' do
   redirect '/'
 end
 
-get '/editor' do
-  send_file File.join(settings.public_folder, 'editor.html')
-end
-
 get '/api/chapters' do # public chapters
   content_type :json
   success_response

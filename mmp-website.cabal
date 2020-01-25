@@ -31,7 +31,6 @@ executable style
                      , Reader
                      , Renderer
                      , Countdown
-                     , Editor
   -- other-extensions:
   build-depends:       base >=4.10 && <4.12
                      , clay

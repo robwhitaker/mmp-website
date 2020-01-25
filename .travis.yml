@@ -2,13 +2,11 @@ language: nix
 script:
   nix-shell utils.nix --run '
     bundix;
-    bower2nix > bower-packages.nix;
   ' &&
   test $(git ls-files -m | wc -l) -eq 0 &&
   nix-shell shell.nix --pure --run '
     set -e;
     npm install;
-    gulp build:editor --prod;
     gulp build:reader --prod;
     gulp build:countdown --prod;
     ';
