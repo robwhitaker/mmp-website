@@ -1,21 +1,10 @@
 #!/bin/bash
 
-if [ "$1" = "--force-bower" ]; then
-    force_bower=true
-elif [ "$1" = "--force-gems" ]; then
-    force_gems=true
-elif [ "$1" = "--force-all" ]; then
-    force_bower=true
+if [ "$1" = "--force-gems" ]; then
     force_gems=true
 fi
 
 updates=0
-
-# only update bower deps in Nix if there's been a change in bower.json
-if ! git diff-index --quiet HEAD bower.json || [ "$force_bower" = true ]; then
-    bower_update="echo 'Updating bower packages...'; bower2nix > bower-packages.nix;"
-    ((updates++))
-fi
 
 # only update ruby gems in Nix if Gemfile has changed
 if ! git diff-index --quiet HEAD Gemfile || [ "$force_gems" = true ]; then
@@ -24,9 +13,9 @@ if ! git diff-index --quiet HEAD Gemfile || [ "$force_gems" = true ]; then
 fi
 
 if [ $updates -gt 0 ]; then
-    nix-shell utils.nix --run "$bower_update $gem_update"
+    nix-shell utils.nix --run "$gem_update"
 else
-    echo "No changes to bower.json or Gemfile. Nothing to update."
+    echo "No changes to Gemfile. Nothing to update."
     echo ""
-    echo "You can force an update with --force-bower, --force-gems, or --force-all."
+    echo "You can force an update with --force-gems."
 fi

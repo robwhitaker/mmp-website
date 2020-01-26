@@ -27,9 +27,6 @@ echo "Setting up the database..."
 
 rake db:setup
 
-echo "Building the editor..."
-gulp build:editor
-
 echo "Building the reader..."
 gulp build:reader
 
