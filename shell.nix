@@ -15,9 +15,9 @@ let
     };
   };
 
-  haskellEnv = (pkgs1803.haskellPackages.callCabal2nix "mmp-website" ./. {}).env;
+  haskell = pkgs1803.haskellPackages.callCabal2nix "mmp-website" ./. {};
 
-in pkgs1803.lib.overrideDerivation haskellEnv (old: {
+in pkgs1803.lib.overrideDerivation haskell.env (old: {
   name = "mmp-website";
   src = mmpApp;
   buildInputs = old.buildInputs ++ (with pkgs1803; [
@@ -31,6 +31,6 @@ in pkgs1803.lib.overrideDerivation haskellEnv (old: {
   ]);
   shellHook = ''
     export PATH=./node_modules/.bin:$PATH
-    cabal --config-file=/dev/null configure
+    ${pkgs1803.cabal-install}/bin/cabal --config-file=/dev/null configure --cabal-file="$src/mmp-website.cabal"
   '';
 })
